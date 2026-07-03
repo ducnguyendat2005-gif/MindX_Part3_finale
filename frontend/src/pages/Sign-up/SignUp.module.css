@@ -1,0 +1,144 @@
+@charset "UTF-8";
+/* ── Header ── */
+/* ── Main page ── */
+.mainPage {
+  display: grid;
+  grid-template-columns: 532px 1fr;
+  grid-template-rows: 1fr;
+}
+.mainPage > img {
+  display: block;
+  width: auto;
+  height: 100vh;
+}
+
+/* ── Sign-up section ── */
+.signUpSection {
+  width: 70%;
+  align-self: center;
+  justify-self: center;
+  display: grid;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr 43px 20px 1fr;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas: "TI TI" "FN LN" "UN UN" "EM EM" "PW CP" "CA CA" "SL SL" "SIO SIO";
+  gap: 15px;
+}
+.signUpSection > p {
+  grid-area: TI;
+  font-weight: 600;
+  font-size: 32px;
+  justify-self: center;
+}
+.signUpSection > button {
+  grid-area: CA;
+  align-self: center;
+  justify-self: center;
+  width: 100%;
+  height: 43px;
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.25s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.signUpSection > button:hover {
+  background-color: #4338ca;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+.signUpSection > button:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.signUpSection > button:focus-visible {
+  outline: 3px solid #c7d2fe;
+  outline-offset: 2px;
+}
+
+.fieldGroup, .confirmPassword, .password, .email, .username, .lastName, .firstName {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.fieldGroup > p, .confirmPassword > p, .password > p, .email > p, .username > p, .lastName > p, .firstName > p {
+  font-weight: 600;
+  font-size: 14px;
+}
+.fieldGroup input, .confirmPassword input, .password input, .email input, .username input, .lastName input, .firstName input {
+  width: 100%;
+  height: 43px;
+  border-radius: 5px;
+  border: 0.5px solid #E2E8F0;
+  padding: 10px;
+  outline: none;
+  font-size: 14px;
+}
+
+.firstName {
+  grid-area: FN;
+}
+
+.lastName {
+  grid-area: LN;
+  align-self: end;
+}
+
+.username {
+  grid-area: UN;
+}
+
+.email {
+  grid-area: EM;
+}
+
+.password {
+  grid-area: PW;
+}
+
+.confirmPassword {
+  grid-area: CP;
+}
+
+.sepLine {
+  grid-area: SL;
+  align-self: center;
+  justify-self: center;
+  width: 100%;
+  height: 0.5px;
+  background-color: #94A3B8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sepLine span {
+  display: flex;
+  justify-content: center;
+  width: 120px;
+  font-size: 14px;
+  color: #94A3B8;
+  background-color: white;
+}
+
+.signInOther {
+  grid-area: SIO;
+  display: flex;
+  gap: 15px;
+}
+.signInOther button {
+  width: 100%;
+  height: 40px;
+  background-color: white;
+  border: 0.5px solid #B2B5C4;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.signInOther button img {
+  width: 27px;
+  height: 27px;
+}/*# sourceMappingURL=SignUp.module.css.map */

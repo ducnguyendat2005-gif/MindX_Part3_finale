@@ -1,0 +1,466 @@
+.mainPage {
+  display: flex;
+  flex-direction: column;
+  gap: 70px;
+}
+.mainPage .homePageBanner {
+  padding: 0px 60px 0px 60px;
+  height: 700px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: "LEIN DERI";
+}
+.mainPage .homePageBanner .leftInfo {
+  grid-area: LEIN;
+}
+.mainPage .homePageBanner .decoRight {
+  grid-area: DERI;
+}
+.mainPage .homePageBanner .leftInfo {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.mainPage .homePageBanner .leftInfo p:nth-of-type(1) {
+  font-size: 50px;
+  font-weight: 700;
+}
+.mainPage .homePageBanner .leftInfo p:nth-of-type(2) {
+  color: #64748b;
+  font-size: 16px;
+}
+.mainPage .homePageBanner .leftInfo button {
+  width: 249px;
+  height: 51px;
+  background-color: #2563eb;
+  font-size: 16px;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), color 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.mainPage .homePageBanner .leftInfo button:hover {
+  background-color: #fff;
+  color: #2563eb;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.25);
+  transform: translateY(-2px);
+}
+.mainPage .homePageBanner .leftInfo button:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 5px 12px rgba(37, 99, 235, 0.2);
+}
+.mainPage .homePageBanner .decoRight {
+  position: relative;
+}
+.mainPage .homePageBanner .decoRight img:nth-of-type(1),
+.mainPage .homePageBanner .decoRight img:nth-of-type(2),
+.mainPage .homePageBanner .decoRight img:nth-of-type(3) {
+  position: absolute;
+}
+.mainPage .homePageBanner .decoRight img:nth-of-type(1) {
+  top: 100px;
+  left: 240px;
+}
+.mainPage .homePageBanner .decoRight img:nth-of-type(2) {
+  top: 140px;
+  left: 275px;
+  z-index: -1;
+}
+.mainPage .homePageBanner .decoRight img:nth-of-type(3) {
+  top: 125px;
+  left: 183px;
+  z-index: -1;
+}
+.mainPage .homePageBanner .decoRight .cardCircularProgress {
+  display: inline-flex;
+  position: absolute;
+  left: 510px;
+  top: 40px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 20px 24px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+  font-family: "Segoe UI", sans-serif;
+  min-width: 200px;
+}
+.mainPage .homePageBanner .decoRight .cardCircularProgress .svgWrapperCircularProgress {
+  overflow: hidden;
+  position: relative;
+}
+.mainPage .homePageBanner .decoRight .cardCircularProgress .valueTextCircularProgress {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a2e;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  margin-top: 4px;
+}
+.mainPage .homePageBanner .decoRight .cardCircularProgress .labelCircularProgress {
+  font-size: 13px;
+  color: #8a95a3;
+  text-align: center;
+  max-width: 160px;
+  line-height: 1.4;
+}
+.mainPage .massCounter {
+  padding: 0px 60px 0px 60px;
+  background-color: #f8fafc;
+  height: 149px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mainPage .massCounter .insideText {
+  display: grid;
+  width: 97%;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr 1px 1fr 1px 1fr 1px 1fr;
+  grid-template-areas: "first line1 second line2 third line3 fourth";
+  align-items: center;
+}
+.mainPage .massCounter .insideText .first {
+  grid-area: first;
+}
+.mainPage .massCounter .insideText .second {
+  grid-area: second;
+}
+.mainPage .massCounter .insideText .third {
+  grid-area: third;
+}
+.mainPage .massCounter .insideText .fourth {
+  grid-area: fourth;
+}
+.mainPage .massCounter .insideText .sepLine1 {
+  grid-area: line1;
+}
+.mainPage .massCounter .insideText .sepLine2 {
+  grid-area: line2;
+}
+.mainPage .massCounter .insideText .sepLine3 {
+  grid-area: line3;
+}
+.mainPage .massCounter .insideText .sepLine1,
+.mainPage .massCounter .insideText .sepLine2,
+.mainPage .massCounter .insideText .sepLine3 {
+  width: 0.5px;
+  height: 75px;
+  background-color: black;
+}
+.mainPage .massCounter .insideText .first,
+.mainPage .massCounter .insideText .second,
+.mainPage .massCounter .insideText .third,
+.mainPage .massCounter .insideText .fourth {
+  text-align: center;
+}
+.mainPage .massCounter .insideText .first p:nth-of-type(1),
+.mainPage .massCounter .insideText .second p:nth-of-type(1),
+.mainPage .massCounter .insideText .third p:nth-of-type(1),
+.mainPage .massCounter .insideText .fourth p:nth-of-type(1) {
+  font-weight: 700;
+  font-size: 20px;
+}
+.mainPage .topField {
+  padding: 0px 60px 0px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+}
+.mainPage .topField .topCat {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: 45px 1fr;
+  grid-template-areas: "title title lk lk" "ast dev mar phy";
+  gap: 20px;
+}
+.mainPage .topField .topCat > p {
+  grid-area: title;
+  font-weight: 700;
+  font-size: 20px;
+}
+.mainPage .topField .topCat a {
+  grid-area: lk;
+  font-size: 16px;
+  color: #3b82f6;
+  align-self: center;
+  justify-self: end;
+}
+.mainPage .topField .topCat .ast {
+  grid-area: ast;
+}
+.mainPage .topField .topCat .dev {
+  grid-area: dev;
+}
+.mainPage .topField .topCat .market {
+  grid-area: mar;
+}
+.mainPage .topField .topCat .physic {
+  grid-area: phy;
+}
+.mainPage .topField .topCat p {
+  align-self: center;
+}
+.mainPage .topField .topCat .ast,
+.mainPage .topField .topCat .dev,
+.mainPage .topField .topCat .market,
+.mainPage .topField .topCat .physic {
+  padding: 35px 0px 35px 0px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  justify-self: center;
+  display: flex;
+  gap: 5px;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.mainPage .topField .topCat .ast .imgBino,
+.mainPage .topField .topCat .ast .imgDev,
+.mainPage .topField .topCat .ast .marImg,
+.mainPage .topField .topCat .ast .phyImg,
+.mainPage .topField .topCat .dev .imgBino,
+.mainPage .topField .topCat .dev .imgDev,
+.mainPage .topField .topCat .dev .marImg,
+.mainPage .topField .topCat .dev .phyImg,
+.mainPage .topField .topCat .market .imgBino,
+.mainPage .topField .topCat .market .imgDev,
+.mainPage .topField .topCat .market .marImg,
+.mainPage .topField .topCat .market .phyImg,
+.mainPage .topField .topCat .physic .imgBino,
+.mainPage .topField .topCat .physic .imgDev,
+.mainPage .topField .topCat .physic .marImg,
+.mainPage .topField .topCat .physic .phyImg {
+  width: 100px;
+  height: 100px;
+  border-radius: 100px;
+  background-color: #e0f2fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mainPage .topField .topCour {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: 45px 1fr;
+  grid-template-areas: "title title title title" "cont cont cont cont";
+  gap: 20px;
+}
+.mainPage .topField .topCour > p {
+  grid-area: title;
+  align-self: center;
+  justify-self: start;
+  font-weight: 700;
+  font-size: 20px;
+}
+.mainPage .topField .topCour .topCourCard {
+  grid-area: cont;
+  display: flex;
+  gap: 20px;
+}
+.mainPage .topField .topIns {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: 45px 1fr;
+  grid-template-areas: "title title title lk lk" "Tcont Tcont Tcont Tcont Tcont";
+}
+.mainPage .topField .topIns > p {
+  grid-area: title;
+  font-size: 24px;
+  font-weight: 600;
+}
+.mainPage .topField .topIns .topInsCardParent {
+  grid-area: Tcont;
+  display: flex;
+  gap: 50px;
+}
+.mainPage .topField .topIns .TopInsCard {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 22px 20px 10px 20px;
+  width: 220px;
+  height: 280px;
+  justify-self: center;
+  display: grid;
+  grid-template-rows: 1fr 16% 7% 1fr 1fr;
+  grid-template-columns: 55px 1fr;
+  grid-template-areas: "img img" "author author" "c-name c-name" "sli sli" "snn stu-count";
+  align-items: center;
+  justify-items: center;
+}
+.mainPage .topField .topIns .TopInsCard > img:nth-of-type(1) {
+  grid-area: img;
+  width: 100px;
+  height: 100px;
+}
+.mainPage .topField .topIns .TopInsCard p:nth-of-type(1) {
+  grid-area: author;
+}
+.mainPage .topField .topIns .TopInsCard p:nth-of-type(2) {
+  grid-area: c-name;
+  font-size: 15px;
+  font-weight: 300;
+}
+.mainPage .topField .topIns .TopInsCard .sepLineIns {
+  grid-area: sli;
+}
+.mainPage .topField .topIns .TopInsCard .strNNum {
+  grid-area: snn;
+}
+.mainPage .topField .topIns .TopInsCard p:nth-of-type(3) {
+  grid-area: stu-count;
+}
+.mainPage .topField .topIns .TopInsCard .strNNum {
+  display: flex;
+  align-items: center;
+}
+.mainPage .topField .topIns .TopInsCard .strNNum p {
+  font-weight: 600;
+}
+.mainPage .topField .topIns .TopInsCard p:nth-of-type(1) {
+  align-self: end;
+  font-weight: 600;
+}
+.mainPage .topField .topIns .TopInsCard .sepLineIns {
+  background-color: #e2e8f0;
+  width: 100%;
+  height: 0.5px;
+}
+.mainPage .topField .topIns .TopInsCard p:nth-of-type(3) {
+  justify-self: end;
+  font-size: 14px;
+}
+.mainPage .cusRev {
+  background-color: #f8fafc;
+  padding: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.mainPage .cusRev > p {
+  font-weight: 600;
+  font-size: 24px;
+}
+.mainPage .cusRev .lowerRev {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 432px;
+  gap: 30px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.mainPage .cusRev .lowerRev .cusBox {
+  background-color: white;
+  width: 432px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.mainPage .cusRev .lowerRev .cusBox > img {
+  width: 36px;
+  height: 28px;
+}
+.mainPage .cusRev .lowerRev .cusBox .iconDiv {
+  margin-top: auto;
+  width: 222px;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas: "ava name-rev" "ava job";
+  align-items: center;
+}
+.mainPage .cusRev .lowerRev .cusBox .iconDiv img {
+  grid-area: ava;
+}
+.mainPage .cusRev .lowerRev .cusBox .iconDiv p:nth-of-type(1) {
+  grid-area: name-rev;
+  font-weight: 600;
+  font-size: 18px;
+}
+.mainPage .cusRev .lowerRev .cusBox .iconDiv p:nth-of-type(2) {
+  grid-area: job;
+  align-self: start;
+  font-weight: 300;
+}
+.mainPage .cntPage {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 100px;
+  padding: 0px 50px 0px 150px;
+}
+.mainPage .cntPage .ci {
+  display: flex;
+  gap: 200px;
+}
+.mainPage .cntPage .ci .ciDes {
+  width: 45%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+.mainPage .cntPage .ci .ciDes p:nth-of-type(1) {
+  font-weight: 600;
+  font-size: 18px;
+}
+.mainPage .cntPage .ci .ciDes button {
+  width: 230px;
+  height: 40px;
+  color: white;
+  background-color: black;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+.mainPage .cntPage .ci .ciDes button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+  background: #111;
+}
+.mainPage .cntPage .ci .ciDes button:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+.mainPage .cntPage .cc {
+  display: flex;
+  gap: 200px;
+}
+.mainPage .cntPage .cc .ccDes {
+  width: 45%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+.mainPage .cntPage .cc .ccDes p:nth-of-type(1) {
+  font-weight: 600;
+  font-size: 18px;
+}
+.mainPage .cntPage .cc .ccDes button {
+  width: 230px;
+  height: 40px;
+  color: white;
+  background-color: black;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+.mainPage .cntPage .cc .ccDes button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+  background: #111;
+}
+.mainPage .cntPage .cc .ccDes button:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}/*# sourceMappingURL=HomePage.module.css.map */

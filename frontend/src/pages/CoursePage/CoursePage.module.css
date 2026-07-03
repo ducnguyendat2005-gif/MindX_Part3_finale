@@ -1,0 +1,634 @@
+.mainPage {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 25px;
+  padding: 0 60px 50px 60px;
+  font-family: Inter, sans-serif;
+}
+
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+.container h1 {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.container .subtitle {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.filterBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+.filterBtn:hover {
+  background: #f5f5f5;
+}
+
+.sortControl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sortControl label {
+  font-size: 14px;
+  color: #666;
+}
+.sortControl select {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+.sortControl select:hover {
+  border-color: #999;
+}
+.sortControl select:focus {
+  outline: none;
+  border-color: #5624d0;
+}
+
+.mainContent {
+  display: flex;
+  gap: 30px;
+}
+
+.sidebar {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+.filterSection {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.filterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 15px;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+.filterHeader:hover h3 {
+  color: #5624d0;
+}
+.filterHeader h3 {
+  font-size: 16px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+.filterHeader .arrow {
+  transition: transform 0.3s ease;
+  font-size: 12px;
+  display: inline-block;
+}
+.filterHeader.collapsed .arrow {
+  transform: rotate(180deg);
+}
+
+.filterContent {
+  max-height: 500px;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.filterContent.hidden {
+  max-height: 0;
+}
+
+.filterOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.filterOption:hover {
+  background: rgba(86, 36, 208, 0.05);
+  margin: 0 -10px;
+  padding: 8px 10px;
+  border-radius: 4px;
+}
+.filterOption input[type=checkbox] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #5624d0;
+}
+.filterOption label {
+  cursor: pointer;
+  font-size: 14px;
+  flex: 1;
+}
+
+.stars {
+  color: #f4c150;
+  font-size: 14px;
+}
+
+.starEmpty {
+  color: #ddd;
+}
+
+.seeMore {
+  color: #5624d0;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+.seeMore:hover {
+  color: #3b1a8f;
+  text-decoration: underline;
+}
+
+.coursesGrid {
+  flex: 1;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 0;
+  color: #666;
+  font-size: 16px;
+}
+
+.courseCard {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.courseCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+.courseCard:hover .courseTitle {
+  color: #5624d0;
+}
+
+.courseImage {
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.courseInfo {
+  padding: 15px;
+}
+
+.courseTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+  line-height: 1.4;
+  transition: color 0.2s ease;
+}
+
+.courseAuthor {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.courseRating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.ratingStars {
+  color: #f4c150;
+  letter-spacing: 2px;
+}
+
+.ratingCount {
+  color: #666;
+}
+
+.courseDetails {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.coursePrice {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 40px;
+}
+
+.pageBtn {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 40px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+.pageBtn:hover:not(:disabled):not(.active) {
+  background: #f5f5f5;
+  border-color: #999;
+}
+.pageBtn.active {
+  background: #1a1a1a;
+  color: white;
+  border-color: #1a1a1a;
+}
+.pageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.topIns {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: 45px 1fr;
+  grid-template-areas: "title title title lk lk" "ins1 ins2 ins3 ins4 ins5";
+  gap: 20px;
+}
+.topIns > p {
+  grid-area: title;
+  font-size: 24px;
+  font-weight: 600;
+  align-self: center;
+}
+.topIns > a {
+  grid-area: lk;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2563eb;
+  justify-self: end;
+  align-self: center;
+  text-decoration: none;
+}
+
+.ins1 {
+  grid-area: ins1;
+}
+
+.ins2 {
+  grid-area: ins2;
+}
+
+.ins3 {
+  grid-area: ins3;
+}
+
+.ins4 {
+  grid-area: ins4;
+}
+
+.ins5 {
+  grid-area: ins5;
+}
+
+.insCard {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 22px 20px 10px;
+  width: 220px;
+  height: 280px;
+  justify-self: center;
+  display: grid;
+  grid-template-rows: 1fr 16% 7% 1fr 1fr;
+  grid-template-columns: 55px 1fr;
+  grid-template-areas: "img img" "author author" "c-name c-name" "sli sli" "snn stu-count";
+  align-items: center;
+  justify-items: center;
+}
+.insCard .insAvatar {
+  grid-area: img;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+}
+.insCard .insName {
+  grid-area: author;
+  align-self: end;
+  font-weight: 600;
+}
+.insCard .insRole {
+  grid-area: c-name;
+  font-size: 15px;
+  font-weight: 300;
+}
+.insCard .insSepLine {
+  grid-area: sli;
+  background-color: #e2e8f0;
+  width: 100%;
+  height: 0.5px;
+}
+.insCard .insRating {
+  grid-area: snn;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.insCard .insRating p {
+  font-weight: 600;
+}
+.insCard .insStudents {
+  grid-area: stu-count;
+  justify-self: end;
+  font-size: 14px;
+}
+
+.topCour {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: 45px 1fr;
+  grid-template-areas: "title title lk lk" "cont cont cont cont";
+  gap: 20px;
+}
+.topCour > p {
+  grid-area: title;
+  align-self: center;
+  justify-self: start;
+  font-weight: 700;
+  font-size: 20px;
+}
+.topCour > a {
+  grid-area: lk;
+  align-self: center;
+  justify-self: end;
+  font-size: 16px;
+  color: #3b82f6;
+  text-decoration: none;
+}
+.topCour .topCourList {
+  grid-area: cont;
+  display: flex;
+  gap: 1px;
+}
+
+.c1 {
+  grid-area: c1;
+}
+
+.c2 {
+  grid-area: c2;
+}
+
+.c3 {
+  grid-area: c3;
+}
+
+.c4 {
+  grid-area: c4;
+}
+
+.topCourCard {
+  border: 0.5px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 16px;
+  overflow: hidden;
+}
+.topCourCard .topCourImg {
+  width: 100%;
+  height: 139px;
+  border-radius: 8px;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+.topCourCard .topCourTitle {
+  font-weight: 600;
+  font-size: 18px;
+}
+.topCourCard .topCourAuthor,
+.topCourCard .topCourMeta {
+  font-weight: 200;
+  font-size: 14px;
+  color: #666;
+}
+.topCourCard .topCourRating {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.topCourCard .topCourRating p {
+  font-weight: 300;
+  font-size: 13px;
+}
+.topCourCard .topCourPrice {
+  font-weight: 600;
+  font-size: 23px;
+}
+
+@media (max-width: 768px) {
+  .mainPage {
+    padding: 0 20px 30px;
+  }
+  .mainContent {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .controls {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+  .sortControl {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .topIns {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: 45px 1fr;
+    grid-template-areas: "title title title lk lk" "Tcont Tcont Tcont Tcont Tcont";
+  }
+  .topIns > p {
+    grid-area: title;
+    font-size: 24px;
+    font-weight: 600;
+  }
+  .topIns .topInsCardParent {
+    grid-area: Tcont;
+    display: flex;
+    gap: 50px;
+  }
+  .topIns .TopInsCard {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 22px 20px 10px 20px;
+    width: 220px;
+    height: 280px;
+    justify-self: center;
+    display: grid;
+    grid-template-rows: 1fr 16% 7% 1fr 1fr;
+    grid-template-columns: 55px 1fr;
+    grid-template-areas: "img img" "author author" "c-name c-name" "sli sli" "snn stu-count";
+    align-items: center;
+    justify-items: center;
+  }
+  .topIns .TopInsCard > img:nth-of-type(1) {
+    grid-area: img;
+    width: 100px;
+    height: 100px;
+  }
+  .topIns .TopInsCard p:nth-of-type(1) {
+    grid-area: author;
+  }
+  .topIns .TopInsCard p:nth-of-type(2) {
+    grid-area: c-name;
+    font-size: 15px;
+    font-weight: 300;
+  }
+  .topIns .TopInsCard .sepLineIns {
+    grid-area: sli;
+  }
+  .topIns .TopInsCard .strNNum {
+    grid-area: snn;
+  }
+  .topIns .TopInsCard p:nth-of-type(3) {
+    grid-area: stu-count;
+  }
+  .topIns .TopInsCard .strNNum {
+    display: flex;
+    align-items: center;
+  }
+  .topIns .TopInsCard .strNNum p {
+    font-weight: 600;
+  }
+  .topIns .TopInsCard p:nth-of-type(1) {
+    align-self: end;
+    font-weight: 600;
+  }
+  .topIns .TopInsCard .sepLineIns {
+    background-color: #e2e8f0;
+    width: 100%;
+    height: 0.5px;
+  }
+  .topIns .TopInsCard p:nth-of-type(3) {
+    justify-self: end;
+    font-size: 14px;
+  }
+  .topCour {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 40px 1fr 1fr;
+    grid-template-areas: "title lk" "c1 c2" "c3 c4";
+  }
+}
+@media (max-width: 480px) {
+  .container h1 {
+    font-size: 24px;
+  }
+  .pagination {
+    gap: 4px;
+  }
+  .pageBtn {
+    padding: 6px 10px;
+    min-width: 36px;
+    font-size: 13px;
+  }
+  .topIns {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas: "title lk" "ins1 ins2";
+  }
+  .topIns .ins3,
+  .topIns .ins4,
+  .topIns .ins5 {
+    display: none;
+  }
+  .topCour {
+    grid-template-columns: 1fr;
+    grid-template-areas: "title" "lk" "c1" "c2" "c3" "c4";
+  }
+}
+@media (min-width: 1024px) and (max-width: 1024px) and (min-height: 600px) and (max-height: 600px) {
+  .mainPage {
+    padding: 0 30px 30px;
+    gap: 20px;
+  }
+  .container h1 {
+    font-size: 24px;
+  }
+  .sidebar {
+    width: 220px;
+  }
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  .courseImage {
+    height: 130px;
+  }
+  .topIns {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-areas: "title title lk" "ins1 ins2 ins3";
+  }
+  .topCour {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 40px 1fr 1fr;
+    grid-template-areas: "title lk" "c1 c2" "c3 c4";
+  }
+}/*# sourceMappingURL=CoursePage.module.css.map */

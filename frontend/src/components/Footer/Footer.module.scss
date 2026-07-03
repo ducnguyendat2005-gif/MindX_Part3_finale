@@ -1,0 +1,136 @@
+footer {
+  width: 100%;
+  height: 350px;
+  background-color: #1E293B;
+  position: relative;
+
+  .footerInfo {           // ← footer-info
+    padding: 80px;
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 2.2fr 0.8fr 0.8fr 1.5fr;
+    gap: 80px;
+    color: white;
+  }
+
+  .footerIntro {          // ← footer-intro
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+
+    > p:nth-of-type(1) {
+      font-weight: 200;
+      font-size: 14px;
+      padding-top: 15px;
+    }
+
+    > p:nth-of-type(2) {
+      font-weight: 200;
+      font-size: 14px;
+      padding-top: 4px;
+    }
+  }
+
+  .footerLogo {           // ← footer-logo
+    display: flex;
+    align-items: center;
+    font-weight: 400;
+    font-size: 20px;
+    gap: 6px;
+  }
+
+  .upperP {               // ← upper-p
+    display: inline-block;
+    padding-bottom: 4px;
+  }
+
+  .getHelp {              // ← get-help
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    > p:nth-child(1) {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    > p:nth-child(2) {
+      margin-top: 3px;
+      font-size: 14px;
+      font-weight: 200;
+    }
+
+    > p:nth-child(3),
+    > p:nth-child(4) {
+      font-size: 14px;
+      font-weight: 200;
+    }
+  }
+
+  .programs {             // ← giữ nguyên (đã là 1 từ)
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    > p:nth-child(1) {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    > p:nth-child(2) {
+      margin-top: 3px;
+      font-size: 14px;
+      font-weight: 200;
+    }
+
+    > p:nth-child(3),
+    > p:nth-child(4),
+    > p:nth-child(5),
+    > p:nth-child(6) {
+      font-size: 14px;
+      font-weight: 200;
+    }
+  }
+
+  .contact {              // ← giữ nguyên
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .contactUs {            // ← contact-us
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-weight: 200;
+    font-size: 14px;
+
+    > p:nth-child(1) {
+      font-weight: 700;
+      font-size: 20px;
+      padding-bottom: 10px;
+    }
+  }
+
+  .partnerButton {        // ← partner-button
+    display: flex;
+    gap: 10px;
+  }
+
+  .iconBtn {              // ← icon-btn
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    text-decoration: none;
+
+    img {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}

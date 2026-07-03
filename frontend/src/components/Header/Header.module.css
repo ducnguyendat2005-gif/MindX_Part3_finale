@@ -1,0 +1,109 @@
+.header {
+  width: 100%;
+  height: 75px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-bottom: 1px solid #E2E8F0;
+}
+.header .headStart {
+  width: 70%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 0px;
+  flex-direction: row;
+}
+.header .headStart > p:nth-of-type(1) {
+  font-size: 15px;
+  font-weight: 250;
+}
+.header .headStart > p:nth-of-type(2) {
+  font-size: 15px;
+  font-weight: 250;
+}
+.header .logo {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  font-family: inter;
+  font-weight: 500;
+  font-size: 16px;
+}
+.header .logo > img {
+  width: 31px;
+  height: 40px;
+}
+.header .searchContainer {
+  width: 100%;
+  max-width: 600px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background-color: #fff;
+}
+.header .searchContainer img {
+  width: 16px;
+  height: 16px;
+  opacity: 0.6;
+}
+.header .searchContainer:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+.header .searchBox {
+  flex: 1;
+  height: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #111827;
+}
+.header .searchBox::-moz-placeholder {
+  color: #9ca3af;
+}
+.header .searchBox::placeholder {
+  color: #9ca3af;
+}
+.header .funcBar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.header .funcBar > img {
+  width: 24px;
+  height: 24px;
+}
+.header .funcBar .buttonContainer {
+  display: flex;
+  gap: 10px;
+}
+.header .funcBar .buttonContainer button {
+  padding: 10px 24px;
+  font-size: 14px;
+  border: 1px solid #d0d0d0;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.header .funcBar .buttonContainer button.loginBtn {
+  border-radius: 5px;
+  background-color: white;
+  color: #333;
+}
+.header .funcBar .buttonContainer button.loginBtn:hover {
+  background-color: #f8f8f8;
+}
+.header .funcBar .buttonContainer button.signupBtn {
+  border-radius: 5px;
+  background-color: #2c3e50;
+  color: white;
+  border-color: #2c3e50;
+}
+.header .funcBar .buttonContainer button.signupBtn:hover {
+  background-color: #34495e;
+}/*# sourceMappingURL=Header.module.css.map */

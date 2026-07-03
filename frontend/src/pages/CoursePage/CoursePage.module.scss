@@ -1,0 +1,761 @@
+// ─── Variables ───────────────────────────────────────────────────────────────
+$primary-color: #5624d0;
+$primary-dark: #3b1a8f;
+$text-primary: #1a1a1a;
+$text-secondary: #666;
+$border-color: #ddd;
+$border-light: #e0e0e0;
+$bg-light: #f8f9fa;
+$bg-white: white;
+$star-color: #f4c150;
+$hover-bg: rgba(86, 36, 208, 0.05);
+
+// Spacing
+$spacing-xs: 8px;
+$spacing-sm: 10px;
+$spacing-md: 15px;
+$spacing-lg: 20px;
+$spacing-xl: 30px;
+
+// Breakpoints
+$mobile: 480px;
+$tablet: 768px;
+
+// ─── Mixins ───────────────────────────────────────────────────────────────────
+@mixin transition($properties...) {
+  transition: $properties;
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin card-hover {
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+.mainPage {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 25px;
+  padding: 0 60px 50px 60px;
+  font-family: Inter, sans-serif;
+}
+
+// ─── Container ───────────────────────────────────────────────────────────────
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: $spacing-lg;
+
+  h1 {
+    font-size: 32px;
+    margin-bottom: $spacing-xs;
+  }
+
+  .subtitle {
+    color: $text-secondary;
+    font-size: 16px;
+    margin-bottom: $spacing-lg;
+  }
+}
+
+// ─── Controls ─────────────────────────────────────────────────────────────────
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-xl;
+}
+
+.filterBtn {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-sm $spacing-lg;
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  @include transition(all 0.2s ease);
+
+  &:hover {
+    background: #f5f5f5;
+  }
+}
+
+.sortControl {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+
+  label {
+    font-size: 14px;
+    color: $text-secondary;
+  }
+
+  select {
+    padding: $spacing-sm $spacing-md;
+    border: 1px solid $border-color;
+    border-radius: 4px;
+    background: $bg-white;
+    cursor: pointer;
+    font-size: 14px;
+    @include transition(border-color 0.2s ease);
+
+    &:hover {
+      border-color: #999;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $primary-color;
+    }
+  }
+}
+
+// ─── Main Content ─────────────────────────────────────────────────────────────
+.mainContent {
+  display: flex;
+  gap: $spacing-xl;
+}
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+.sidebar {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+.filterSection {
+  background: $bg-white;
+  border: 1px solid $border-light;
+  border-radius: 8px;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+}
+
+.filterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: $spacing-md;
+  user-select: none;
+
+  &:hover h3 {
+    color: $primary-color;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    @include transition(color 0.2s ease);
+  }
+
+  .arrow {
+    @include transition(transform 0.3s ease);
+    font-size: 12px;
+    display: inline-block;
+  }
+
+  &.collapsed .arrow {
+    transform: rotate(180deg);
+  }
+}
+
+.filterContent {
+  max-height: 500px;
+  overflow: hidden;
+  @include transition(max-height 0.3s ease);
+
+  &.hidden {
+    max-height: 0;
+  }
+}
+
+.filterOption {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-xs 0;
+  cursor: pointer;
+  @include transition(background 0.2s ease);
+
+  &:hover {
+    background: $hover-bg;
+    margin: 0 (-$spacing-sm);
+    padding: $spacing-xs $spacing-sm;
+    border-radius: 4px;
+  }
+
+  input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: $primary-color;
+  }
+
+  label {
+    cursor: pointer;
+    font-size: 14px;
+    flex: 1;
+  }
+}
+
+.stars {
+  color: $star-color;
+  font-size: 14px;
+}
+
+.starEmpty {
+  color: $border-color;
+}
+
+.seeMore {
+  color: $primary-color;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: $spacing-sm;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+  @include transition(color 0.2s ease);
+
+  &:hover {
+    color: $primary-dark;
+    text-decoration: underline;
+  }
+}
+
+// ─── Courses Grid ─────────────────────────────────────────────────────────────
+.coursesGrid {
+  flex: 1;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: $spacing-lg;
+  margin-bottom: $spacing-xl;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 0;
+  color: $text-secondary;
+  font-size: 16px;
+}
+
+// ─── Course Card ──────────────────────────────────────────────────────────────
+.courseCard {
+  background: $bg-white;
+  border: 1px solid $border-light;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  @include transition(transform 0.2s ease, box-shadow 0.2s ease);
+  @include card-hover;
+
+  &:hover .courseTitle {
+    color: $primary-color;
+  }
+}
+
+.courseImage {
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.courseInfo {
+  padding: $spacing-md;
+}
+
+.courseTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: $spacing-xs;
+  color: $text-primary;
+  line-height: 1.4;
+  @include transition(color 0.2s ease);
+}
+
+.courseAuthor {
+  font-size: 13px;
+  color: $text-secondary;
+  margin-bottom: $spacing-xs;
+}
+
+.courseRating {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-xs;
+  font-size: 13px;
+}
+
+.ratingStars {
+  color: $star-color;
+  letter-spacing: 2px;
+}
+
+.ratingCount {
+  color: $text-secondary;
+}
+
+.courseDetails {
+  font-size: 13px;
+  color: $text-secondary;
+  margin-bottom: 12px;
+}
+
+.coursePrice {
+  font-size: 18px;
+  font-weight: 700;
+  color: $text-primary;
+}
+
+// ─── Pagination ───────────────────────────────────────────────────────────────
+.pagination {
+  @include flex-center;
+  gap: $spacing-xs;
+  margin-top: 40px;
+}
+
+.pageBtn {
+  padding: $spacing-xs 12px;
+  border: 1px solid $border-color;
+  background: $bg-white;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 40px;
+  text-align: center;
+  @include transition(all 0.2s ease);
+
+  &:hover:not(:disabled):not(.active) {
+    background: #f5f5f5;
+    border-color: #999;
+  }
+
+  &.active {
+    background: $text-primary;
+    color: white;
+    border-color: $text-primary;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// ─── Top Instructors ──────────────────────────────────────────────────────────
+.topIns {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: 45px 1fr;
+      grid-template-areas:
+        'title title title lk lk'
+        'Tcont Tcont Tcont Tcont Tcont';
+
+      > p {
+        grid-area: title;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .topInsCardParent{
+        grid-area:Tcont;
+        display:flex;
+        
+        justify-content: space-between;
+      }
+      .TopInsCard {
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 22px 20px 10px 20px;
+        width: 220px;
+        height: 280px;
+        justify-self: center;
+        display: grid;
+        grid-template-rows: 1fr 16% 7% 1fr 1fr;
+        grid-template-columns: 55px 1fr;
+        grid-template-areas:
+          'img img'
+          'author author'
+          'c-name c-name'
+          'sli sli'
+          'snn stu-count';
+        align-items: center;
+        justify-items: center;
+
+        > img:nth-of-type(1)          { grid-area: img; width:100px; height:100px; }
+        p:nth-of-type(1) { grid-area: author; }
+        p:nth-of-type(2) { grid-area: c-name; font-size: 15px; font-weight: 300; }
+        .sepLineIns  { grid-area: sli; }
+        .strNNum     { grid-area: snn; }
+        p:nth-of-type(3) { grid-area: stu-count; }
+
+        .strNNum {
+          display: flex;
+          align-items: center;
+          p { font-weight: 600; }
+        }
+
+        p:nth-of-type(1) { align-self: end; font-weight: 600; }
+
+        .sepLineIns {
+          background-color: #e2e8f0;
+          width: 100%;
+          height: 0.5px;
+        }
+
+        p:nth-of-type(3) { justify-self: end; font-size: 14px; }
+      }
+    }
+
+.ins1 { grid-area: ins1; }
+.ins2 { grid-area: ins2; }
+.ins3 { grid-area: ins3; }
+.ins4 { grid-area: ins4; }
+.ins5 { grid-area: ins5; }
+
+.insCard {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 22px 20px 10px;
+  width: 220px;
+  height: 280px;
+  justify-self: center;
+  display: grid;
+  grid-template-rows: 1fr 16% 7% 1fr 1fr;
+  grid-template-columns: 55px 1fr;
+  grid-template-areas:
+    'img img'
+    'author author'
+    'c-name c-name'
+    'sli sli'
+    'snn stu-count';
+  align-items: center;
+  justify-items: center;
+
+  .insAvatar {
+    grid-area: img;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+  }
+
+  .insName {
+    grid-area: author;
+    align-self: end;
+    font-weight: 600;
+  }
+
+  .insRole {
+    grid-area: c-name;
+    font-size: 15px;
+    font-weight: 300;
+  }
+
+  .insSepLine {
+    grid-area: sli;
+    background-color: #e2e8f0;
+    width: 100%;
+    height: 0.5px;
+  }
+
+  .insRating {
+    grid-area: snn;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    p {
+      font-weight: 600;
+    }
+  }
+
+  .insStudents {
+    grid-area: stu-count;
+    justify-self: end;
+    font-size: 14px;
+  }
+}
+
+// ─── Top Courses ──────────────────────────────────────────────────────────────
+.topCour {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: 45px 1fr;
+  grid-template-areas:
+    'title title lk lk'
+    'cont cont cont cont';
+  gap: 20px;
+
+  > p {
+    grid-area: title;
+    align-self: center;
+    justify-self: start;
+    font-weight: 700;
+    font-size: 20px;
+  }
+
+  > a {
+    grid-area: lk;
+    align-self: center;
+    justify-self: end;
+    font-size: 16px;
+    color: #3b82f6;
+    text-decoration: none;
+  }
+  .topCourList{
+    grid-area:cont;
+    display:flex;
+    justify-content: space-between;
+  }
+}
+
+.c1 { grid-area: c1; }
+.c2 { grid-area: c2; }
+.c3 { grid-area: c3; }
+.c4 { grid-area: c4; }
+
+.topCourCard {
+  border: 0.5px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 16px;
+  overflow: hidden;
+
+  .topCourImg {
+    width: 100%;
+    height: 139px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+
+  .topCourTitle {
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+  .topCourAuthor,
+  .topCourMeta {
+    font-weight: 200;
+    font-size: 14px;
+    color: $text-secondary;
+  }
+
+  .topCourRating {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+
+    p {
+      font-weight: 300;
+      font-size: 13px;
+    }
+  }
+
+  .topCourPrice {
+    font-weight: 600;
+    font-size: 23px;
+  }
+}
+
+// ─── Responsive ───────────────────────────────────────────────────────────────
+@media (max-width: $tablet) {
+  .mainPage {
+    padding: 0 20px 30px;
+  }
+
+  .mainContent {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .controls {
+    flex-direction: column;
+    gap: $spacing-md;
+    align-items: stretch;
+  }
+
+  .sortControl {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .topIns {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: 45px 1fr;
+      grid-template-areas:
+        'title title title lk lk'
+        'Tcont Tcont Tcont Tcont Tcont';
+
+      > p {
+        grid-area: title;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .topInsCardParent{
+        grid-area:Tcont;
+        display:flex;
+        gap:50px;
+      }
+      .TopInsCard {
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 22px 20px 10px 20px;
+        width: 220px;
+        height: 280px;
+        justify-self: center;
+        display: grid;
+        grid-template-rows: 1fr 16% 7% 1fr 1fr;
+        grid-template-columns: 55px 1fr;
+        grid-template-areas:
+          'img img'
+          'author author'
+          'c-name c-name'
+          'sli sli'
+          'snn stu-count';
+        align-items: center;
+        justify-items: center;
+
+        > img:nth-of-type(1)          { grid-area: img; width:100px; height:100px; }
+        p:nth-of-type(1) { grid-area: author; }
+        p:nth-of-type(2) { grid-area: c-name; font-size: 15px; font-weight: 300; }
+        .sepLineIns  { grid-area: sli; }
+        .strNNum     { grid-area: snn; }
+        p:nth-of-type(3) { grid-area: stu-count; }
+
+        .strNNum {
+          display: flex;
+          align-items: center;
+          p { font-weight: 600; }
+        }
+
+        p:nth-of-type(1) { align-self: end; font-weight: 600; }
+
+        .sepLineIns {
+          background-color: #e2e8f0;
+          width: 100%;
+          height: 0.5px;
+        }
+
+        p:nth-of-type(3) { justify-self: end; font-size: 14px; }
+      }
+    }
+
+  .topCour {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 40px 1fr 1fr;
+    grid-template-areas:
+      'title lk'
+      'c1 c2'
+      'c3 c4';
+  }
+}
+
+@media (max-width: $mobile) {
+  .container h1 {
+    font-size: 24px;
+  }
+
+  .pagination {
+    gap: 4px;
+  }
+
+  .pageBtn {
+    padding: 6px $spacing-sm;
+    min-width: 36px;
+    font-size: 13px;
+  }
+
+  .topIns {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas:
+      'title lk'
+      'ins1 ins2';
+
+    .ins3,
+    .ins4,
+    .ins5 {
+      display: none;
+    }
+  }
+
+  .topCour {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'title'
+      'lk'
+      'c1'
+      'c2'
+      'c3'
+      'c4';
+  }
+}
+
+// ─── Nest Hub (1024×600) ──────────────────────────────────────────────────────
+@media (min-width: 1024px) and (max-width: 1024px) and (min-height: 600px) and (max-height: 600px) {
+  .mainPage {
+    padding: 0 30px 30px;
+    gap: 20px;
+  }
+
+  .container h1 {
+    font-size: 24px;
+  }
+
+  .sidebar {
+    width: 220px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+
+  .courseImage {
+    height: 130px;
+  }
+
+  .topIns {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-areas:
+      'title title lk'
+      'ins1 ins2 ins3';
+  }
+
+  .topCour {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 40px 1fr 1fr;
+    grid-template-areas:
+      'title lk'
+      'c1 c2'
+      'c3 c4';
+  }
+}
