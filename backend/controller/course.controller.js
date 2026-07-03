@@ -67,7 +67,7 @@ const courseController = {
             if (!enrolled) return res.status(403).json({ message: 'Bạn cần mua khóa học trước khi review', success: false });
 
             const account = await AccountModel.findById(accountId);
-            const displayName = `${account.Fname} ${account.Lname}`.trim() || account.Username;
+            const displayName = account.Username;
 
             const review = await ReviewModel.create({ courseId, accountId, name: displayName, rating, comment });
             res.status(201).json({ data: review, message: 'Review created', success: true });
