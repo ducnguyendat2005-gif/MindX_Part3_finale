@@ -322,7 +322,8 @@ export default function CoursesPage() {
                     ratingCount={course.reviews?.length ?? 0}
                     duration={`${course.hours} Total Hours. ${course.lectures} Lectures. ${course.level}`}
                     category={course.category}
-                    price={`$${course.price}`}
+                    promotionalPrice={course.promotionalPrice}
+                    originalPrice={course.price}
                   />
                 ))}
               </div>
@@ -387,7 +388,8 @@ export default function CoursesPage() {
                 ratingCount={course.reviews?.length ?? 0}
                 duration={`${course.hours} Total Hours. ${course.lectures} Lectures. ${course.level}`}
                 category={course.category}
-                price={`$${course.price}`}
+                promotionalPrice={course.promotionalPrice}
+                originalPrice={course.price}
               />
             ))}
         </div>

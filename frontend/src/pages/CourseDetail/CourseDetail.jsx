@@ -160,6 +160,7 @@ const buildReviewStats = (reviews = []) => {
 };
 
 
+
 const CourseDetail = () => {
   const { id } = useParams(); 
   const [allCourse, setAllCourse] = useState([]);
@@ -228,9 +229,16 @@ useEffect(() => {
     .catch(err => console.error(err))
 }, [])
 
+  
+
   if (loading) return <p>Đang tải...</p>;
   if (!course) return <p>Không tìm thấy khóa học</p>;
   const reviewStats = buildReviewStats(course.reviews);
+
+  const hasDiscount =
+    course.promotionalPrice &&
+    course.promotionalPrice > 0 &&
+    course.promotionalPrice < course.price;
   return (
     <>
       {showToast && (
@@ -298,13 +306,19 @@ useEffect(() => {
             <div className={styles.teacherInfo}>
               <img src={CourseImg} alt="course thumbnail" />
               <div className={styles.price}>
-                <p>${course.promotionalPrice}</p>
-                <p style={{ textDecoration: "line-through", color: "lightgrey" }}>
-                  ${course.price}
-                </p>
-                <p style={{ color: "#16A34A" }}>
-                  {saleCount(course.promotionalPrice, course.price)}% OFF!
-                </p>
+                {hasDiscount ? (
+                  <>
+                    <p>${course.promotionalPrice}</p>
+                    <p style={{ textDecoration: "line-through", color: "lightgrey" }}>
+                      ${course.price}
+                    </p>
+                    <p style={{ color: "#16A34A" }}>
+                      {saleCount(course.promotionalPrice, course.price)}% OFF!
+                    </p>
+                  </>
+                ) : (
+                  <p>${course.price}</p>
+                )}
               </div>
 
               {isOwned ? (

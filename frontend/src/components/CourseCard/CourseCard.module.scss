@@ -21,6 +21,9 @@
         align-items: center;
 
         p { font-weight: 300; }
+        p:nth-of-type(1){
+            color:orange;
+        }
     }
 
     // ⭐ StarRating nằm ở đây
@@ -64,9 +67,32 @@
         font-weight: 200;
         font-size: 14px;
     }
+    >p:nth-of-type(4) {
+        color:#5D5FEF;
+    }
+    .priceRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
 
-    > p:nth-of-type(4) {
+    .newPrice {
         font-weight: 600;
         font-size: 23px;
+        color: #0b1f3b;
+    }
+
+    .oldPrice {
+        font-weight: 300;
+        font-size: 16px;
+        text-decoration: line-through;
+        color: #cbd5e1; // lightgrey tông xám giống ảnh
+    }
+
+    .offBadge {
+        font-weight: 600;
+        font-size: 16px;
+        color: #16A34A;
     }
     }

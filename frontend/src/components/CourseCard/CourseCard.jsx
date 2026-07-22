@@ -28,20 +28,51 @@ const StarRating = ({ rating, maxStars = 5 }) => {
 };
 
 // CourseCard.jsx
-const CourseCard = ({ thumbnail = image, title, instructor, rating, ratingCount, duration, category, price, id }) => {
+const CourseCard = ({
+  thumbnail = image,
+  title,
+  instructor,
+  rating,
+  ratingCount,
+  duration,
+  category,
+  price,          // giữ lại nếu chỗ khác vẫn đang dùng dạng cũ
+  promotionalPrice,
+  originalPrice,
+  id
+}) => {
+  const hasDiscount =
+    promotionalPrice != null &&
+    originalPrice != null &&
+    promotionalPrice > 0 &&
+    promotionalPrice < originalPrice;
+
+  const saleCount = (promo, original) =>
+    Math.round((1 - promo / original) * 100);
+
   return (
     <Link to={`/home/course-page/${id}`} style={{ textDecoration: "none", color: "inherit" }}>
-      <div className={styles.CourCard}> 
+      <div className={styles.CourCard}>
         <img src={thumbnail} alt="course thumbnail" />
         <p className={styles.title}>{title}</p>
         <p className={styles.instructor}>By {instructor}</p>
         <div className={styles.rtin}>
+          <p>{rating}</p>
           <StarRating rating={rating} />
-          <p>{ratingCount} Ratings</p>
+          <p>({ratingCount})</p>
         </div>
         <p>{duration}</p>
         <p>#{category}</p>
-        <p>{price}</p>
+
+        {hasDiscount ? (
+          <div className={styles.priceRow}>
+            <p className={styles.newPrice}>${promotionalPrice}</p>
+            <p className={styles.oldPrice}>${originalPrice}</p>
+            <p className={styles.offBadge}>{saleCount(promotionalPrice, originalPrice)}% OFF!</p>
+          </div>
+        ) : (
+          <p className={styles.newPrice}>${originalPrice}</p>
+        )}
       </div>
     </Link>
   );
