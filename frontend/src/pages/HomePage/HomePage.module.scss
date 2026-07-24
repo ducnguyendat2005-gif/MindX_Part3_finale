@@ -26,7 +26,7 @@
       }
 
       p:nth-of-type(2) {
-        color: #64748b;
+        color: var(--muted-text);
         font-size: 16px;
       }
 
@@ -46,7 +46,7 @@
           transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
         &:hover {
-          background-color: #fff;
+          background-color: var(--surface-color);
           color: #2563eb;
           box-shadow: 0 10px 25px rgba(37, 99, 235, 0.25);
           transform: translateY(-2px);
@@ -94,9 +94,10 @@
         align-items: center;
         gap: 8px;
         padding: 28px 20px 24px;
-        background: #fff;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
         border-radius: 20px;
-        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--card-shadow);
         font-family: 'Segoe UI', sans-serif;
         min-width: 200px;
           .svgWrapperCircularProgress {
@@ -106,14 +107,14 @@
           .valueTextCircularProgress {
           font-size: 32px;
           font-weight: 700;
-          color: #1a1a2e;
+          color: var(--text-color);
           letter-spacing: -0.5px;
           line-height: 1;
           margin-top: 4px;
         }
         .labelCircularProgress {
           font-size: 13px;
-          color: #8a95a3;
+          color: var(--muted-text);
           text-align: center;
           max-width: 160px;
           line-height: 1.4;
@@ -124,7 +125,7 @@
 
   .massCounter {
     padding: 0px 60px 0px 60px;
-    background-color: #f8fafc;
+    background-color: var(--surface-alt);
     height: 149px;
     display: flex;
     align-items: center;
@@ -152,7 +153,7 @@
       .sepLine3 {
         width: 0.5px;
         height: 75px;
-        background-color: black;
+        background-color: var(--border-color);
       }
 
       .first,
@@ -210,8 +211,9 @@
       .market,
       .physic {
         padding: 35px 0px 35px 0px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--card-shadow);
+        background-color: var(--card-bg);
         border-radius: 10px;
         justify-self: center;
         display: flex;
@@ -227,7 +229,7 @@
           width: 100px;
           height: 100px;
           border-radius: 100px;
-          background-color: #e0f2fe;
+          background-color: var(--icon-bg);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -278,7 +280,9 @@
         justify-content: space-between;
       }
       .TopInsCard {
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--border-color);
+        background-color: var(--card-bg);
+        box-shadow: var(--card-shadow);
         border-radius: 16px;
         padding: 22px 20px 10px 20px;
         width: 220px;
@@ -312,7 +316,7 @@
         p:nth-of-type(1) { align-self: end; font-weight: 600; }
 
         .sepLineIns {
-          background-color: #e2e8f0;
+          background-color: var(--border-color);
           width: 100%;
           height: 0.5px;
         }
@@ -323,7 +327,7 @@
   }
 
   .cusRev {
-    background-color: #f8fafc;
+    background-color: var(--surface-alt);
     padding: 60px;
     display: flex;
     flex-direction: column;
@@ -343,9 +347,10 @@
       overflow-y: hidden;
 
       .cusBox {
-        background-color: white;
+        background-color: var(--card-bg);
         width: 432px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--card-shadow);
         border-radius: 16px;
         padding: 25px;
         display: flex;
@@ -399,20 +404,21 @@
         button {
           width: 230px;
           height: 40px;
-          color: white;
-          background-color: black;
+          color: #111;
+          background-color: white;
+          border: 1px solid var(--border-color);
           border-radius: 10px;
           cursor: pointer;
           transition:
             transform 0.15s ease,
             box-shadow 0.15s ease,
             background 0.15s ease;
-          box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
 
           &:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
-            background: #111;
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+            background: var(--surface-alt);
           }
 
           &:active {
@@ -439,20 +445,21 @@
         button {
           width: 230px;
           height: 40px;
-          color: white;
-          background-color: black;
+          color: #111;
+          background-color: white;
+          border: 1px solid var(--border-color);
           border-radius: 10px;
           cursor: pointer;
           transition:
             transform 0.15s ease,
             box-shadow 0.15s ease,
             background 0.15s ease;
-          box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
 
           &:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
-            background: #111;
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+            background: var(--surface-alt);
           }
 
           &:active {

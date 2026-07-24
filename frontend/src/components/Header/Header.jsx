@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { Link } from "react-router-dom";
 import { API } from '../../config/api.js';
+import ThemeToggleButton from './ThemeToggleButton';
 
 function Header() {
   const navigate = useNavigate();
@@ -254,6 +255,8 @@ function Header() {
             </button>
           </>
         )}
+
+        <ThemeToggleButton />
 
         {/* Avatar / Login */}
         {user ? (

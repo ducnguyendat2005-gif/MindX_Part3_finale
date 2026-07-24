@@ -91,7 +91,6 @@ export default function SignInPage() {
                 onChange={(e) => { setEmail(e.target.value); if (e.target.value) clearError(); }}
                 style={{ borderColor: loginError ? 'red' : '', outlineColor: loginError ? 'red' : '' }}
               />
-              {loginError && <p style={{ fontSize: "14px", color: "red" }}>Wrong email or password</p>}
             </div>
 
             <div className="form-group">
@@ -102,8 +101,9 @@ export default function SignInPage() {
                 onChange={(e) => { setPassword(e.target.value); if (e.target.value) clearError(); }}
                 style={{ borderColor: loginError ? 'red' : '', outlineColor: loginError ? 'red' : '' }}
               />
-              {loginError && <p style={{ fontSize: "14px", color: "red" }}>Wrong email or password</p>}
             </div>
+
+            {loginError && <p className="signin-error">Wrong email or password</p>}
 
             <button type="submit" className="signin-btn" disabled={submitting}>
               {submitting ? 'Signing in...' : 'Sign In'}
