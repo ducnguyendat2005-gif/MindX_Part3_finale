@@ -12,7 +12,7 @@
   position: absolute;
   width: 100%;
   height: 441px;
-  background-color: #f8fafc;
+  background-color: var(--surface-alt);
   z-index: -10;
 }
 
@@ -85,7 +85,7 @@
   align-items: center;
 
   > div {
-    background-color: black;
+    background-color: var(--border-color);
     height: 20px;
     width: 0.5px;
     margin-right: 10px;
@@ -103,36 +103,35 @@
 // ─── Teacher / Buy Card ──────────────────────────────────────────
 .teacherNBuy {
   grid-area: TnB;
-  box-shadow: 5px 10px 15px 2px rgba(0, 0, 0, 0.1);
-  background-color: white;
+  box-shadow: var(--card-shadow);
+  background-color: var(--card-bg);
   width: 400px;
   height: 541px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   justify-self: end;
 }
 .learnNowButton {
-  width: 90%;
-  height: 54px;
-  background-color: #16a34a;
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.15s ease;
-  margin:10px 0px 10px 0px;
-  &:hover {
-    background-color: #15803d;
-    transform: translateY(-2px);
-  }
+    width: 90%;
+    height: 54px;
+    background-color: #16a34a;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+    margin:10px 0px 10px 0px;
+    &:hover {
+      background-color: #15803d;
+      transform: translateY(-2px);
+    }
 
-  &:active {
-    transform: translateY(0);
+    &:active {
+      transform: translateY(0);
+    }
   }
-}
-
 .teacherInfo {
   display: flex;
   flex-direction: column;
@@ -153,32 +152,31 @@
   padding: 14px 0 14px 24px;
   font-size: 18px;
   font-weight: 700;
-  color: #0b1f3b;
+  color: var(--text-color);
 }
 
 .addToCartButton {
-  width: 356px;
-  height: 48px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #0b1220, #020617);
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
+    width: 356px;
+    height: 48px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #0b1220, #020617);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
 
-  &:hover {
-    background: linear-gradient(180deg, #111827, #020617);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-  }
+    &:hover {
+      background: linear-gradient(180deg, #111827, #020617);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    }
 
-  &:active {
-    transform: scale(0.97);
+    &:active {
+      transform: scale(0.97);
+    }
   }
-}
-.addToCartAdded {
-    background: linear-gradient(180deg, #166534, #14532d) !important;
+  .addToCartAdded {
     pointer-events: none;
     display:flex;
     align-items:center;
@@ -198,33 +196,33 @@
   }
 
 .buyNowButton {
-  width: 356px;
-  height: 48px;
-  border-radius: 10px;
-  background: #ffffff;
-  color: #020617;
-  border: 1.5px solid #020617;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+    width: 356px;
+    height: 48px;
+    border-radius: 10px;
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: 1.5px solid var(--border-color);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
 
-  &:hover {
-    box-shadow: 0 6px 20px rgba(2, 6, 23, 0.2);
-    transform: translateY(-1px);
+    &:hover {
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      background: var(--surface-alt);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: scale(0.97);
+    }
   }
-
-  &:active {
-    transform: scale(0.97);
-  }
-}
-
 .tnbSl {
   width: 100%;
   height: 0.5px;
-  background-color: #E2E8F0;
+  background-color: var(--border-color);
   margin-top: 20px;
 }
 
@@ -238,93 +236,88 @@
 }
 
 .shareGroup {
-  display: flex;
-  gap: 16px;
-
-  a {
-    width: 44px;
-    height: 44px;
-    border: 2px solid #e0e0e0;
-    border-radius: 50%;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-    cursor: pointer;
-    transition: all 0.25s ease;
+    gap: 16px;
 
-    &:hover {
-      border-color: #bbb;
-      background: #f5f5f5;
-      transform: translateY(-2px);
+    a {
+      width: 44px;
+      height: 44px;
+      border: 2px solid var(--border-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card-bg);
+      cursor: pointer;
+      transition: all 0.25s ease;
+
+      &:hover {
+        border-color: var(--text-color);
+        background: var(--surface-alt);
+        transform: translateY(-2px);
+      }
+    }
+
+    img {
+      width: 20px;
+      height: 20px;
     }
   }
-
-  img {
-    width: 20px;
-    height: 20px;
-  }
-}
-
 // shared-button variants (kept for completeness — no extra styles needed currently)
 
 // ─── Course Navbar ───────────────────────────────────────────────
 .courseNavbar {
-  grid-area: CN;
-  display: flex;
-  gap: 12px;
-}
-
-.navBtn {
-  width:100%;
-  padding: 10px 28px;
-  height: 48px;
-  border-radius: 12px;
-  border: 1px solid #e5ebf3;
-  background: #ffffff;
-  color: #1f2937;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.25s ease;
-
-  &:hover {
-    background: #f0f5ff;
-    border-color: #c7d9ff;
+    grid-area: CN;
+    display: flex;
+    gap: 12px;
   }
-}
 
-.navBtnActive {
-  background: #eef4ff;
-  color: #1d4ed8;
-  border-color: #1d4ed8;
-  font-weight: 600;
-}
+  .navBtn {
+    width:100%;
+    padding: 10px 28px;
+    height: 48px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
 
-// ─── Separator Lines ─────────────────────────────────────────────
-%sepLine {
-  background-color: #E2E8F0;
-  width: 100%;
-  height: 0.5px;
-  justify-self: center;
-  align-self: center;
-}
+    &:hover {
+      background: var(--surface-alt);
+      border-color: var(--border-color);
+    }
+  }
 
-.sepLine1 {
-  @extend %sepLine;
-  grid-area: SL1;
-  
-}
+  .navBtnActive {
+    background: var(--primary-color);
+    color: var(--card-bg);
+    border-color: var(--primary-color);
+    font-weight: 600;
+  }
 
-.sepLine2 {
-  @extend %sepLine;
-  grid-area: SL2;
-}
+  .sepLine1,
+  .sepLine2,
+  .sepLine3 {
+    width: 100%;
+    height: 1px;
+    background-color: var(--border-color);
+    opacity: 0.7;
+  }
 
-.sepLine3 {
-  @extend %sepLine;
-  grid-area: SL3;
-}
+  .sepLine1 {
+    grid-area: SL1;
+  }
+
+  .sepLine2 {
+    grid-area: SL2;
+  }
+
+  .sepLine3 {
+    grid-area: SL3;
+  }
 
 // ─── Tab sliding track ───────────────────────────────────────────
 .contWrapper {
@@ -385,7 +378,7 @@
     }
 
     > p:nth-of-type(2) {
-      color: blue;
+      color: var(--primary-color);
       font-weight: 600;
       font-size: 25px;
     }
@@ -473,13 +466,13 @@
   .syllabusTitle {
     font-size: 22px;
     font-weight: 700;
-    color: #1a1a2e;
+    color: var(--text-color);
     margin: 0 0 4px;
   }
 
   .syllabusSummary {
     font-size: 14px;
-    color: #6b7280;
+    color: var(--muted-text);
     margin: 0;
   }
 
@@ -488,15 +481,15 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     border-radius: 10px;
     overflow: hidden;
   }
 
   /* Each accordion card */
   .tocCard {
-    border-bottom: 1px solid #e5e7eb;
-    background: #fff;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--card-bg);
     transition: background 0.2s;
 
     &:last-child {
@@ -504,7 +497,7 @@
     }
 
     &.tocCardOpen {
-      background: #f9fafb;
+      background: var(--surface-alt);
     }
   }
 
@@ -522,7 +515,7 @@
     gap: 12px;
 
     &:hover {
-      background: #f3f4f6;
+      background: var(--surface-alt);
     }
   }
 
@@ -537,7 +530,7 @@
   .tocIndex {
     font-size: 13px;
     font-weight: 600;
-    color: #9ca3af;
+    color: var(--muted-text);
     min-width: 24px;
     flex-shrink: 0;
   }
@@ -545,7 +538,7 @@
   .tocTitle {
     font-size: 15px;
     font-weight: 600;
-    color: #111827;
+    color: var(--text-color);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -560,7 +553,7 @@
 
   .tocMeta {
     font-size: 13px;
-    color: #6b7280;
+    color: var(--muted-text);
     white-space: nowrap;
   }
 
@@ -568,12 +561,12 @@
     width: 3px;
     height: 3px;
     border-radius: 50%;
-    background: #d1d5db;
+    background: var(--border-color);
   }
 
   /* Chevron icon */
   .chevron {
-    color: #6b7280;
+    color: var(--muted-text);
     transition: transform 0.25s ease;
     flex-shrink: 0;
   }
@@ -608,11 +601,11 @@
     align-items: center;
     gap: 10px;
     font-size: 14px;
-    color: #374151;
+    color: var(--text-color);
   }
 
   .lessonIcon {
-    color: #9ca3af;
+    color: var(--muted-text);
     display: flex;
     align-items: center;
     flex-shrink: 0;
@@ -634,7 +627,7 @@
       grid-area: heading;
       font-size: 22px;
       font-weight: 700;
-      color: #1a1a2e;
+      color: var(--text-color);
       margin: 0 0 4px;
     }
     > .stars {
@@ -704,7 +697,8 @@
       "ava  star    date"
       "ava  comment comment";
     gap: 10px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
     border-radius: 16px;
     padding: 25px 20px 15px 20px;
 
@@ -755,17 +749,26 @@
   // padding-left: 77px;
   // padding-right: 77px;
   // padding-bottom: 94px;
-  padding:30px 77px 77px 94px;
-  background-color: #f8fafc;
+  padding: 30px 77px 77px 94px;
+  background-color: var(--surface-alt);
+  position: relative;
+}
 
-  > h2 {
-    margin-bottom: 30px;
-  }
+.courses::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 77px;
+  right: 94px;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .divTitle {
   font-size: 22px;
-  color: #0b1f3b;
+  color: var(--text-color);
+  margin-top: 16px;
 }
 
 .courseList {
@@ -775,10 +778,9 @@
 }
 
 .courseCard {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  box-shadow: var(--card-shadow);
   transition: transform 0.2s ease;
 
   &:hover {
@@ -798,32 +800,28 @@
   h3 {
     font-size: 16px;
     margin-bottom: 6px;
-    color: #0b1f3b;
+    color: var(--text-color);
   }
-}
 
-.author {
-  font-size: 13px;
-  color: #6b7280;
   margin-bottom: 8px;
 }
 
 .rating {
   font-size: 14px;
-  color: black;
+  color: var(--text-color);
   margin-bottom: 6px;
   display: flex;
   align-items: center;
   gap: 5px;
 
   span {
-    color: #6b7280;
+    color: var(--muted-text);
     font-size: 12px;
   }
 }
 
 .meta {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--muted-text);
   margin-bottom: 12px;
 }

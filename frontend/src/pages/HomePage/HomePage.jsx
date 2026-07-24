@@ -274,15 +274,16 @@ const [topCourses, setTopCourses] = useState([]);
           <div className={styles.topCourCard}>
             {topCourses.map((course) => (
               <CourseCard
-                key={course._id}
-                id={course._id}
+                key={course.id ?? course._id}
+                id={course.id ?? course._id}
                 title={course.title}
                 instructor={course.instructorId?.name}
                 rating={course.rating}
-                ratingCount={course.reviewCount}
+                ratingCount={course.reviews?.length ?? 0}
                 duration={`${course.hours} Total Hours. ${course.lectures} Lectures. ${course.level}`}
                 category={course.category}
-                price={`$${course.price}`}
+                promotionalPrice={course.promotionalPrice}
+                originalPrice={course.price}
               />
             ))}
           </div>
@@ -295,10 +296,10 @@ const [topCourses, setTopCourses] = useState([]);
               <TopInstructor
                 key={t._id}
                 name={t.name}
-                title={t.title}
+                role={t.title}
                 rating={t.rating}
-                totalStudents={t.totalStudents}
-                thumbnail={t.thumbnail}
+                students={t.totalStudents}
+                thumbnail={t.thumbnail ?? defaultAvatar}
               />
             ))}
           </div>

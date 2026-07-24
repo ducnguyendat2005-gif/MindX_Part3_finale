@@ -1,5 +1,5 @@
 .CourCard {
-    background: #fff;
+    background: var(--card-bg);
     flex-shrink: 0;
     width: 333px; // ← không để width lớn hơn đây
     > img {
@@ -7,9 +7,9 @@
         height: 139px;
     }
     height:350.8px;
-    border: 0.5px solid #e2e8f0;
+    border: 0.5px solid var(--border-color);
     border-radius: 16px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--card-shadow);
     display: flex;
     padding: 16px;
     flex-direction: column;
@@ -20,9 +20,9 @@
         gap: 10px;
         align-items: center;
 
-        p { font-weight: 300; }
+        p { font-weight: 300; color: var(--muted-text); }
         p:nth-of-type(1){
-            color:orange;
+            color: orange;
         }
     }
 
@@ -38,10 +38,10 @@
         }
 
         .starFilled { color: #f5a623; }
-        .starEmpty  { color: #ddd; }
+        .starEmpty  { color: var(--border-color); }
 
         .starHalf {
-            color: #ddd;
+            color: var(--border-color);
             position: relative;
             display: inline-block;
             overflow: hidden;
@@ -60,12 +60,14 @@
     > p:nth-of-type(1) {
         font-weight: 600;
         font-size: 18px;
+        color: var(--text-color);
     }
 
     > p:nth-of-type(2),
     > p:nth-of-type(3) {
         font-weight: 200;
         font-size: 14px;
+        color: var(--muted-text);
     }
     >p:nth-of-type(4) {
         color:#5D5FEF;
