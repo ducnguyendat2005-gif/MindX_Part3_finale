@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-
+//lightdarktheme
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {

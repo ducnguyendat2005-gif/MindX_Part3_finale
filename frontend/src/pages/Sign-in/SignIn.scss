@@ -87,7 +87,7 @@
     }
   }
 }
-
+//changesignin
 // ── Submit Button ────────────────────────────────────────
 .signin-btn {
   display: inline-flex;
@@ -97,7 +97,7 @@
   padding: 0.75rem 2rem;
   background-color: var(--signin-btn-bg);
   color: var(--signin-btn-text);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--signin-btn-bg);
   border-radius: 0.5rem;
   font-size: 0.9375rem;
   font-weight: 600;
@@ -142,10 +142,12 @@
   span {
     position: relative;
     margin: 0 auto;
-    padding: 0 0.5rem;
-    background-color: var(--surface-color);
+    padding: 0.25rem 0.75rem;
+    background-color: #ffffff;
+    border: 1px solid #000000;
+    border-radius: 999px;
     font-size: 0.875rem;
-    color: var(--text-color);
+    color: #000000;
   }
 }
 
