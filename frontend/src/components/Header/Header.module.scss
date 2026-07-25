@@ -20,7 +20,7 @@
       position: relative;
       flex-shrink: 0;
     }
-
+//changeheader
     .categoriesBtn {
       display: flex;
       align-items: center;
@@ -30,15 +30,15 @@
       cursor: pointer;
       font-size: 14px;
       font-weight: 500;
-      color: #374151;
+      color: var(--text-color);
       padding: 6px 10px;
       border-radius: 8px;
       transition: background 0.18s, color 0.18s;
 
       &:hover,
       &.active {
-        background: #f1f5f9;
-        color: #2563eb;
+        background: var(--surface-alt);
+        color: var(--primary-color);
       }
     }
 
@@ -55,10 +55,10 @@
       position: absolute;
       top: calc(100% + 10px);
       left: 0;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
       border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
       padding: 6px;
       width: 180px;
       z-index: 200;
@@ -78,7 +78,7 @@
       padding: 10px 14px;
       font-size: 14px;
       font-weight: 500;
-      color: #374151;
+      color: var(--text-color);
       text-align: left;
       background: none;
       border: none;
@@ -87,8 +87,8 @@
       transition: background 0.15s, color 0.15s;
 
       &:hover {
-        background: #f0f7ff;
-        color: #2563eb;
+        background: var(--surface-alt);
+        color: var(--primary-color);
       }
     }
 

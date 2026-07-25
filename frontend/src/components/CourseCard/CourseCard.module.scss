@@ -78,18 +78,18 @@
     gap: 8px;
     flex-wrap: wrap;
 }
-
+//changecourse
     .newPrice {
         font-weight: 600;
         font-size: 23px;
-        color: #0b1f3b;
+        color: var(--text-color);
     }
 
     .oldPrice {
         font-weight: 300;
         font-size: 16px;
         text-decoration: line-through;
-        color: #cbd5e1; // lightgrey tông xám giống ảnh
+        color: var(--muted-text);
     }
 
     .offBadge {
