@@ -153,6 +153,70 @@ $transition-scale: 300ms ease;
   }
 }
 
+[data-theme="dark"] {
+  .sidebar__profile-card {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    color: #f8fafc;
+  }
+
+  .sidebar__avatar {
+    border-color: #0f172a;
+  }
+
+  .sidebar__name,
+  .sidebar__share-btn,
+  .sidebar__nav-item,
+  .sidebar__nav-item--active,
+  .courses-header__title,
+  .courses-header__count,
+  .sort-control__label,
+  .sort-control__btn,
+  .filter-btn,
+  .dropdown-menu__item,
+  .dropdown-menu__section-title,
+  .filter-btn__icon,
+  .filter-badge {
+    color: #f8fafc;
+  }
+
+  .sidebar__share-btn {
+    background: transparent;
+    border-color: #334155;
+  }
+
+  .sidebar__nav-item {
+    color: #cbd5e1;
+  }
+
+  .sidebar__nav-item:hover {
+    background-color: #111827;
+  }
+
+  .sidebar__nav-item--active {
+    color: #f8fafc;
+    background-color: #111827;
+  }
+
+  .search-box__input {
+    background-color: #0f172a;
+    color: #f8fafc;
+    border-color: #334155;
+  }
+
+  .search-box__input::placeholder {
+    color: #94a3b8;
+  }
+
+  .search-box__icon {
+    color: #f8fafc;
+  }
+
+  .search-box {
+    background-color: #0f172a;
+  }
+}
+
 // ----- Main Content -----
 .my-courses-page__main {
   flex: 1;

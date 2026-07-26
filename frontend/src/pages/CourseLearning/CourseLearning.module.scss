@@ -956,6 +956,87 @@
   border-color: var(--blue-light);
 }
 
+[data-theme="dark"] {
+  .navBtn,
+  .navBtnActive {
+    background: #0f172a;
+    color: #f8fafc;
+    border-color: #334155;
+  }
+
+  .navBtn:hover,
+  .navBtnActive:hover {
+    background: #111827;
+  }
+
+  .courseCompletion {
+    background: #0f172a;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    border: 1px solid #334155;
+  }
+
+  .courseCompletionHeader {
+    padding: 24px 20px;
+    border-bottom: 1px solid #334155;
+  }
+
+  .courseCompletionTitle {
+    color: #f8fafc;
+  }
+
+  .courseCompletionSection {
+    border-bottom: 1px solid #334155;
+  }
+
+  .courseCompletionSectionHeader {
+    background: #111827;
+  }
+
+  .courseCompletionSectionHeader:hover {
+    background: #111827;
+  }
+
+  .courseCompletionSectionTitle,
+  .courseCompletionLessonInfo,
+  .courseCompletionLessonNumber,
+  .courseCompletionLessonTitle,
+  .courseCompletionLessonDuration,
+  .courseCompletionCheckmark {
+    color: #f8fafc;
+  }
+
+  .courseCompletionLesson {
+    background: #111827;
+    border-bottom: 1px solid #334155;
+  }
+
+  .courseCompletionLesson:hover {
+    background: #111827;
+  }
+
+  .courseCompletionLessonCurrent {
+    background: #172134;
+    border-left-color: #2563eb;
+  }
+
+  .courseCompletionLessonCompleted {
+    background: #111827;
+  }
+
+  .courseCompletionCheckbox {
+    border-color: #94a3b8;
+  }
+
+  .courseCompletionLessonCompleted .courseCompletionCheckbox {
+    border-color: #f8fafc;
+  }
+
+  .courseCompletionLessonCompleted .courseCompletionCheckmark {
+    color: #f8fafc;
+  }
+}
+
 /* ==================== INSTRUCTOR PROFILE ==================== */
 
 
