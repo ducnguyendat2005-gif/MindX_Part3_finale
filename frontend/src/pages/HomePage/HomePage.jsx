@@ -7,10 +7,26 @@ import frame1 from '../../assets/Frame 427318990 (1).png'
 import frame2 from '../../assets/Frame 427318991 (1).png'
 import frame3 from '../../assets/Group (1).png'
 import { useState, useEffect, useRef } from "react";
-import travel from '../../assets/briefcase-02.png'
-import code from '../../assets/code-browser.png'
-import astronomy from '../../assets/Icon (3).png'
-import physic from '../../assets/Icon.png'
+
+import {
+  Code2,
+  Server,
+  Layers,
+  Palette,
+  Container,
+  Cloud,
+  BarChart3,
+  BookOpen, // icon fallback mặc định
+} from 'lucide-react'
+
+import bgFrontend from '../../assets/frontend.jpg'
+import bgBackend from '../../assets/backend.webp'
+import bgFullstack from '../../assets/fullstack.jpg'
+import bgUiux from '../../assets/UXUI.jpg'
+import bgDevops from '../../assets/devops.jpg'
+import bgCloud from '../../assets/cloudcom.jpg'
+import bgDataScience from '../../assets/datasci.jpg'
+
 import CourseCard from '../../components/CourseCard/CourseCard.jsx'
 import star from '../../assets/icon-1star.png'
 import CommentIcon from '../../assets/Ellipse 61.png'
@@ -136,6 +152,38 @@ const TopCat = (data) => {
     .map(([category, totalReviews]) => ({ category, totalReviews }));
 };
 
+const categoryIconMap = {
+  'frontend development': Code2,
+  'backend development': Server,
+  'full-stack development': Layers,
+  'ui/ux design': Palette,
+  devops: Container,
+  'cloud computing': Cloud,
+  'data science': BarChart3,
+}
+
+const getCategoryIcon = (category) => {
+  const key = category?.toLowerCase().trim()
+  return categoryIconMap[key] || BookOpen
+}
+
+
+const categoryBgMap = {
+  'frontend development': bgFrontend,
+  'backend development': bgBackend,
+  'full-stack development': bgFullstack,
+  'ui/ux design': bgUiux,
+  devops: bgDevops,
+  'cloud computing': bgCloud,
+  'data science': bgDataScience,
+}
+
+const getCategoryBg = (category) => {
+  const key = category?.toLowerCase().trim()
+  return categoryBgMap[key] || null
+}
+
+
 const HomePage = () => {
 
 const [products, setProducts] = useState([]);
@@ -237,37 +285,28 @@ const [topCourses, setTopCourses] = useState([]);
       </div>
  
       <div className={styles.topField}>
-        <div className={styles.topCat}>
-          <p>Top Catergories</p>
-          <div className={styles.ast}>
-            <div className={styles.imgBino}>
-              <img src={astronomy} />
-            </div>
-            <p>{TopCat(products)[0].category.charAt(0).toUpperCase() + TopCat(products)[0].category.slice(1)}</p>
-            <p>{TopCat(products)[0].totalReviews} Courses</p>
-          </div>
-          <div className={styles.dev}>
-            <div className={styles.imgDev}>
-              <img src={code} />
-            </div>
-            <p>{TopCat(products)[1].category.charAt(0).toUpperCase() + TopCat(products)[1].category.slice(1)}</p>
-            <p>{TopCat(products)[1].totalReviews} Courses</p>
-          </div>
-          <div className={styles.market}>
-            <div className={styles.marImg}>
-              <img src={travel} />
-            </div>
-            <p>{TopCat(products)[2].category.charAt(0).toUpperCase() + TopCat(products)[2].category.slice(1)}</p>
-            <p>{TopCat(products)[2].totalReviews} Courses</p>
-          </div>
-          <div className={styles.physic}>
-            <div className={styles.phyImg}>
-              <img src={physic}/>
-            </div>
-            <p>{TopCat(products)[3].category.charAt(0).toUpperCase() + TopCat(products)[3].category.slice(1)}</p>
-            <p>{TopCat(products)[3].totalReviews} Courses</p>
-          </div>
-        </div>
+      <div className={styles.topCat}>
+        <p>Top Catergories</p>
+        <div className={styles.cardCover}>
+          {TopCat(products).map((cat) => {
+            const Icon = getCategoryIcon(cat.category)
+            const bgImage = getCategoryBg(cat.category) // 👈 thiếu dòng này
+            return (
+              <div
+                className={styles.ast}
+                key={cat.category}
+                style={bgImage ? { backgroundImage: `url(${bgImage})` } : {}}
+              >
+                <div className={styles.imgBino}>
+                  <Icon size={28} color="#4A90E2" />
+                </div>
+                <p style={{ color: 'white', fontWeight:"700" }}>{cat.category.charAt(0).toUpperCase() + cat.category.slice(1)}</p>
+                <p style={{ color: 'white', fontWeight:"300" }}>{cat.totalReviews} Courses</p>
+              </div>
+          )
+        })}
+      </div>
+</div>
  
         <div className={styles.topCour}>
           <p>Top Courses</p>
@@ -298,7 +337,8 @@ const [topCourses, setTopCourses] = useState([]);
                 name={t.name}
                 role={t.title}
                 rating={t.rating}
-                students={t.totalStudents}
+                totalStudents={t.totalStudents}
+                title={t.title}
                 thumbnail={t.thumbnail ?? defaultAvatar}
               />
             ))}
