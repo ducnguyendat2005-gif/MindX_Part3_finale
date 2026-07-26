@@ -14,6 +14,18 @@
   --signin-btn-bg: #0f172a;
   --signin-btn-text: #ffffff;
   --signin-btn-hover: #1e293b;
+  --cart-summary-btn-bg: #0f172a;
+  --cart-summary-btn-text: #ffffff;
+  --cart-summary-btn-hover: #1e293b;
+  --form-input-bg: #111827;
+  --form-input-text: #f8fafc;
+  --form-input-placeholder: #94a3b8;
+  --checkout-form-input-bg: #ffffff;
+  --checkout-form-input-text: #111827;
+  --checkout-form-input-placeholder: #6b7280;
+  --addtocart-btn-bg: #0f172a;
+  --addtocart-btn-text: #ffffff;
+  --addtocart-btn-hover-bg: #1e293b;
 }
 
 [data-theme="dark"] {
@@ -31,6 +43,18 @@
   --signin-btn-bg: #ffffff;
   --signin-btn-text: #020617;
   --signin-btn-hover: #f8fafc;
+  --cart-summary-btn-bg: #ffffff;
+  --cart-summary-btn-text: #0f172a;
+  --cart-summary-btn-hover: #e2e8f0;
+  --form-input-bg: #ffffff;
+  --form-input-text: #111827;
+  --form-input-placeholder: #6b7280;
+  --checkout-form-input-bg: #ffffff;
+  --checkout-form-input-text: #111827;
+  --checkout-form-input-placeholder: #6b7280;
+  --addtocart-btn-bg: #ffffff;
+  --addtocart-btn-text: #111827;
+  --addtocart-btn-hover-bg: #f3f4f6;
 }
 
 body {

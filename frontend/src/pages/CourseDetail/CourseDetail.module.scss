@@ -158,18 +158,18 @@
 .addToCartButton {
     width: 356px;
     height: 48px;
-    border: none;
+    border: 1px solid var(--border-color);
     border-radius: 10px;
-    background: linear-gradient(180deg, #0b1220, #020617);
-    color: #ffffff;
+    background: var(--addtocart-btn-bg);
+    color: var(--addtocart-btn-text);
     font-size: 16px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.15s ease;
 
     &:hover {
-      background: linear-gradient(180deg, #111827, #020617);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+      background: var(--addtocart-btn-hover-bg);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
     }
 
     &:active {
