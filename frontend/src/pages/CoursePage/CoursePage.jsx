@@ -20,7 +20,7 @@ const TopInstructor = ({name,role,rating,students,thumbnail}) => {
           <img src={star} alt="star" />
           <p>{rating}</p>
         </div>
-        <p>{students}</p>
+        <p>{students} students</p>
       </div>
     
   )
@@ -363,11 +363,12 @@ export default function CoursesPage() {
           <div className={styles.topInsCardParent}>
             {topInstructors.map((t) => (
               <TopInstructor
-                key={t.id ?? t._id}
+                key={t._id}
                 name={t.name}
-                role={t.role}
+                role={t.title}
                 rating={t.rating}
-                students={t.students}
+                students={t.totalStudents}
+                title={t.title}
                 thumbnail={t.thumbnail ?? defaultAvatar}
               />
             ))}
