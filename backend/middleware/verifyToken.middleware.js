@@ -8,6 +8,7 @@ export const verifyToken = (req, res, next) => {
         
         const decoded = jwt.verify(token, process.env.JWT_SECRET_ACCESS);
         req.user = decoded;
+        console.log(req.user)
         // xem decoded trông như nào
         next();
         
