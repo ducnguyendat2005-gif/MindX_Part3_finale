@@ -36,6 +36,8 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  background-color: var(--surface-color);
+  color: var(--text-color);
 
   @media (min-width: 640px) {
     padding: 3rem;

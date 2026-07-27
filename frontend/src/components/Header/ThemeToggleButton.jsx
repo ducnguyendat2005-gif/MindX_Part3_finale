@@ -7,6 +7,7 @@ const ThemeToggleButton = () => {
 
   return (
     <button
+      style = {{ border:"1px solid #d0d0d0" ,borderRadius:"2px"}}
       type="button"
       className={styles.themeToggle}
       onClick={toggleTheme}

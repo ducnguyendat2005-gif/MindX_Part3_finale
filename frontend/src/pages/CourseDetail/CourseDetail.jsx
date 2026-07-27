@@ -518,17 +518,17 @@ useEffect(() => {
             {sameCourse({ data: allCourse, course: course }).map((data) =>
             <div key={data._id} onClick={() => window.location.reload()}> 
             <CourseCard
-              id={data._id}
-              title={data.title}
-              instructor={data.instructorId?.name}
-              rating={data.rating}
-              ratingCount={data.reviews?.length ?? 0}
-              duration={`${data.hours} Total Hours. ${data.lectures} Lectures. ${data.level}`}
-              category={data.category}
-              price={`$${data.price}`}
-              >
-
-            </CourseCard>
+                key={course.id ?? course._id}
+                id={course.id ?? course._id}
+                title={course.title}
+                instructor={course.instructorId?.name}
+                rating={course.rating}
+                ratingCount={course.reviews?.length ?? 0}
+                duration={`${course.hours} Total Hours. ${course.lectures} Lectures. ${course.level}`}
+                category={course.category}
+                promotionalPrice={course.promotionalPrice}
+                originalPrice={course.price}
+              />
             </div>)}
           </div>
         </div>
