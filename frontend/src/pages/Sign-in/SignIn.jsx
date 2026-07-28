@@ -83,7 +83,7 @@ export default function SignInPage() {
           </div>
 
           <form className="signin-form" onSubmit={(e) => handleSignin(e)}>
-            <div className="form-group">
+            <div className="signin-form-group">
               <label>Email</label>
               <input
                 type="text"
@@ -93,7 +93,7 @@ export default function SignInPage() {
               />
             </div>
 
-            <div className="form-group">
+            <div className="signin-form-group">
               <label>Password</label>
               <input
                 type="password"
