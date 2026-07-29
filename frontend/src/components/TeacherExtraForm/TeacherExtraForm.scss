@@ -1,0 +1,65 @@
+// src/components/SignUp/TeacherExtraForm.scss
+
+.teacher-form-inner {
+  width: 100%;
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.teacher-form-heading {
+  h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0 0 0.5rem 0;
+  }
+  p {
+    font-size: 0.875rem;
+    color: var(--muted-text);
+    margin: 0;
+  }
+}
+
+.teacher-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-family: inherit;
+    color: var(--text-color);
+    background-color: var(--surface-color);
+    outline: none;
+    box-sizing: border-box;
+    resize: vertical;
+
+    &::placeholder {
+      color: var(--muted-text);
+    }
+
+    &:focus {
+      border-color: transparent;
+      box-shadow: 0 0 0 2px var(--primary-color);
+    }
+  }
+}
+
+.teacher-form-error {
+  color: red;
+  font-size: 0.75rem;
+  margin: 0;
+}

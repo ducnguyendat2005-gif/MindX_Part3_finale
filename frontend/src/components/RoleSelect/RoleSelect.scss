@@ -1,0 +1,86 @@
+// src/components/SignUp/RoleSelect.scss
+
+.role-select-inner {
+  width: 100%;
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+// ── Heading ─────────────────────────────────────────────
+.role-select-heading {
+  text-align: center;
+
+  @media (min-width: 1024px) {
+    text-align: left;
+  }
+
+  h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0 0 0.5rem 0;
+  }
+
+  p {
+    font-size: 0.875rem;
+    color: var(--muted-text);
+    margin: 0;
+  }
+}
+
+// ── Role Cards Grid ───────────────────────────────────────
+.role-select-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.role-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-color);
+  }
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  p {
+    font-size: 0.8125rem;
+    color: var(--muted-text);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.5rem;
+    background-color: var(--primary-color);
+    color: var(--signin-btn-text);
+  }
+}

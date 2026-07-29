@@ -1,0 +1,184 @@
+// src/components/SignUp/BasicInfoForm.scss
+.signup-form-inner {
+  width: 100%;
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+// ── Heading ─────────────────────────────────────────────
+.signup-heading {
+  text-align: center;
+
+  @media (min-width: 1024px) {
+    text-align: left;
+  }
+
+  h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+  }
+}
+
+// ── Form ────────────────────────────────────────────────
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.signup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-color);
+    background-color: var(--surface-color);
+    outline: none;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    box-sizing: border-box;
+
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+      -webkit-text-fill-color: var(--text-color) !important;
+      box-shadow: 0 0 0 1000px var(--surface-color) inset !important;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+
+    &::placeholder {
+      color: var(--muted-text);
+    }
+
+    &:focus {
+      border-color: transparent;
+      box-shadow: 0 0 0 2px var(--primary-color);
+    }
+  }
+
+  &--no-label {
+    padding-top: 25px;
+  }
+}
+
+// ── Submit Button ────────────────────────────────────────
+.signup-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 2rem;
+  background-color: var(--signin-btn-bg);
+  color: var(--signin-btn-text);
+  border: 1px solid var(--signin-btn-bg);
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  width: 100%;
+
+  @media (min-width: 640px) {
+    width: auto;
+  }
+
+  &:hover {
+    background-color: var(--signin-btn-hover);
+
+    .btn-icon {
+      transform: translateX(4px);
+    }
+  }
+
+  .btn-icon {
+    width: 1rem;
+    height: 1rem;
+    transition: transform 0.15s ease;
+  }
+}
+
+// ── Divider ──────────────────────────────────────────────
+.divider {
+  position: relative;
+  padding: 1rem 0;
+  display: flex;
+  align-items: center;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 50% 0 auto 0;
+    height: 1px;
+    background-color: var(--border-color);
+  }
+
+  span {
+    position: relative;
+    margin: 0 auto;
+    padding: 0.25rem 0.75rem;
+    background-color: #ffffff;
+    border: 1px solid #000000;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    color: #000000;
+  }
+}
+
+// ── Social Buttons ───────────────────────────────────────
+.social-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: #fff;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  gap: 0.5rem;
+
+  &:hover {
+    background-color: #f9fafb;
+  }
+
+  img {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  &__label {
+    font-size: 0.75rem;
+    font-weight: 500;
+
+    &--facebook  { color: #2563eb; }
+    &--google    { color: #ef4444; }
+    &--microsoft { color: #4b5563; }
+  }
+}
