@@ -15,6 +15,7 @@
     align-items: center;
     gap: 0px;
     flex-direction: row;
+    flex-wrap: nowrap;
 
     .categoriesWrapper {
       position: relative;
@@ -117,6 +118,10 @@
     position: relative;
     width: 100%;
     max-width: 600px;
+
+      @media (max-height: 760px) {
+        max-width: 420px;
+      }
 
     .searchContainer {
       width: 100%;
@@ -277,6 +282,36 @@
         p{color:white;font-size: 12px;}
       }
     }
+
+  // Responsive adjustments for shorter desktop viewports (not mobile)
+  @media (max-height: 760px) {
+    .header {
+      height: 64px;
+    }
+
+    .headStart {
+      width: 100%;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .searchWrapper {
+      max-width: 360px;
+      order: 2;
+      width: 100%;
+    }
+
+    .funcBar {
+      order: 3;
+
+      .iconBtn, .avatarBtn, .themeToggle {
+        width: 34px;
+        height: 34px;
+        padding: 4px;
+      }
+    }
+  }
     .iconBtn {
       width: 38px;
       height: 38px;
@@ -293,6 +328,23 @@
       &:hover {
         background: #f1f5f9;
         color: #2563eb;
+      }
+    }
+
+    .themeToggle {
+      background: none;
+      border: none;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 50%;
+      color: var(--text-color);
+
+      &:focus {
+        outline: none;
+        box-shadow: none;
       }
     }
 
