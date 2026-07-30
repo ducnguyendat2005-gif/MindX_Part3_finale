@@ -115,6 +115,38 @@ const accountController = {
         catch (error) {
             next(error)
         }
+    },
+    teacherRegister:async (req, res,next) =>{
+        try{
+            const {
+                Fname,
+                LName,
+                Username,
+                Email,
+                pass,
+                role,
+                expertise,
+                experienceYears,
+                bio,
+                portfolioUrl} = req.body;
+
+                
+            res.status(200).json({ data: {
+                Fname,
+                LName,
+                Username,
+                Email,
+                pass,
+                role,
+                expertise,
+                experienceYears,
+                bio,
+                portfolioUrl
+            }, message: 'Retrieve successful!', success: true });
+        }
+        catch (error){
+            next(error)
+        }
     }
 }
 
