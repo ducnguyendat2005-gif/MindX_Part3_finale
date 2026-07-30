@@ -2,12 +2,14 @@
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
+import { API } from '../../config/api.js';   // ← thêm dòng này
 import './BasicInfoForm.module.scss'
 
 export default function BasicInfoForm({ onNext }) {
   const [Fname, setFname] = useState('');
   const [Lname, setLname] = useState('');
   const [Username, setUsername] = useState('');
+  const [checkingEmail, setCheckingEmail] = useState(false); 
   const [Email, setEmail] = useState('');
   const [pass, setpass] = useState('');
   const [Repass, setRepass] = useState('');
@@ -17,7 +19,7 @@ export default function BasicInfoForm({ onNext }) {
     setErrors((prev) => ({ ...prev, [field]: false }));
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     const newErrors = {};
     if (!Fname) newErrors.Fname = 'Please fill this field';
     if (!Lname) newErrors.Lname = 'Please fill this field';
@@ -31,9 +33,28 @@ export default function BasicInfoForm({ onNext }) {
       setErrors(newErrors);
       return;
     }
+    setCheckingEmail(true);
+    try {
+      const res = await fetch(API.checkDuplicateEmail, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: Email }), // chú ý key "email" viết thường, khớp với req.body ở backend
+    });
+
+    if (!res.ok) {
+      const result = await res.json();
+      setErrors({ Email: result.message || 'Email existed please try others' });
+      return;
+    }
+
+    onNext({ Fname, Lname, Username, Email, pass });
+  } catch {
+    setErrors({ Email: 'Không thể kiểm tra email lúc này' });
+  } finally {
+    setCheckingEmail(false);
+  }
 
     // Không gọi API register ở đây nữa — chỉ đẩy data lên component cha
-    onNext({ Fname, Lname, Username, Email, pass });
   };
 
   const inputStyle = (field) => ({

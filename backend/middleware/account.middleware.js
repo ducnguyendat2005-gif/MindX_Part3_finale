@@ -59,3 +59,14 @@ export const isAdmin = async (req,res,next) =>{
     }
 }
 
+export const checkDuplicateEmail = async (req,res,next) => {
+    try {
+        const {email} = req.body;
+        const checkDuplicateEmail = await AccountModel.findOne({Email:email})
+        if (checkDuplicateEmail) throw new Error ("email existed please try others")
+        res.send({ message: 'notduplicate!', success: true });
+    }
+    catch(error){
+        next(error)
+    }
+}
