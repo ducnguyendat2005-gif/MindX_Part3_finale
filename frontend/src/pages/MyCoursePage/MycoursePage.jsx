@@ -123,11 +123,11 @@ export default function MyCoursesPage() {
             </button>
           </div>
           <nav className="sidebar__nav">
-            <a href="#" className="sidebar__nav-item">Profile</a>
+            <Link to="/profile" className="sidebar__nav-item">Profile</Link>
             <a href="#" className="sidebar__nav-item sidebar__nav-item--active">My Courses</a>
             <a href="#" className="sidebar__nav-item">Teachers</a>
             <a href="#" className="sidebar__nav-item">Message</a>
-            <a href="#" className="sidebar__nav-item">My Reviews</a>
+            <Link to="/myreviews" className="sidebar__nav-item">My Reviews</Link>
           </nav>
         </aside>
 

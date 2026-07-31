@@ -194,8 +194,14 @@ $transition-scale: 300ms ease;
   }
 
   .sidebar__nav-item--active {
-    color: #f8fafc;
-    background-color: #111827;
+    color: #0f172a;
+    background-color: #f8fafc;
+    font-weight: 700;
+    border: 1px solid #e2e8f0;
+  }
+
+  .sidebar__nav-item--active:hover {
+    background-color: #f8fafc;
   }
 
   .search-box__input {
@@ -214,6 +220,24 @@ $transition-scale: 300ms ease;
 
   .search-box {
     background-color: #0f172a;
+  }
+
+  // ----- Course Card (dark) -----
+  .course-card {
+    background-color: #000;
+    border: 1px solid #334155;
+  }
+
+  .course-card__title {
+    color: #f8fafc;
+  }
+
+  .course-card__instructor {
+    color: #94a3b8;
+  }
+
+  .course-card__reviews {
+    color: #94a3b8;
   }
 }
 
@@ -376,7 +400,7 @@ $transition-scale: 300ms ease;
   border: 1px solid $color-gray-100;
   border-radius: $radius-md;
   overflow: hidden;
-  transition: box-shadow $transition-default;
+  transition: box-shadow $transition-default, background-color $transition-default;
 
   &:hover {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
@@ -410,7 +434,6 @@ $transition-scale: 300ms ease;
     font-size: 0.875rem;
     margin-bottom: 0.25rem;
 
-    // Line clamp
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;

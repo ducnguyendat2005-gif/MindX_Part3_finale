@@ -319,3 +319,135 @@
   text-align: center;
   padding: 32px 0;
 }
+
+/* ==================== DARK THEME ==================== */
+[data-theme="dark"] {
+  .page {
+    background-color: #0b1220;
+  }
+
+  .loading {
+    color: #94a3b8;
+  }
+
+  // ── Sidebar ──
+  .sidebar {
+    background: #0f172a;
+    border-color: #334155;
+  }
+
+  .avatar {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+  }
+
+  .fullName {
+    color: #f8fafc;
+  }
+
+  .username {
+    color: #94a3b8;
+  }
+
+  .divider {
+    background: #334155;
+  }
+
+  .navItem {
+    color: #94a3b8;
+
+    &:hover {
+      background: #172134;
+      color: #f8fafc;
+    }
+  }
+
+  .navActive {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.22);
+      color: #60a5fa;
+    }
+  }
+
+  .navSignout {
+    color: #f87171;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+    }
+  }
+
+  // ── Stats ──
+  .statCard {
+    background: #0f172a;
+    border-color: #334155;
+  }
+
+  .statNum {
+    color: #f8fafc;
+  }
+
+  .statLabel {
+    color: #94a3b8;
+  }
+
+  // ── Section card / Personal info ──
+  .sectionCard {
+    background: #0f172a;
+    border-color: #334155;
+  }
+
+  .sectionTitle {
+    color: #f8fafc;
+  }
+
+  .infoLabel {
+    color: #94a3b8;
+  }
+
+  .infoValue {
+    color: #f8fafc;
+    background: #172134;
+    border-color: #334155;
+  }
+
+  // ── Course list ──
+  .courseRow {
+    background: #172134;
+    border-color: #334155;
+
+    &:hover {
+      border-color: #475569;
+    }
+  }
+
+  .courseThumb {
+    background: rgba(59, 130, 246, 0.15);
+  }
+
+  .courseTitle {
+    color: #f8fafc;
+  }
+
+  .courseMeta {
+    color: #94a3b8;
+  }
+
+  .badgeDefault      { background: #172134; color: #cbd5e1; }
+  .badge_development { background: rgba(37, 99, 235, 0.18); color: #60a5fa; }
+  .badge_marketing    { background: rgba(147, 51, 234, 0.18); color: #c084fc; }
+  .badge_physics      { background: rgba(22, 163, 74, 0.18); color: #4ade80; }
+  .badge_astrology    { background: rgba(234, 88, 12, 0.18); color: #fb923c; }
+  .badge_mathematics  { background: rgba(202, 138, 4, 0.18); color: #facc15; }
+  .badge_design       { background: rgba(219, 39, 119, 0.18); color: #f472b6; }
+  .badge_cloud        { background: rgba(2, 132, 199, 0.18); color: #38bdf8; }
+  .badge_database     { background: rgba(5, 150, 105, 0.18); color: #34d399; }
+
+  .empty {
+    color: #94a3b8;
+  }
+}

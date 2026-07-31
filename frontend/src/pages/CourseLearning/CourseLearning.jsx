@@ -320,7 +320,7 @@ function ReviewForm({ courseId, onReviewPosted }) {
         rows={4}
       />
       <button onClick={handleSubmit} disabled={loading}>
-        {loading ? 'Đang gửi...' : 'Gửi đánh giá'}
+        {loading ? 'Sending...' : 'Send ratings'}
       </button>
     </div>
   );

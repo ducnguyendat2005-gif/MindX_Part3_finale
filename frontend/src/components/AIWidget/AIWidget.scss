@@ -81,6 +81,26 @@
     }
   }
 
+  // When viewport height is reduced on desktop, make widget less intrusive
+  @media (max-height: 760px) {
+    right: 12px;
+    bottom: 12px;
+
+    &__fab {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+    }
+
+    &__window {
+      width: 300px;
+      height: 420px;
+      bottom: 64px;
+      right: 0;
+      transform-origin: bottom right;
+    }
+  }
+
   // ── Header ───────────────────────────────────
   &__header {
     background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);

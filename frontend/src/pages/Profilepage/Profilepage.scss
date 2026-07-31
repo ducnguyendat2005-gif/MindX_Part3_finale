@@ -1,0 +1,424 @@
+// ============================================================
+// ProfilePage.scss
+// ============================================================
+
+$color-bg: #f9fafb;
+$color-white: #ffffff;
+$color-gray-50: #f9fafb;
+$color-gray-100: #f3f4f6;
+$color-gray-200: #e5e7eb;
+$color-gray-400: #9ca3af;
+$color-gray-500: #6b7280;
+$color-gray-600: #4b5563;
+$color-gray-700: #374151;
+$color-gray-900: #111827;
+$color-slate-900: #0f172a;
+$color-blue-500: #3b82f6;
+
+$radius-sm: 0.5rem;
+$radius-md: 0.75rem;
+$radius-lg: 1rem;
+$radius-xl: 1.5rem;
+
+$transition-default: 200ms ease;
+
+.profile-page {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+
+  @media (min-width: 640px) {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+
+    @media (min-width: 1024px) {
+      flex-direction: row;
+    }
+  }
+
+  &__sidebar {
+    width: 100%;
+
+    @media (min-width: 1024px) {
+      width: 16rem;
+      flex-shrink: 0;
+    }
+  }
+
+  &__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}
+
+// ----- Sidebar (dùng chung style với MyCoursesPage) -----
+.sidebar {
+  &__profile-card {
+    background-color: $color-gray-50;
+    border-radius: $radius-xl;
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  &__avatar-wrapper {
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+
+  &__avatar {
+    width: 8rem;
+    height: 8rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid $color-white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  &__name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $color-gray-900;
+    margin-bottom: 1rem;
+  }
+
+  &__share-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid $color-gray-200;
+    border-radius: $radius-sm;
+    background: transparent;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $color-gray-700;
+    cursor: pointer;
+    transition: background-color $transition-default;
+
+    &:hover {
+      background-color: $color-white;
+    }
+  }
+
+  &__share-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &__nav {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__nav-item {
+    display: block;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $color-gray-600;
+    border-radius: $radius-sm;
+    text-decoration: none;
+    transition: background-color $transition-default;
+
+    &:hover {
+      background-color: $color-gray-50;
+    }
+
+    &--active {
+      font-weight: 700;
+      color: $color-white;
+      background-color: $color-slate-900;
+
+      &:hover {
+        background-color: $color-slate-900;
+      }
+    }
+  }
+}
+
+// ----- Profile Card (form sections) -----
+.profile-card {
+  position: relative;
+  background-color: $color-white;
+  border: 1px solid $color-gray-100;
+  border-radius: $radius-lg;
+  padding: 2rem 1.5rem 1.5rem;
+
+  &__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: none;
+    background: $color-gray-500;
+    color: $color-white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color $transition-default;
+    z-index: 2;
+
+    &:hover {
+      background: $color-gray-600;
+    }
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: $color-gray-900;
+    margin-bottom: 1.25rem;
+  }
+
+  &__row {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+
+    @media (min-width: 640px) {
+      flex-direction: row;
+    }
+
+    .profile-card__field {
+      flex: 1;
+    }
+  }
+
+  &__field {
+    margin-bottom: 1.25rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: $color-gray-700;
+      margin-bottom: 0.5rem;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 0.625rem 0.875rem;
+      border: 1px solid $color-gray-200;
+      border-radius: $radius-sm;
+      font-size: 0.875rem;
+      color: $color-gray-900;
+      background-color: $color-white;
+      outline: none;
+      transition: border-color $transition-default, box-shadow $transition-default;
+
+      &::placeholder {
+        color: $color-gray-400;
+      }
+
+      &:focus {
+        border-color: $color-blue-500;
+        box-shadow: 0 0 0 2px rgba($color-blue-500, 0.2);
+      }
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      padding-right: 2.25rem;
+    }
+  }
+}
+
+// ----- Image Preview -----
+.image-preview {
+  width: 100%;
+  max-width: 22rem;
+  aspect-ratio: 16 / 10;
+  background-color: $color-gray-100;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+
+  &__placeholder {
+    width: 2rem;
+    height: 2rem;
+    color: $color-gray-400;
+  }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.image-upload-row {
+  display: flex;
+  gap: 0.75rem;
+
+  input {
+    flex: 1;
+  }
+}
+
+// ----- Buttons -----
+.btn {
+  padding: 0.625rem 1.25rem;
+  border-radius: $radius-sm;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color $transition-default, opacity $transition-default;
+
+  &--primary {
+    background-color: $color-slate-900;
+    color: $color-white;
+    margin-top: 1.25rem;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+
+  &--secondary {
+    background-color: $color-slate-900;
+    color: $color-white;
+    white-space: nowrap;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+}
+
+// ============================================================
+// DARK THEME
+// ============================================================
+[data-theme="dark"] {
+  .sidebar__profile-card {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    color: #f8fafc;
+  }
+
+  .sidebar__avatar {
+    border-color: #0f172a;
+  }
+
+  .sidebar__name,
+  .sidebar__share-btn,
+  .sidebar__nav-item,
+  .sidebar__nav-item--active {
+    color: #f8fafc;
+  }
+
+  .sidebar__share-btn {
+    background: transparent;
+    border-color: #334155;
+  }
+
+  .sidebar__nav-item {
+    color: #cbd5e1;
+
+    &:hover {
+      background-color: #111827;
+    }
+  }
+
+  .sidebar__nav-item--active {
+    color: #f8fafc;
+    background-color: #111827;
+  }
+
+  .profile-card {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+
+    &__title {
+      color: #f8fafc;
+    }
+
+    &__close {
+      background: #334155;
+
+      &:hover {
+        background: #475569;
+      }
+    }
+
+    &__field {
+      label {
+        color: #cbd5e1;
+      }
+
+      input,
+      textarea,
+      select {
+        background-color: #111827;
+        border-color: #334155;
+        color: #f8fafc;
+
+        &::placeholder {
+          color: #64748b;
+        }
+
+        &:focus {
+          border-color: $color-blue-500;
+        }
+      }
+
+      select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      }
+    }
+  }
+
+  .image-preview {
+    background-color: #111827;
+
+    &__placeholder {
+      color: #64748b;
+    }
+  }
+
+  .btn--primary,
+  .btn--secondary {
+    background-color: #f8fafc;
+    color: #0f172a;
+
+    &:hover {
+      opacity: 0.85;
+    }
+  }
+}

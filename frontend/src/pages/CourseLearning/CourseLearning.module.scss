@@ -957,16 +957,24 @@
 }
 
 [data-theme="dark"] {
-  .navBtn,
-  .navBtnActive {
+  .navBtn {
     background: #0f172a;
     color: #f8fafc;
     border-color: #334155;
   }
 
-  .navBtn:hover,
-  .navBtnActive:hover {
+  .navBtn:hover {
     background: #111827;
+  }
+
+  .navBtnActive {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border-color: rgba(59, 130, 246, 0.4);
+  }
+
+  .navBtnActive:hover {
+    background: rgba(59, 130, 246, 0.22);
   }
 
   .courseCompletion {
@@ -1034,6 +1042,122 @@
 
   .courseCompletionLessonCompleted .courseCompletionCheckmark {
     color: #f8fafc;
+  }
+
+  .courses {
+    background-color: #0b1220;
+  }
+
+  .divTitle {
+    color: #f8fafc;
+  }
+
+  /* ---------- Syllabus (Courses tab) ---------- */
+  .syllabusTitle {
+    color: #f8fafc;
+  }
+
+  .syllabusSummary {
+    color: #94a3b8;
+  }
+
+  .tableOfContent {
+    border-color: #334155;
+  }
+
+  .tocCard {
+    background: #0f172a;
+    border-bottom-color: #334155;
+
+    &.tocCardOpen {
+      background: #111827;
+    }
+  }
+
+  .tocHeader:hover {
+    background: #1e293b;
+  }
+
+  .tocIndex {
+    color: #64748b;
+  }
+
+  .tocTitle {
+    color: #f8fafc;
+  }
+
+  .tocMeta {
+    color: #94a3b8;
+  }
+
+  .tocDot {
+    background: #475569;
+  }
+
+  .chevron {
+    color: #94a3b8;
+  }
+
+  .lessonItem {
+    color: #cbd5e1;
+  }
+
+  .lessonIcon {
+    color: #94a3b8;
+  }
+
+  /* ---------- Review Form ---------- */
+  .reviewForm {
+    background: #0f172a;
+    border-color: #334155;
+
+    > p:first-child {
+      color: #f8fafc;
+    }
+
+    .reviewFormError {
+      background: #3f1d1d;
+      border-color: #7f1d1d;
+      color: #fca5a5;
+    }
+
+    select {
+      background: #1e293b;
+      border-color: #334155;
+      color: #f8fafc;
+
+      &:focus {
+        border-color: #60a5fa;
+      }
+    }
+
+    textarea {
+      background: #1e293b;
+      border-color: #334155;
+      color: #f8fafc;
+
+      &::placeholder {
+        color: #64748b;
+      }
+
+      &:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+      }
+    }
+
+    button {
+      background: var(--blue);
+      color: #ffffff;
+
+      &:hover:not(:disabled) {
+        background: #2563eb;
+      }
+
+      &:disabled {
+        background: #475569;
+      }
+    }
   }
 }
 

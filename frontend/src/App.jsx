@@ -14,7 +14,9 @@ import Checkout from './pages/CheckoutPage/Checkout.jsx'
 import BuyNPage from './pages/BuyNowPage/BuyNPage.jsx'
 import MyCoursesPage from "./pages/MyCoursePage/MycoursePage.jsx";
 import AIWidget from './components/AIWidget/AIWidget';
+import ProfilePage from './pages/Profilepage/Profilepage.jsx';
 import MyProfilePage from './pages/MyProfilePage/MyProfilePage.jsx'
+import MyReviewsPage from './pages/Myreviewspage/Myreviewspage.jsx'
 import AdminPage from './pages/Admin/Admin.jsx'
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { Routes, Route } from "react-router-dom";
@@ -43,8 +45,16 @@ function App() {
           element={<ProtectedRoute><CourseLearning /></ProtectedRoute>}
         />
         <Route
+          path='/profile'
+          element={<ProtectedRoute><ProfilePage /></ProtectedRoute>}
+        />
+        <Route
           path='/myprofile'
           element={<ProtectedRoute><MyProfilePage /></ProtectedRoute>}
+        />
+        <Route
+          path='/myreviews'
+          element={<ProtectedRoute><MyReviewsPage /></ProtectedRoute>}
         />
 
         <Route
