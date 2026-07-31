@@ -6,7 +6,7 @@ const accountSchema = new mongoose.Schema({
     Username: { type: String, required: true, unique: true },
     Email: { type: String, required: true, unique: true },
     pass: { type: String, required: true }, // nhớ hash bằng bcrypt trước khi lưu
-    role: { type: String, enum: ['admin', 'user'], default: 'user' },
+    role: { type: String, enum: ['admin', 'user','teacher'], default: 'user' },
 }, { timestamps: true });
 
 const AccountModel = mongoose.model('account', accountSchema);

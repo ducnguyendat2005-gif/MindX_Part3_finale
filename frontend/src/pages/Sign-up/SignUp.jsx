@@ -18,8 +18,11 @@ export default function SignUpPage() {
 
   const handleFinalSubmit = async (extraData) => {
     const fullData = { ...formData, ...extraData };
+    
+    const endpoint = fullData.role === 'teacher' ? API.registerTeacher : API.register;
+
     try {
-      const res = await fetch(API.register, {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(fullData),
