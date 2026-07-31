@@ -92,11 +92,11 @@ export default function CheckoutPage() {
             <div className="checkout-card">
               {/* Location */}
               <div className="checkout-location">
-                <div className="form-group">
+                <div className="checkout-form-group">
                   <label>Country</label>
                   <input type="text" placeholder="Enter Country" />
                 </div>
-                <div className="form-group">
+                <div className="checkout-form-group">
                   <label>State/Union Territory</label>
                   <input type="text" placeholder="Enter State" />
                 </div>
@@ -126,20 +126,20 @@ export default function CheckoutPage() {
 
                   {paymentMethod === 'card' && (
                     <div className="card-fields">
-                      <div className="form-group">
+                      <div className="checkout-form-group">
                         <label>Name of Card</label>
                         <input type="text" placeholder="Name of card" />
                       </div>
-                      <div className="form-group">
+                      <div className="checkout-form-group">
                         <label>Card Number</label>
                         <input type="text" placeholder="Card Number" />
                       </div>
                       <div className="card-fields__row">
-                        <div className="form-group">
+                        <div className="checkout-form-group">
                           <label>Expiry Date</label>
                           <input type="text" placeholder="MM/YY" />
                         </div>
-                        <div className="form-group">
+                        <div className="checkout-form-group">
                           <label>CVC/CVV</label>
                           <input type="text" placeholder="CVC" />
                         </div>

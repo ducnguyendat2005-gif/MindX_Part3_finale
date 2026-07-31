@@ -96,7 +96,7 @@ export default function SignUpPage() {
 
           <form className="signup-form" onSubmit={(e) => { e.preventDefault(); handleSignUp(); }}>
             <div className="form-row">
-              <div className="form-group">
+              <div className="signup-field">
                 <label>Full Name</label>
                 <input
                   style={inputStyle('Fname')}
@@ -107,7 +107,7 @@ export default function SignUpPage() {
                 {errors.Fname && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Fname}</p>}
               </div>
 
-              <div className="form-group form-group--no-label">
+              <div className="signup-field signup-field--no-label">
                 <input
                   style={inputStyle('Lname')}
                   onChange={(e) => { setLname(e.target.value); if (e.target.value) clearError('Lname'); }}
@@ -118,7 +118,7 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            <div className="form-group">
+            <div className="signup-field">
               <label>Username</label>
               <input
                 style={inputStyle('Username')}
@@ -129,7 +129,7 @@ export default function SignUpPage() {
               {errors.Username && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Username}</p>}
             </div>
 
-            <div className="form-group">
+            <div className="signup-field">
               <label>Email</label>
               <input
                 style={inputStyle('Email')}
@@ -141,7 +141,7 @@ export default function SignUpPage() {
             </div>
 
             <div className="form-row">
-              <div className="form-group">
+              <div className="signup-field">
                 <label>Password</label>
                 <input
                   style={inputStyle('pass')}
@@ -152,7 +152,7 @@ export default function SignUpPage() {
                 {errors.pass && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.pass}</p>}
               </div>
 
-              <div className="form-group">
+              <div className="signup-field">
                 <label>Confirm Password</label>
                 <input
                   style={inputStyle('Repass')}

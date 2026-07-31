@@ -73,7 +73,7 @@
 }
 
 // ── Form Group ───────────────────────────────────────────
-.form-group {
+.checkout-form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -81,7 +81,7 @@
   label {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-color);
   }
 
   input {
@@ -93,6 +93,14 @@
     outline: none;
     transition: box-shadow 0.15s ease;
     box-sizing: border-box;
+
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+      -webkit-text-fill-color: var(--text-color) !important;
+      box-shadow: 0 0 0 1000px var(--surface-color) inset !important;
+      transition: background-color 5000s ease-in-out 0s; // chặn Chrome delay-apply lại màu
+    }
 
     &::placeholder { color: #9ca3af; }
     &:focus { box-shadow: 0 0 0 2px #3b82f6; border-color: transparent; }
