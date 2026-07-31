@@ -12,9 +12,11 @@ export const API = {
   topCourses: `${BASE_URL}/top-courses`,
   mainComment: `${BASE_URL}/mainComment`,
   register: `${BASE_URL}/register`,
+  registerTeacher: `${BASE_URL}/register/teacher`,  
   login: `${BASE_URL}/login`,
   refreshToken: `${BASE_URL}/account/refresh-token`,
   topTeacher: `${BASE_URL}/top-teacher`,
+  checkDuplicateEmail: `${BASE_URL}/account/check-duplicate`,
 
   // ── Protected — cần đăng nhập (gửi kèm AT) ──
   mycourses: `${BASE_URL}/account/mycourses`,

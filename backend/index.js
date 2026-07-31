@@ -1,7 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import { errorHandler } from './middleware/errorHandler.middleware.js'
-import { validateReg,validateLogin ,isAdmin} from './middleware/account.middleware.js'
+import { validateReg,validateLogin ,isAdmin ,checkDuplicateEmail } from './middleware/account.middleware.js'
 import courseController from './controller/course.controller.js';
 import commentController from './controller/comment.controller.js';
 import accountController from './controller/accounts.controller.js'
@@ -31,6 +31,10 @@ app.get('/mainComment',commentController.getTopComments)
 app.get('/top-teacher',teacherController.getTopTeacher)
 
 app.post('/register',validateReg,accountController.registerCustomer)
+
+app.post('/register/teacher',validateReg,accountController.teacherRegister)
+
+app.post('/account/check-duplicate',checkDuplicateEmail)
 
 app.post('/login',validateLogin,accountController.accLogin)
 

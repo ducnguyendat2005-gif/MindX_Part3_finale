@@ -1,0 +1,124 @@
+
+
+.extra-form-inner {
+  width: 100%;
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.extra-form-heading {
+  h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0 0 0.5rem 0;
+  }
+  p {
+    font-size: 0.875rem;
+    color: var(--muted-text);
+    margin: 0;
+  }
+}
+
+.extra-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-family: inherit;
+    color: var(--text-color);
+    background-color: var(--surface-color);
+    outline: none;
+    resize: vertical;
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: var(--muted-text);
+    }
+
+    &:focus {
+      border-color: transparent;
+      box-shadow: 0 0 0 2px var(--primary-color);
+    }
+  }
+}
+
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    border-color: var(--primary-color);
+  }
+
+  &--active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--signin-btn-text);
+  }
+}
+
+.extra-form-error {
+  color: red;
+  font-size: 0.8125rem;
+  margin: 0;
+}
+
+.extra-form-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+
+  .signup-btn {
+    flex: 1;
+  }
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  color: var(--text-color);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--surface-color);
+  }
+
+  .btn-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+}

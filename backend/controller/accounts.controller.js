@@ -115,6 +115,44 @@ const accountController = {
         catch (error) {
             next(error)
         }
+    },
+    teacherRegister:async (req, res,next) =>{
+        try{
+            const {
+                Fname,
+                Lname,
+                Username,
+                Email,
+                pass,
+                role,
+                expertise,
+                experienceYears,
+                bio,
+                portfolioUrl} = req.body;
+            const DEFAULT_THUMBNAIL = "https://res.cloudinary.com/demo/image/upload/default-avatar.png"; // ← đặt link ảnh mặc định của bạn ở đây
+
+            
+            const saltRounds = 10;
+
+            const salt = bcrypt.genSaltSync(saltRounds);
+            const hash = bcrypt.hashSync(pass, salt);
+
+            const createdAccount = await AccountModel.create({ Fname, Lname, Username, Email, pass: hash, role :"teacher" })
+            const createInstructor = await InstructorModel.create({
+                name :Username,
+                title:expertise,
+                thumbnail:DEFAULT_THUMBNAIL,
+                bio:bio,
+                totalStudents : 0,
+                totalCourses : 0,
+                totalReviews : 0,
+                rating : 0,
+                accountId:createdAccount._id})
+            res.status(201).send({ data: createdAccount, message: 'Register successful!', success: true });
+        }
+        catch (error){
+            next(error)
+        }
     }
 }
 
