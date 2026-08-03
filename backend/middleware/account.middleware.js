@@ -19,7 +19,7 @@ export const validateReg = async (req,res,next) =>{
             }
         
         const checkDuplicateEmail = await AccountModel.findOne({Email:Email})
-        if (checkDuplicateEmail) throw new Error ("email existed please try others")
+        if (checkDuplicateEmail) throw new Error ("Email existed please try others")
         next();
         }
         catch(error){
@@ -63,7 +63,7 @@ export const checkDuplicateEmail = async (req,res,next) => {
     try {
         const {email} = req.body;
         const checkDuplicateEmail = await AccountModel.findOne({Email:email})
-        if (checkDuplicateEmail) throw new Error ("email existed please try others")
+        if (checkDuplicateEmail) throw new Error ("Email existed please try others")
         res.send({ message: 'notduplicate!', success: true });
     }
     catch(error){

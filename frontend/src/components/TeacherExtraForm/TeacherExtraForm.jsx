@@ -39,49 +39,49 @@ export default function TeacherExtraForm({ onSubmit, onBack }) {
       className="teacher-form-inner"
     >
       <div className="teacher-form-heading">
-        <h1>Hồ sơ giảng viên</h1>
-        <p>Thông tin này sẽ hiển thị công khai trên trang khóa học của bạn</p>
+        <h1>Instructor Profile</h1>
+        <p>This information will be displayed publicly on your course page.</p>
       </div>
 
       <div className="teacher-form-field">
-        <label>Chuyên môn giảng dạy</label>
+        <label>Teaching Expertise</label>
         <input
           style={{ borderColor: errors.expertise ? 'red' : '' }}
           value={expertise}
           onChange={(e) => { setExpertise(e.target.value); if (e.target.value) clearError('expertise'); }}
           type="text"
-          placeholder="VD: Frontend Development, UI/UX Design..."
+          placeholder="EX: Frontend Development, UI/UX Design..."
         />
         {errors.expertise && <p className="teacher-form-error">{errors.expertise}</p>}
       </div>
 
       <div className="teacher-form-field">
-        <label>Số năm kinh nghiệm</label>
+        <label>Years of Experience</label>
         <input
           style={{ borderColor: errors.experienceYears ? 'red' : '' }}
           value={experienceYears}
           onChange={(e) => { setExperienceYears(e.target.value); if (e.target.value) clearError('experienceYears'); }}
           type="number"
           min="0"
-          placeholder="VD: 5"
+          placeholder="EX: 5"
         />
         {errors.experienceYears && <p className="teacher-form-error">{errors.experienceYears}</p>}
       </div>
 
       <div className="teacher-form-field">
-        <label>Giới thiệu bản thân</label>
+        <label>Biography / About Me</label>
         <textarea
           style={{ borderColor: errors.bio ? 'red' : '' }}
           value={bio}
           onChange={(e) => { setBio(e.target.value); if (e.target.value) clearError('bio'); }}
-          placeholder="Chia sẻ kinh nghiệm giảng dạy, thành tích nổi bật..."
+          placeholder="Share your teaching experience, outstanding achievements..."
           rows={4}
         />
         {errors.bio && <p className="teacher-form-error">{errors.bio}</p>}
       </div>
 
       <div className="teacher-form-field">
-        <label>Link portfolio / CV (không bắt buộc)</label>
+        <label>Portfolio / CV Link</label>
         <input
           value={portfolioUrl}
           onChange={(e) => setPortfolioUrl(e.target.value)}
