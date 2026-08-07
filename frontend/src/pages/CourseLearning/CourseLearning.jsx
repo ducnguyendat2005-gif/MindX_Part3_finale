@@ -325,6 +325,148 @@ function ReviewForm({ courseId, onReviewPosted }) {
     </div>
   );
 }
+function LearnerReviewsShowcase({ course, reviewStats }) {
+  const breakdown = [5, 4, 3, 2, 1].map((n) => ({
+    stars: n,
+    percent: reviewStats.ratingBreakdown[`${n}_star`] || "0%",
+  }));
+
+  const formatDate = (d) => {
+    const date = new Date(d);
+    return isNaN(date) ? "" : date.toLocaleDateString("vi-VN");
+  };
+
+  return (
+    <div className={styles.lrSection}>
+      <h2 className={styles.lrHeading}>Learner Reviews</h2>
+
+      <div className={styles.lrBody}>
+        {/* Left: rating summary */}
+        <div className={styles.lrSummary}>
+          <div className={styles.lrScoreRow}>
+            <img src={yellowstar} alt="star" className={styles.lrStarIcon} />
+            <span className={styles.lrScore}>{reviewStats.averageRating}</span>
+          </div>
+          <p className={styles.lrTotal}>
+            {reviewStats.totalReviews.toLocaleString("vi-VN")} reviews
+          </p>
+
+          {breakdown.map(({ stars, percent }) => (
+            <div key={stars} className={styles.lrBarRow}>
+              <div className={styles.lrBarStars}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <img
+                    key={i}
+                    src={i < stars ? yellowstar : greystar}
+                    alt="star"
+                    className={styles.lrBarStarIcon}
+                  />
+                ))}
+              </div>
+              <span className={styles.lrBarPercent}>{percent}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Right: individual review cards */}
+        <div className={styles.lrList}>
+          {course.reviews.map((r) => (
+            <div key={r._id} className={styles.lrCard}>
+              <img src={bigava} alt={r.name} className={styles.lrAvatar} />
+              <div className={styles.lrCardContent}>
+                <div className={styles.lrCardTop}>
+                  <span className={styles.lrName}>{r.name}</span>
+                  <span className={styles.lrRatingBadge}>
+                    <img src={yellowstar} alt="star" className={styles.lrBarStarIcon} />
+                    {r.rating}
+                  </span>
+                  <span className={styles.lrDate}>Reviewed on {formatDate(r.createdAt)}</span>
+                </div>
+                <p className={styles.lrComment}>{r.comment}</p>
+              </div>
+            </div>
+          ))}
+
+          <button className={styles.lrMoreBtn}>View more Reviews</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LearnerReviews({ course, reviewStats, onReviewPosted, showForm = true }) {
+  return (
+    <div className={styles.reviews}>
+      <p>Learner Reviews</p>
+      <div className={styles.stars}>
+        <div className={styles.starReview}>
+          <img src={yellowstar} alt="star" />
+          <p>{reviewStats.averageRating}</p>
+          <p>{reviewStats.totalReviews.toLocaleString('vi-VN')} reviews</p>
+        </div>
+        <div className={styles.star5}>
+          <img src={yellowstar} alt="star" />
+          <img src={yellowstar} alt="star" />
+          <img src={yellowstar} alt="star" />
+          <img src={yellowstar} alt="star" />
+          <img src={yellowstar} alt="star" />
+          <p>{reviewStats.ratingBreakdown["5_star"]}</p>
+        </div>
+        <div className={styles.star4}>
+          <img src={yellowstar} alt="star" />
+          <img src={yellowstar} alt="star" />
+          <img src={yellowstar} alt="star" />
+          <img src={yellowstar} alt="star" />
+          <img src={greystar} alt="star" />
+          <p>{reviewStats.ratingBreakdown["4_star"]}</p>
+        </div>
+        <div className={styles.star3}>
+          <img src={yellowstar} alt="star" />
+          <img src={yellowstar} alt="star" />
+          <img src={yellowstar} alt="star" />
+          <img src={greystar} alt="star" />
+          <img src={greystar} alt="star" />
+          <p>{reviewStats.ratingBreakdown["3_star"]}</p>
+        </div>
+        <div className={styles.star2}>
+          <img src={yellowstar} alt="star" />
+          <img src={yellowstar} alt="star" />
+          <img src={greystar} alt="star" />
+          <img src={greystar} alt="star" />
+          <img src={greystar} alt="star" />
+          <p>{reviewStats.ratingBreakdown["2_star"]}</p>
+        </div>
+        <div className={styles.star1}>
+          <img src={yellowstar} alt="star" />
+          <img src={greystar} alt="star" />
+          <img src={greystar} alt="star" />
+          <img src={greystar} alt="star" />
+          <img src={greystar} alt="star" />
+          <p>{reviewStats.ratingBreakdown["1_star"]}</p>
+        </div>
+      </div>
+      {showForm && <ReviewForm courseId={course._id} onReviewPosted={onReviewPosted} />}
+      <div className={styles.review}>
+        {course.reviews.map((i) => (
+          <div key={i._id} className={styles.reviewCard}>
+            <div className={styles.ava}>
+              <img src={bigava} alt="avatar" />
+              <p>{i.name}</p>
+            </div>
+            <div className={styles.starRating}>
+              <img src={yellowstar} alt="star" />
+              <p>{i.rating}</p>
+            </div>
+            <p>Reviewed on {new Date(i.createdAt).toLocaleDateString('vi-VN')}</p>
+            <p>{i.comment}</p>
+          </div>
+        ))}
+      </div>
+      <button id="more-reviews">View more Reviews</button>
+    </div>
+  );
+}
+
 // ==================== MAIN PAGE ====================
 export default function CourseLearning() {
   const [allCourse, setAllCourse] = useState([]);
@@ -452,77 +594,11 @@ export default function CourseLearning() {
   
               {/* Reviews Tab */}
               <div className={styles.tabSlide}>
-                <div className={styles.reviews}>
-                  <p>Learner Reviews</p>
-                  <div className={styles.stars}>
-                    <div className={styles.starReview}>
-                      <img src={yellowstar} alt="star" />
-                      <p>{reviewStats.averageRating}</p>
-                      <p>{reviewStats.totalReviews.toLocaleString('vi-VN')} reviews</p>
-                    </div>
-                    <div className={styles.star5}>
-                      <img src={yellowstar} alt="star" />
-                      <img src={yellowstar} alt="star" />
-                      <img src={yellowstar} alt="star" />
-                      <img src={yellowstar} alt="star" />
-                      <img src={yellowstar} alt="star" />
-                      <p>{reviewStats.ratingBreakdown["5_star"]}</p>
-                    </div>
-                    <div className={styles.star4}>
-                      <img src={yellowstar} alt="star" />
-                      <img src={yellowstar} alt="star" />
-                      <img src={yellowstar} alt="star" />
-                      <img src={yellowstar} alt="star" />
-                      <img src={greystar} alt="star" />
-                      <p>{reviewStats.ratingBreakdown["4_star"]}</p>
-                    </div>
-                    <div className={styles.star3}>
-                      <img src={yellowstar} alt="star" />
-                      <img src={yellowstar} alt="star" />
-                      <img src={yellowstar} alt="star" />
-                      <img src={greystar} alt="star" />
-                      <img src={greystar} alt="star" />
-                      <p>{reviewStats.ratingBreakdown["3_star"]}</p>
-                    </div>
-                    <div className={styles.star2}>
-                      <img src={yellowstar} alt="star" />
-                      <img src={yellowstar} alt="star" />
-                      <img src={greystar} alt="star" />
-                      <img src={greystar} alt="star" />
-                      <img src={greystar} alt="star" />
-                      <p>{reviewStats.ratingBreakdown["2_star"]}</p>
-                    </div>
-                    <div className={styles.star1}>
-                      <img src={yellowstar} alt="star" />
-                      <img src={greystar} alt="star" />
-                      <img src={greystar} alt="star" />
-                      <img src={greystar} alt="star" />
-                      <img src={greystar} alt="star" />
-                      <p>{reviewStats.ratingBreakdown["1_star"]}</p>
-                    </div>
-                  </div>
-                <ReviewForm courseId={course._id} onReviewPosted={handleReviewPosted} />
-                  <div className={styles.review}>
-                    {course.reviews.map((i) => (
-                      <div key={i._id} className={styles.reviewCard}>
-                        <div className={styles.ava}>
-                          <img src={bigava} alt="avatar" />
-                          <p>{i.name}</p>
-                        </div>
-                        <div className={styles.starRating}>
-                          <img src={yellowstar} alt="star" />
-                          <p>{i.rating}</p>
-                        </div>
-                         <p>Reviewed on {new Date(i.createdAt).toLocaleDateString('vi-VN')}</p>
-                        <p>
-                          {i.comment}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-  
-                  <button id="more-reviews">View more Reviews</button>
-                </div>
+                <LearnerReviews
+                  course={course}
+                  reviewStats={reviewStats}
+                  onReviewPosted={handleReviewPosted}
+                />
               </div>
   
             </div>{/* end tabTrack */}
@@ -550,7 +626,12 @@ export default function CourseLearning() {
             </div>)}
           </div>
         </div>
-        
+
+        {/* Learner Reviews — luôn hiển thị, không phụ thuộc tab */}
+        <div className={styles.reviewsStandalone}>
+          <LearnerReviewsShowcase course={course} reviewStats={reviewStats} />
+        </div>
+
       </div>
 
       

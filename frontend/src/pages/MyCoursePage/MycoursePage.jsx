@@ -99,6 +99,9 @@ export default function MyCoursesPage() {
 
   const activeFilterCount = [filterCategory, filterLevel].filter(Boolean).length;
 
+  const getTeacherAvatar = (name) =>
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Teacher')}&background=2563eb&color=ffffff&rounded=true`;
+
   if (loading) return <p style={{ padding: 24 }}>Đang tải...</p>;
   if (error) return <p style={{ padding: 24, color: 'red' }}>Lỗi: {error}</p>;
 
@@ -125,8 +128,8 @@ export default function MyCoursesPage() {
           <nav className="sidebar__nav">
             <Link to="/profile" className="sidebar__nav-item">Profile</Link>
             <a href="#" className="sidebar__nav-item sidebar__nav-item--active">My Courses</a>
-            <a href="#" className="sidebar__nav-item">Teachers</a>
-            <a href="#" className="sidebar__nav-item">Message</a>
+            <Link to="/teachers" className="sidebar__nav-item">Teachers</Link>
+            <Link to="/message" className="sidebar__nav-item">Message</Link>
             <Link to="/myreviews" className="sidebar__nav-item">My Reviews</Link>
           </nav>
         </aside>
@@ -235,12 +238,12 @@ export default function MyCoursesPage() {
               <p style={{ color: '#94a3b8', gridColumn: '1/-1' }}>No courses found.</p>
             ) : (
               displayedCourses.map((data) => (
-                <Link
-                  key={data._id || data.id}
-                  to={`/mycoursespage/${data._id || data.id}`}
-                  state={{ course: data }}
-                >
-                  <div className="course-card">
+                <div className="course-card" key={data._id || data.id}>
+                  <Link
+                    className="course-card__link"
+                    to={`/mycoursespage/${data._id || data.id}`}
+                    state={{ course: data }}
+                  >
                     <div className="course-card__thumbnail">
                       <img src={img} alt={data.title} className="course-card__image" referrerPolicy="no-referrer" />
                     </div>
@@ -265,8 +268,9 @@ export default function MyCoursesPage() {
                         <span className="course-card__reviews">({data.reviews} Ratings)</span>
                       </div>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+                  
+                </div>
               ))
             )}
           </div>

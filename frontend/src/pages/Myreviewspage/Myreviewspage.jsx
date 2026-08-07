@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Share2, Star, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import './Myreviewspage.scss';
+import './MyReviewsPage.scss';
 
 export default function MyReviewsPage() {
   const [user] = useState(() => {
@@ -61,7 +61,7 @@ export default function MyReviewsPage() {
             <Link to="/profile" className="sidebar__nav-item">Profile</Link>
             <Link to="/mycoursespage" className="sidebar__nav-item">My Courses</Link>
             <a href="#" className="sidebar__nav-item">Teachers</a>
-            <a href="#" className="sidebar__nav-item">Message</a>
+            <Link to="/message" className="sidebar__nav-item">Message</Link>
             <Link to="/myreviews" className="sidebar__nav-item sidebar__nav-item--active">My Reviews</Link>
           </nav>
         </aside>

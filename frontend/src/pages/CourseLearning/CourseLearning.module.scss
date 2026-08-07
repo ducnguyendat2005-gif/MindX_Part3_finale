@@ -1044,7 +1044,8 @@
     color: #f8fafc;
   }
 
-  .courses {
+  .courses,
+  .reviewsStandalone {
     background-color: #0b1220;
   }
 
@@ -1157,6 +1158,92 @@
       &:disabled {
         background: #475569;
       }
+    }
+  }
+
+  /* ---------- Learner Reviews ---------- */
+  .reviews > p {
+    color: #f8fafc;
+  }
+
+  .starReview > p:nth-of-type(1) {
+    color: #f8fafc;
+  }
+
+  .starReview > p:nth-of-type(2),
+  .star5 > p,
+  .star4 > p,
+  .star3 > p,
+  .star2 > p,
+  .star1 > p {
+    color: #94a3b8;
+  }
+
+  .reviewCard {
+    background: #0f172a;
+    border-color: #334155;
+
+    > .ava > p {
+      color: #f8fafc;
+    }
+
+    > .starRating > p {
+      color: #f8fafc;
+    }
+
+    > p:nth-of-type(1) {
+      color: #94a3b8;
+    }
+
+    > p:nth-of-type(2) {
+      color: #cbd5e1;
+    }
+  }
+
+  .moreReviews {
+    background: #0f172a;
+    color: #f8fafc;
+    border-color: #334155;
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+  }
+
+  /* ---------- Learner Reviews Showcase (standalone section) ---------- */
+  .lrHeading,
+  .lrScore,
+  .lrName,
+  .lrRatingBadge {
+    color: #f8fafc;
+  }
+
+  .lrTotal,
+  .lrBarPercent,
+  .lrDate {
+    color: #94a3b8;
+  }
+
+  .lrComment {
+    color: #cbd5e1;
+  }
+
+  .lrCard {
+    background: #0f172a;
+    border-color: #334155;
+  }
+
+  .lrMoreBtn {
+    background: #0f172a;
+    color: #f8fafc;
+    border-color: #334155;
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border-color: rgba(59, 130, 246, 0.4);
     }
   }
 }
@@ -1288,6 +1375,164 @@
 
   > h2 {
     margin-bottom: 30px;
+  }
+}
+
+.reviewsStandalone {
+  padding: 0 77px 94px 94px;
+  background-color: #f8fafc;
+}
+
+/* ---------- Learner Reviews Showcase (standalone section) ---------- */
+.lrSection {
+  width: 100%;
+}
+
+.lrHeading {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 20px;
+}
+
+.lrBody {
+  display: flex;
+  align-items: flex-start;
+  gap: 48px;
+}
+
+.lrSummary {
+  flex: 0 0 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lrScoreRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lrStarIcon {
+  width: 20px;
+  height: 19px;
+}
+
+.lrScore {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.lrTotal {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 10px;
+}
+
+.lrBarRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lrBarStars {
+  display: flex;
+  gap: 3px;
+}
+
+.lrBarStarIcon {
+  width: 15px;
+  height: 14px;
+}
+
+.lrBarPercent {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.lrList {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lrCard {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.lrAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.lrCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.lrCardTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lrName {
+  font-weight: 700;
+  font-size: 15px;
+  color: #1a1a2e;
+}
+
+.lrRatingBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.lrDate {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.lrComment {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #475569;
+  margin: 0;
+}
+
+.lrMoreBtn {
+  align-self: flex-start;
+  padding: 10px 24px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--white);
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--blue-light);
+    color: var(--blue);
+    border-color: var(--blue-light);
   }
 }
 
