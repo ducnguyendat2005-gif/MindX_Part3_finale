@@ -1,0 +1,566 @@
+// ============================================================
+// TeachersPage.scss
+// ============================================================
+
+$color-white: #ffffff;
+$color-gray-50: #f9fafb;
+$color-gray-100: #f3f4f6;
+$color-gray-200: #e5e7eb;
+$color-gray-400: #9ca3af;
+$color-gray-500: #6b7280;
+$color-gray-600: #4b5563;
+$color-gray-700: #374151;
+$color-gray-900: #111827;
+$color-slate-900: #0f172a;
+$color-blue-600: #2563eb;
+$color-blue-700: #1d4ed8;
+
+$radius-sm: 0.5rem;
+$radius-md: 0.75rem;
+$radius-lg: 1rem;
+$radius-xl: 1.5rem;
+
+$transition-default: 200ms ease;
+
+.teachers-page {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+
+  @media (min-width: 640px) {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+
+    @media (min-width: 1024px) {
+      flex-direction: row;
+    }
+  }
+
+  &__sidebar {
+    width: 100%;
+
+    @media (min-width: 1024px) {
+      width: 16rem;
+      flex-shrink: 0;
+    }
+  }
+
+  &__main {
+    flex: 1;
+  }
+}
+
+// ----- Sidebar (dùng chung style) -----
+.sidebar {
+  &__profile-card {
+    background-color: $color-gray-50;
+    border-radius: $radius-xl;
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  &__avatar-wrapper {
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+
+  &__avatar {
+    width: 8rem;
+    height: 8rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid $color-white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  &__name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $color-gray-900;
+    margin-bottom: 1rem;
+  }
+
+  &__share-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid $color-gray-200;
+    border-radius: $radius-sm;
+    background: transparent;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $color-gray-700;
+    cursor: pointer;
+    transition: background-color $transition-default;
+
+    &:hover {
+      background-color: $color-white;
+    }
+  }
+
+  &__share-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &__nav {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__nav-item {
+    display: block;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $color-gray-600;
+    border-radius: $radius-sm;
+    text-decoration: none;
+    transition: background-color $transition-default;
+
+    &:hover {
+      background-color: $color-gray-50;
+    }
+
+    &--active {
+      font-weight: 700;
+      color: $color-white;
+      background-color: $color-slate-900;
+
+      &:hover {
+        background-color: $color-slate-900;
+      }
+    }
+  }
+}
+
+// ----- Header (search / sort / filter) -----
+.teachers-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $color-gray-900;
+  }
+
+  &__count {
+    font-weight: 400;
+    font-size: 1.125rem;
+    color: $color-gray-400;
+  }
+
+  &__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+}
+
+.search-box {
+  position: relative;
+
+  &__input {
+    padding: 0.5rem 2.25rem 0.5rem 0.875rem;
+    border: 1px solid $color-gray-200;
+    border-radius: $radius-sm;
+    font-size: 0.875rem;
+    color: $color-gray-900;
+    background-color: $color-white;
+    outline: none;
+    width: 12rem;
+
+    &::placeholder {
+      color: $color-gray-400;
+    }
+
+    &:focus {
+      border-color: $color-blue-600;
+    }
+  }
+
+  &__icon {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    color: $color-gray-400;
+    pointer-events: none;
+  }
+}
+
+.sort-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &__label {
+    font-size: 0.875rem;
+    color: $color-gray-600;
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid $color-gray-200;
+    border-radius: $radius-sm;
+    background: $color-white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $color-gray-700;
+    cursor: pointer;
+  }
+
+  &__icon {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid $color-gray-200;
+  border-radius: $radius-sm;
+  background: $color-white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-gray-700;
+  cursor: pointer;
+
+  &__icon {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: $color-white;
+  border: 1px solid $color-gray-200;
+  border-radius: $radius-sm;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  padding: 6px;
+  z-index: 20;
+
+  &__item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 10px;
+    border: none;
+    background: none;
+    border-radius: 6px;
+    font-size: 13px;
+    color: $color-gray-700;
+    cursor: pointer;
+
+    &:hover {
+      background: $color-gray-50;
+    }
+
+    &--active {
+      font-weight: 600;
+      color: $color-blue-600;
+    }
+  }
+
+  &__section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-gray-400;
+    padding: 6px 10px 2px;
+  }
+}
+
+// ----- Teacher Grid -----
+.teacher-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (min-width: 1280px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.teacher-card {
+  background-color: $color-white;
+  border: 1px solid $color-gray-100;
+  border-radius: $radius-md;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  &__thumbnail {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__body {
+    padding: 1rem;
+    text-align: center;
+  }
+
+  &__name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: $color-gray-900;
+    margin-bottom: 0.25rem;
+  }
+
+  &__title {
+    font-size: 0.8125rem;
+    color: $color-gray-500;
+    margin-bottom: 0.875rem;
+  }
+
+  &__btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border: none;
+    border-radius: $radius-sm;
+    background-color: $color-blue-600;
+    color: $color-white;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color $transition-default;
+
+    &:hover {
+      background-color: $color-blue-700;
+    }
+  }
+}
+
+// ----- Pagination -----
+.pagination {
+  margin-top: 2.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+
+  &__arrow {
+    padding: 0.5rem;
+    border: 1px solid $color-gray-200;
+    border-radius: $radius-sm;
+    background: transparent;
+    color: $color-gray-400;
+    cursor: pointer;
+    transition: background-color $transition-default;
+
+    &:hover:not(:disabled) {
+      background-color: $color-gray-50;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+
+  &__arrow-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &__page {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius-sm;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: transparent;
+    border: 1px solid $color-gray-200;
+    color: $color-gray-700;
+    cursor: pointer;
+    transition: background-color $transition-default;
+
+    &:hover {
+      background-color: $color-gray-50;
+    }
+
+    &--active {
+      background-color: $color-gray-50;
+      color: $color-gray-400;
+      border-color: transparent;
+      cursor: default;
+
+      &:hover {
+        background-color: $color-gray-50;
+      }
+    }
+  }
+}
+
+// ============================================================
+// DARK THEME
+// ============================================================
+[data-theme="dark"] {
+  .sidebar__profile-card {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+  }
+
+  .sidebar__avatar {
+    border-color: #0f172a;
+  }
+
+  .sidebar__name,
+  .sidebar__share-btn,
+  .sidebar__nav-item,
+  .sidebar__nav-item--active {
+    color: #f8fafc;
+  }
+
+  .sidebar__share-btn {
+    background: transparent;
+    border-color: #334155;
+  }
+
+  .sidebar__nav-item {
+    color: #cbd5e1;
+
+    &:hover {
+      background-color: #111827;
+    }
+  }
+
+  .sidebar__nav-item--active {
+    color: #f8fafc;
+    background-color: #111827;
+  }
+
+  .teachers-header__title {
+    color: #f8fafc;
+  }
+
+  .teachers-header__count {
+    color: #64748b;
+  }
+
+  .search-box__input,
+  .sort-control__btn,
+  .filter-btn {
+    background-color: #111827;
+    border-color: #334155;
+    color: #f8fafc;
+  }
+
+  .search-box__input::placeholder {
+    color: #64748b;
+  }
+
+  .search-box__icon {
+    color: #64748b;
+  }
+
+  .dropdown-menu {
+    background: #111827;
+    border-color: #334155;
+
+    &__item {
+      color: #f8fafc;
+
+      &:hover {
+        background: #1e293b;
+      }
+
+      &--active {
+        color: #60a5fa;
+      }
+    }
+
+    &__section-title {
+      color: #64748b;
+    }
+  }
+
+  .teacher-card {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+
+    &__name {
+      color: #f8fafc;
+    }
+
+    &__title {
+      color: #94a3b8;
+    }
+  }
+
+  .pagination {
+    &__arrow,
+    &__page {
+      border-color: #334155;
+      color: #cbd5e1;
+
+      &:hover:not(:disabled) {
+        background-color: #111827;
+      }
+    }
+
+    &__page--active {
+      background-color: #111827;
+      color: #64748b;
+
+      &:hover {
+        background-color: #111827;
+      }
+    }
+  }
+}

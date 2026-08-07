@@ -17,6 +17,8 @@ $color-gray-900: #111827;
 $color-slate-900: #0f172a;
 $color-orange-500: #f97316;
 $color-blue-500: #3b82f6;
+$color-blue-600: #2563eb;
+$color-blue-700: #1d4ed8;
 
 $radius-sm: 0.5rem;    // 8px
 $radius-md: 0.75rem;   // 12px
@@ -316,6 +318,24 @@ $transition-scale: 300ms ease;
   &__reviews {
     font-size: 0.625rem;
     color: $color-gray-400;
+  }
+
+  &__message-btn {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: $radius-sm;
+    background-color: $color-blue-600;
+    color: $color-white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color $transition-default;
+  
+    &:hover {
+      background-color: $color-blue-700;
+    }
   }
 }
 
