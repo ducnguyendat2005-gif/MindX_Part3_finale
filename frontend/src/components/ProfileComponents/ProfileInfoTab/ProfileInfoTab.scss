@@ -1,0 +1,119 @@
+// ============================================================
+// ProfileInfoTab.scss — stats row + personal info grid
+// ============================================================
+@use '../../../pages/Profilepage/variables.scss' as *;
+
+.profile-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.profile-card__edit-link {
+  background: none;
+  border: none;
+  color: $color-blue-500;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.profile-card--stats {
+  padding: 1.5rem;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0;
+
+  &__num {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: $color-slate-900;
+    line-height: 1;
+  }
+
+  &__label {
+    font-size: 0.75rem;
+    color: $color-gray-500;
+    margin-top: 0.25rem;
+  }
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.info-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  &__label {
+    font-size: 0.7rem;
+    color: $color-gray-500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+
+  &__value {
+    font-size: 0.875rem;
+    color: $color-gray-900;
+    background: $color-gray-50;
+    border: 1px solid $color-gray-200;
+    border-radius: $radius-sm;
+    padding: 0.55rem 0.85rem;
+  }
+}
+
+// ============================================================
+// DARK THEME
+// ============================================================
+[data-theme="dark"] {
+  .profile-card__edit-link {
+    color: #60a5fa;
+  }
+
+  .stat-item__num {
+    color: #f8fafc;
+  }
+
+  .stat-item__label {
+    color: #94a3b8;
+  }
+
+  .info-field__label {
+    color: #94a3b8;
+  }
+
+  .info-field__value {
+    color: #f8fafc;
+    background: #111827;
+    border-color: #334155;
+  }
+}

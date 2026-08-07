@@ -1,8 +1,14 @@
 import jwt from 'jsonwebtoken'
 export const retakeToken = (req,res,next) =>{
     try{
-        const RTheader = req.headers.rtauthorization;
-        const decoded = jwt.verify(RTheader, process.env.JWT_SECRET_REFRESH);
+        const authHeader = req.headers.authorization; // "Bearer xxx"
+        const RTtoken = authHeader?.split(' ')[1];
+
+        if (!RTtoken) {
+            return res.status(401).json({ message: 'Thiếu refresh token!', code: 'TOKEN_MISSING' });
+        }
+
+        const decoded = jwt.verify(RTtoken, process.env.JWT_SECRET_REFRESH);
         const { iat, exp, ...userData } = decoded;
         req.user = decoded;
         const ATtoken = jwt.sign({ ...userData, type: 'AT' }, process.env.JWT_SECRET_ACCESS,{ expiresIn: '2h' });

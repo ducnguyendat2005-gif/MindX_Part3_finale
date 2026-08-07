@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import "./App.css";
 import Header from "./components/Header/Header";
@@ -13,8 +13,6 @@ import CartPage from './pages/CartPage/CartPage.jsx'
 import Checkout from './pages/CheckoutPage/Checkout.jsx'
 import BuyNPage from './pages/BuyNowPage/BuyNPage.jsx'
 import MyCoursesPage from "./pages/MyCoursePage/MycoursePage.jsx";
-import TeachersPage from './pages/Teacherspage/Teacherspage.jsx';
-import MessagePage from './pages/Messagepage/Mesagepage.jsx';
 import AIWidget from './components/AIWidget/AIWidget';
 import ProfilePage from './pages/Profilepage/Profilepage.jsx';
 import MyProfilePage from './pages/MyProfilePage/MyProfilePage.jsx'
@@ -22,8 +20,29 @@ import MyReviewsPage from './pages/Myreviewspage/Myreviewspage.jsx'
 import AdminPage from './pages/Admin/Admin.jsx'
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { Routes, Route } from "react-router-dom";
+import { API, tokenStorage, fetchWithAuth } from "./config/api.js";
 
 function App() {
+  // Verify session 1 lần khi app khởi động (F5, mở lại tab...)
+  useEffect(() => {
+    const verifySession = async () => {
+      const AT = tokenStorage.getAT();
+      if (!AT) return; // chưa từng đăng nhập thì thôi, khỏi gọi API
+
+      try {
+        const res = await fetchWithAuth(API.myprofile);
+        if (!res.ok) {
+          tokenStorage.clear();
+          window.dispatchEvent(new Event('userUpdated'));
+        }
+      } catch (err) {
+        // lỗi mạng, không chắc token hỏng hay không -> không clear vội
+        console.error('Verify session failed:', err);
+      }
+    };
+    verifySession();
+  }, []);
+
   return (
     <>
       <Header></Header>
@@ -38,10 +57,6 @@ function App() {
         <Route path="/home/cartpage/checkout" element={<Checkout/>}/>
         <Route path='/home/course-page/:id/buynow' element={<BuyNPage/>}></Route>
 
-        <Route
-          path='/mycoursespage'
-          element={<ProtectedRoute><MyCoursesPage /></ProtectedRoute>}
-        />
         <Route
           path="/mycoursespage/:id"
           element={<ProtectedRoute><CourseLearning /></ProtectedRoute>}
