@@ -61,7 +61,7 @@ export default function ProfilePage() {
             <Link to="/profile" className="sidebar__nav-item sidebar__nav-item--active">Profile</Link>
             <Link to="/mycoursespage" className="sidebar__nav-item">My Courses</Link>
             <a href="#" className="sidebar__nav-item">Teachers</a>
-            <a href="#" className="sidebar__nav-item">Message</a>
+            <Link to="/message" className="sidebar__nav-item">Message</Link>
             <Link to="/myreviews" className="sidebar__nav-item">My Reviews</Link>
           </nav>
         </aside>
