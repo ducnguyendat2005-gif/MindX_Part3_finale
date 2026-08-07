@@ -6,6 +6,7 @@ import CourseModel from '../model/courses.js'
 import InstructorModel from '../model/instructor.js'
 import ReviewModel from '../model/review.js'
 import CommentModel from '../model/comment.js';
+import { uploadBufferToCloudinary } from '../src/utils/uploadToCloudinary.js';
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -128,10 +129,18 @@ const accountController = {
                 expertise,
                 experienceYears,
                 bio,
-                portfolioUrl} = req.body;
+                } = req.body;
             const DEFAULT_THUMBNAIL = "https://res.cloudinary.com/demo/image/upload/default-avatar.png"; // ← đặt link ảnh mặc định của bạn ở đây
 
-            
+            let portfolioUrl = [];
+            if (req.files && req.files.length > 0) {
+                const uploadPromises = req.files.map(file =>
+                    uploadBufferToCloudinary(file.buffer, file.mimetype)
+                );
+                const results = await Promise.all(uploadPromises);
+                portfolioUrl = results.map(r => r.secure_url);
+            }
+
             const saltRounds = 10;
 
             const salt = bcrypt.genSaltSync(saltRounds);
@@ -143,12 +152,13 @@ const accountController = {
                 title:expertise,
                 thumbnail:DEFAULT_THUMBNAIL,
                 bio:bio,
+                portfolioUrl: portfolioUrl,  
                 totalStudents : 0,
                 totalCourses : 0,
                 totalReviews : 0,
                 rating : 0,
                 accountId:createdAccount._id})
-            res.status(201).send({ data: createdAccount, message: 'Register successful!', success: true });
+            res.status(201).send({ data: createInstructor, message: 'Register successful!', success: true });
         }
         catch (error){
             next(error)

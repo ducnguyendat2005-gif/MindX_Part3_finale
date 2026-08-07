@@ -6,6 +6,7 @@ import courseController from './controller/course.controller.js';
 import commentController from './controller/comment.controller.js';
 import accountController from './controller/accounts.controller.js'
 import teacherController from './controller/teacher.controller.js'
+import { uploadPortfolio } from './src/middleware/upload.middleware.js';
 import cors from 'cors'
 import { retakeToken } from './middleware/retakeToken.middleware.js';
 
@@ -30,9 +31,14 @@ app.get('/mainComment',commentController.getTopComments)
 
 app.get('/top-teacher',teacherController.getTopTeacher)
 
-app.post('/register',validateReg,accountController.registerCustomer)
+app.post(
+  '/register/teacher',
+  uploadPortfolio,   // ← thêm dòng này, đứng TRƯỚC validateReg
+  validateReg,
+  accountController.teacherRegister
+);
 
-app.post('/register/teacher',validateReg,accountController.teacherRegister)
+app.post('/register',validateReg,accountController.registerCustomer)
 
 app.post('/account/check-duplicate',checkDuplicateEmail)
 
@@ -42,11 +48,16 @@ app.get('/account/mycourses',verifyToken,accountController.getMycourses)
 
 app.get('/account/myprofile',verifyToken,accountController.getAllUserInfo)
 
+
 app.get('/admin',verifyToken,isAdmin,accountController.getAllAdminInfo)
 
 app.post('/account/checkout',verifyToken,courseController.postCheckout)
 
 app.post('/courses/:id/reviews', verifyToken, courseController.postReview)
+
+app.get('/account/reviews',verifyToken,courseController.getReviews)
+
+app.put('/account/review/:id',verifyToken,courseController.putReviews)
 
 app.post('/account/refresh-token',retakeToken)
 

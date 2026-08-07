@@ -7,7 +7,7 @@ import cartIcon from '../../assets/Frame 427318762.png';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { Link } from "react-router-dom";
-import { API } from '../../config/api.js';
+import { API, tokenStorage } from '../../config/api.js';
 import ThemeToggleButton from './ThemeToggleButton';
 
 function Header() {
@@ -96,10 +96,11 @@ function Header() {
     setShowSearch(true);
   }, [query, products]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('loggedInUser');
+    const handleLogout = () => {
+    tokenStorage.clear();
     setUser(null);
     setProfileOpen(false);
+    window.dispatchEvent(new Event('userUpdated'));
     navigate('/home');
   };
 
@@ -158,7 +159,7 @@ function Header() {
               {!user && <button onClick={() => navigate('/signup')} className={styles.dropdownItem}>Sign Up</button>}
               <button onClick={() => navigate('/course-page')} className={styles.dropdownItem}>All Courses</button>
               {user && <button onClick={() => navigate('/home/cartpage')} className={styles.dropdownItem}>My Cart</button>}
-              {user && <button onClick={() => navigate('/mycoursespage')} className={styles.dropdownItem}>My Course</button>}
+              {user && <button onClick={() => { navigate('/profile', { state: { tab: 'courses' } }); setOpen(false); }} className={styles.dropdownItem}>My Course</button>}
             </div>
           )}
         </div>
@@ -278,10 +279,10 @@ function Header() {
                   </div>
                 </div>
                 <div className={styles.profileDivider} />
-                <button className={styles.profileItem} onClick={() => { navigate('/myprofile'); setProfileOpen(false); }}>
+                <button className={styles.profileItem} onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
                   👤 My Profile
                 </button>
-                <button className={styles.profileItem} onClick={() => { navigate('/mycoursespage'); setProfileOpen(false); }}>
+                <button className={styles.profileItem} onClick={() => { navigate('/profile', { state: { tab: 'courses' } }); setProfileOpen(false); }}>
                   📚 My Courses
                 </button>
                 <button className={styles.profileItem} onClick={() => { navigate('/home/cartpage'); setProfileOpen(false); }}>

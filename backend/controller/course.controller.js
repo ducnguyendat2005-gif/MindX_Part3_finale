@@ -75,6 +75,27 @@ const courseController = {
         catch(error){
             next(error)
         }
+    },
+    getReviews:async (req,res,next) => {
+        try {
+            const user = req.user ;
+            const reviews = await ReviewModel.find({accountId:user._id}).populate('courseId','title -_id')
+            res.status(201).json({data:reviews,message: 'Review retrieved', success: true })
+        }catch(error){
+            next(error)
+        }
+    },
+    putReviews:async (req,res,next) => {
+        try{
+            const user = req.user;
+            const { id } = req.params;
+
+            res.status(201).json({data:id,message: 'Review retrieved', success: true })
+        }
+        catch(error){
+            next(error)
+        }
     }
+    
 }
 export default courseController

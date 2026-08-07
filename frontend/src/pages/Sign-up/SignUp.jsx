@@ -18,20 +18,49 @@ export default function SignUpPage() {
 
   const handleFinalSubmit = async (extraData) => {
     const fullData = { ...formData, ...extraData };
-    
-    const endpoint = fullData.role === 'teacher' ? API.registerTeacher : API.register;
+    const isTeacher = fullData.role === 'teacher';
+    const endpoint = isTeacher ? API.registerTeacher : API.register;
 
     try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(fullData),
-      });
+      let res;
+
+      if (isTeacher) {
+        // ── Teacher: dùng FormData vì có kèm file ──
+        const fd = new FormData();
+        fd.append('Fname', fullData.Fname);
+        fd.append('Lname', fullData.Lname);
+        fd.append('Username', fullData.Username);
+        fd.append('Email', fullData.Email);
+        fd.append('pass', fullData.pass);
+        fd.append('expertise', fullData.expertise);
+        fd.append('experienceYears', fullData.experienceYears);
+        fd.append('bio', fullData.bio);
+
+        // portfolioFiles là mảng File[] từ TeacherExtraForm
+        if (fullData.portfolioFiles && fullData.portfolioFiles.length > 0) {
+          fullData.portfolioFiles.forEach((file) => {
+            fd.append('portfolioFiles', file); // key phải khớp multer .array('portfolioFiles', 3)
+          });
+        }
+
+        res = await fetch(endpoint, {
+          method: 'POST',
+          body: fd, // KHÔNG set Content-Type, browser tự set kèm boundary
+        });
+      } else {
+        // ── Student: giữ nguyên JSON như cũ ──
+        res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fullData),
+        });
+      }
+
       const result = await res.json();
 
       if (!res.ok) {
         setSubmitError(result.message || 'Đăng ký thất bại');
-        setStep(1); // quay lại đầu nếu backend báo lỗi (VD: trùng email)
+        setStep(1);
         return;
       }
 
@@ -70,9 +99,9 @@ export default function SignUpPage() {
               key="role"
               onSelect={(role) => {
                 updateData({ role });
-                setStep(3); // ← đổi từ handleFinalSubmit({ role }) thành dòng này
+                setStep(3);
               }}
-  />
+            />
           )}
           {step === 3 && (
             <ExtraForm

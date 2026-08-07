@@ -13,6 +13,7 @@ const instructorSchema = new mongoose.Schema({
     totalCourses: Number,
     totalReviews: Number,
     thumbnail: String,
+    portfolioUrl: [String],  
 });
 
 const InstructorModel = mongoose.model('Instructors', instructorSchema);

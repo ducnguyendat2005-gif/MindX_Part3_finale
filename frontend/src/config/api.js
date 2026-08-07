@@ -74,7 +74,7 @@ export const fetchWithAuth = async (url, options = {}) => {
 
       const refreshRes = await fetch(API.refreshToken, {
         method: 'POST',
-        headers: { rtauthorization: RTtoken },
+        headers: { Authorization: `Bearer ${RTtoken}` },
       });
 
       if (!refreshRes.ok) {

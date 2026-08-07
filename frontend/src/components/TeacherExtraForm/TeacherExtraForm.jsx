@@ -8,11 +8,34 @@ export default function TeacherExtraForm({ onSubmit, onBack }) {
   const [expertise, setExpertise] = useState('');
   const [experienceYears, setExperienceYears] = useState('');
   const [bio, setBio] = useState('');
-  const [portfolioUrl, setPortfolioUrl] = useState('');
+  const [portfolioFiles, setPortfolioFiles] = useState([]); // ← đổi từ portfolioUrl (string) sang mảng File
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
   const clearError = (field) => setErrors((prev) => ({ ...prev, [field]: false }));
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+
+    if (files.length > 3) {
+      setErrors((prev) => ({ ...prev, portfolioFiles: 'Can only choose 3 files' }));
+      return;
+    }
+
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    const invalid = files.find((f) => !allowedTypes.includes(f.type));
+    if (invalid) {
+      setErrors((prev) => ({ ...prev, portfolioFiles: 'Accept only PDF, JPG or PNG' }));
+      return;
+    }
+
+    clearError('portfolioFiles');
+    setPortfolioFiles(files);
+  };
+
+  const removeFile = (index) => {
+    setPortfolioFiles((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async () => {
     const newErrors = {};
@@ -26,7 +49,7 @@ export default function TeacherExtraForm({ onSubmit, onBack }) {
     }
 
     setSubmitting(true);
-    await onSubmit({ expertise, experienceYears: Number(experienceYears), bio, portfolioUrl });
+    await onSubmit({ expertise, experienceYears: Number(experienceYears), bio, portfolioFiles });
     setSubmitting(false);
   };
 
@@ -81,13 +104,34 @@ export default function TeacherExtraForm({ onSubmit, onBack }) {
       </div>
 
       <div className="teacher-form-field">
-        <label>Portfolio / CV Link</label>
-        <input
-          value={portfolioUrl}
-          onChange={(e) => setPortfolioUrl(e.target.value)}
-          type="url"
-          placeholder="https://..."
-        />
+        <label>Portfolio / CV / Certificate (maximum 3 files, PDFs or pictures)</label>
+
+        <label className="custom-file-btn">
+          Choose Files
+          <input
+            type="file"
+            multiple
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
+        </label>
+        <span className="file-count-text">
+          {portfolioFiles.length > 0 ? `${portfolioFiles.length} file(s) selected` : 'No file chosen'}
+        </span>
+
+        {errors.portfolioFiles && <p className="teacher-form-error">{errors.portfolioFiles}</p>}
+
+        {portfolioFiles.length > 0 && (
+          <ul className="teacher-form-filelist">
+            {portfolioFiles.map((file, idx) => (
+              <li key={idx}>
+                <span className="file-name">{file.name}</span>
+                <button type="button" className="file-remove-btn" onClick={() => removeFile(idx)}>✕</button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="extra-form-actions">
