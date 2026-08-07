@@ -12,11 +12,12 @@ import CourseLearning from './pages/CourseLearning/CourseLearning.jsx'
 import CartPage from './pages/CartPage/CartPage.jsx'
 import Checkout from './pages/CheckoutPage/Checkout.jsx'
 import BuyNPage from './pages/BuyNowPage/BuyNPage.jsx'
-import MyCoursesPage from "./pages/MyCoursePage/MycoursePage.jsx";
 import AIWidget from './components/AIWidget/AIWidget';
 import ProfilePage from './pages/Profilepage/Profilepage.jsx';
 import MyProfilePage from './pages/MyProfilePage/MyProfilePage.jsx'
 import MyReviewsPage from './pages/Myreviewspage/Myreviewspage.jsx'
+import TeachersPage from './pages/Teacherspage/Teacherspage.jsx'
+import MessagePage from './pages/Messagepage/Mesagepage.jsx'
 import AdminPage from './pages/Admin/Admin.jsx'
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { Routes, Route } from "react-router-dom";
