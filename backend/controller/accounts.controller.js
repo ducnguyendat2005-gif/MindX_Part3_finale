@@ -34,7 +34,7 @@ const accountController = {
             const foundAccount = await AccountModel.findOne({ Email: email }).select("Email role _id")
             const userData = foundAccount.toObject();
 
-            const ATtoken = jwt.sign({ ...userData, type: 'AT' }, process.env.JWT_SECRET_ACCESS, { expiresIn: '1h' });// 👈 thêm type AT
+            const ATtoken = jwt.sign({ ...userData, type: 'AT' }, process.env.JWT_SECRET_ACCESS, { expiresIn: '2d' });// 👈 thêm type AT
             const RTtoken = jwt.sign({ ...userData, type: 'RT' }, process.env.JWT_SECRET_REFRESH, { expiresIn: '7d' });  // 👈 thêm type RT // ⚠️ '1w' không hợp lệ, phải dùng '7d');
 
             res.status(200).json({ data: { ATtoken, RTtoken }, message: 'Login successful!', success: true });

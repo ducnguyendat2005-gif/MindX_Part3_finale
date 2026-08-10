@@ -87,32 +87,34 @@ export default function SignUpPage() {
       </motion.div>
 
       <div className="signup-form-panel">
-        <AnimatePresence mode="wait">
-          {step === 1 && (
-            <BasicInfoForm
-              key="basic"
-              onNext={(data) => { updateData(data); setStep(2); }}
-            />
-          )}
-          {step === 2 && (
-            <RoleSelect
-              key="role"
-              onSelect={(role) => {
-                updateData({ role });
-                setStep(3);
-              }}
-            />
-          )}
-          {step === 3 && (
-            <ExtraForm
-              key="extra"
-              role={formData.role}
-              onBack={() => setStep(2)}
-              onSubmit={(extraData) => handleFinalSubmit(extraData)}
-            />
-          )}
-        </AnimatePresence>
-        {submitError && <p style={{ color: 'red', textAlign: 'center' }}>{submitError}</p>}
+        <div className="signup-form-inner">
+          <AnimatePresence mode="wait">
+            {step === 1 && (
+              <BasicInfoForm
+                key="basic"
+                onNext={(data) => { updateData(data); setStep(2); }}
+              />
+            )}
+            {step === 2 && (
+              <RoleSelect
+                key="role"
+                onSelect={(role) => {
+                  updateData({ role });
+                  setStep(3);
+                }}
+              />
+            )}
+            {step === 3 && (
+              <ExtraForm
+                key="extra"
+                role={formData.role}
+                onBack={() => setStep(2)}
+                onSubmit={(extraData) => handleFinalSubmit(extraData)}
+              />
+            )}
+          </AnimatePresence>
+          {submitError && <p className="signup-error">{submitError}</p>}
+        </div>
       </div>
     </div>
   );

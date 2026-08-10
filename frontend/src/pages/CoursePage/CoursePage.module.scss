@@ -201,10 +201,37 @@ $tablet: 768px;
   }
 
   input[type='checkbox'] {
+    appearance: none;
+    -webkit-appearance: none;
     width: 18px;
     height: 18px;
+    border: 1.5px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-bg); // đồng bộ nền dark
     cursor: pointer;
-    accent-color: $primary-color;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: $primary-color;
+    }
+
+    &:checked {
+      background-color: $primary-color;
+      border-color: $primary-color;
+
+      &::after {
+        content: '';
+        width: 5px;
+        height: 9px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg) translate(-1px, -1px);
+      }
+    }
   }
 
   label {

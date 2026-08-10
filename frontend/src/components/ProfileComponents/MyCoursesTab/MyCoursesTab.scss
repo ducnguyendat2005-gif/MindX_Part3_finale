@@ -32,7 +32,6 @@ $transition-scale: 300ms ease;
 .my-courses-tab {
   max-width: 80rem; // max-w-7xl
   margin: 0 auto;
-  padding: 3rem 1rem;
 
   @media (min-width: 640px) {
     padding-left: 1.5rem;
@@ -55,11 +54,14 @@ $transition-scale: 300ms ease;
   }
 }
 
-
-
 [data-theme="dark"] {
-
-
+  .courses-header {
+    &__title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: $color-white;
+    }
+  }
   .search-box__input {
     background-color: #0f172a;
     color: #f8fafc;
@@ -97,7 +99,6 @@ $transition-scale: 300ms ease;
   }
 }
 
-
 // ----- Courses Header -----
 .courses-header {
   display: flex;
@@ -114,7 +115,7 @@ $transition-scale: 300ms ease;
   &__title {
     font-size: 1.5rem;
     font-weight: 700;
-    color: $color-gray-900;
+    color: $color-slate-900;
   }
 
   &__count {

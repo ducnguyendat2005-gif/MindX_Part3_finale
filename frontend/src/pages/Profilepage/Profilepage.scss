@@ -44,10 +44,8 @@
   }
 
   &__main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+    width: 100%;
+    min-width: 0;
   }
 
   &__loading {
@@ -102,7 +100,7 @@
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  border: 1px solid transparent;
+  border: 1px solid #f3f4f6;
   transition: background-color $transition-default, opacity $transition-default;
 
   &--primary {
@@ -129,6 +127,22 @@
       opacity: 0.9;
     }
   }
+}
+
+.profile-edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "INF INF"
+    "AVA PASS";
+  gap: 1.5rem;
+}
+
+.profile-view-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 // ============================================================

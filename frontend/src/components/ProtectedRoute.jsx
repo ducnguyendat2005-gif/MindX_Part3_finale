@@ -1,17 +1,25 @@
-// src/components/ProtectedRoute/ProtectedRoute.jsx
+// src/components/ProtectedRoute.jsx
 import { Navigate, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { tokenStorage } from '../config/api.js';
+import { useAuth } from '../context/AuthContext.jsx';
 
 export default function ProtectedRoute({ children, requiredRole }) {
   const location = useLocation();
-  const ATtoken = tokenStorage.getAT();
+  const { isLoading, isAuthenticated } = useAuth();
 
-  // 1. Không có token
-  if (!ATtoken) {
+  // Đang trong lúc AuthContext verify/refresh session lúc app khởi động
+  // -> chưa vội kết luận gì, tránh redirect nhầm trong lúc RT còn đang được dùng để refresh AT
+  if (isLoading) {
+    return <div className="protected-route-loading">Đang tải...</div>;
+  }
+
+  if (!isAuthenticated) {
     return <Navigate to="/signin" state={{ from: location }} replace />;
   }
 
+  // Lúc này AT chắc chắn hợp lệ (đã được verify/refresh xong ở AuthContext) -> chỉ decode để lấy role
+  const ATtoken = tokenStorage.getAT();
   let decoded;
   try {
     decoded = jwtDecode(ATtoken);
@@ -20,13 +28,6 @@ export default function ProtectedRoute({ children, requiredRole }) {
     return <Navigate to="/signin" state={{ from: location }} replace />;
   }
 
-  // 2. Token hết hạn
-  if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-    tokenStorage.clear();
-    return <Navigate to="/signin" state={{ from: location }} replace />;
-  }
-
-  // 3. Sai role yêu cầu
   if (requiredRole && decoded.role !== requiredRole) {
     return <Navigate to="/" replace />;
   }

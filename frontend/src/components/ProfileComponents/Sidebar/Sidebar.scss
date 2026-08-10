@@ -112,9 +112,7 @@
   }
 
   .sidebar__name,
-  .sidebar__share-btn,
-  .sidebar__nav-item,
-  .sidebar__nav-item--active {
+  .sidebar__share-btn {
     color: #f8fafc;
   }
 
@@ -124,15 +122,21 @@
   }
 
   .sidebar__nav-item {
-    color: #cbd5e1;
+  color: #cbd5e1;
+  
 
-    &:hover {
-      background-color: #111827;
+    // ⬇️ thêm :not(...) để hover của item thường KHÔNG đè lên active
+    &:hover:not(.sidebar__nav-item--active) {
+      color: black;
+      background-color: white;
     }
   }
-
   .sidebar__nav-item--active {
-    color: #f8fafc;
-    background-color: #111827;
+    color: black;
+    background-color: white;
+    &:hover{
+      color: black;
+      background-color: white;
+    }
   }
 }

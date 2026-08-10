@@ -3,6 +3,20 @@
 // ============================================================
 @use '../../../pages/Profilepage/variables.scss' as *;
 
+.profile-card-info,
+.profile-card-ava,
+.profile-card-pass {
+    position: relative;
+    border-radius: 1rem;
+    padding: 2rem 1.5rem 1.5rem;
+    background-color: $color-white;      // sửa lại
+    border: 1px solid $color-gray-100; 
+}
+
+.profile-card-info {grid-area:INF;}
+.profile-card-ava {grid-area:AVA;}
+.profile-card-pass {grid-area:PASS;}
+
 .profile-card__row {
   display: flex;
   flex-direction: column;
@@ -17,8 +31,25 @@
   }
 }
 
+.profile-card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profile-card__title-icon {
+  color: $color-gray-500;
+}
+
 .profile-card__field {
   margin-bottom: 1.25rem;
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px $color-white inset !important;
+    -webkit-text-fill-color: $color-gray-900 !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
 
   &:last-child {
     margin-bottom: 0;
@@ -68,6 +99,13 @@
   }
 }
 
+// Lỗi validate cho form (dùng chung, ví dụ đổi mật khẩu)
+.profile-card__error {
+  font-size: 0.8125rem;
+  color: $color-red-500;
+  margin: -0.5rem 0 1rem;
+}
+
 .image-preview {
   width: 100%;
   max-width: 22rem;
@@ -91,20 +129,35 @@
     height: 100%;
     object-fit: cover;
   }
+
+  // Avatar: hình vuông + bo tròn, thay vì khung 16:10
+  &--avatar {
+    max-width: 9rem;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+  }
 }
 
 .image-upload-row {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 0.75rem;
 
   input {
     flex: 1;
+  }
+
+  &__hint {
+    font-size: 0.8125rem;
+    color: $color-gray-500;
   }
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
+  align-items:end;
   gap: 0.65rem;
   margin-top: 1.25rem;
 }
@@ -113,6 +166,8 @@
   background-color: transparent;
   color: $color-gray-600;
   border-color: $color-gray-200;
+  height:38.4px;
+
 
   &:hover {
     background-color: $color-gray-50;
@@ -124,9 +179,34 @@
 // DARK THEME
 // ============================================================
 [data-theme="dark"] {
+  .profile-card-info,
+  .profile-card-ava,
+  .profile-card-pass {
+    background-color: #0f172a;
+    border-color: #334155;
+  }
+
+  .profile-card__title-icon {
+    color: #94a3b8;
+  }
+  .profile-card__title-icon {
+    color: #94a3b8;
+  }
+
+  .profile-card__error {
+    color: #f87171;
+  }
+
   .profile-card__field {
     label {
       color: #cbd5e1;
+    }
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px #111827 inset !important;
+      -webkit-text-fill-color: #f8fafc !important;
+      transition: background-color 5000s ease-in-out 0s;
     }
 
     input,
@@ -156,6 +236,10 @@
     &__placeholder {
       color: #64748b;
     }
+  }
+
+  .image-upload-row__hint {
+    color: #64748b;
   }
 
   .btn--ghost {

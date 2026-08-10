@@ -26,7 +26,17 @@ export default function ProfilePage() {
     imageUrl: '',
   });
   const [preview, setPreview] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null); // file thật, gửi lên khi Save changes
   const [saving, setSaving] = useState(false);
+
+  // ── Đổi mật khẩu ──
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     const stored = localStorage.getItem('loggedInUser');
@@ -72,15 +82,64 @@ export default function ProfilePage() {
   const handleChange = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
-  const handleUploadImage = () => {
-    if (form.imageUrl) setPreview(form.imageUrl);
+  // Nhận File thật từ input type="file" trong EditProfileTab
+  const handleAvatarFileChange = (file) => {
+    setAvatarFile(file);
   };
 
   const handleSaveProfile = async () => {
     // TODO: nối API PUT /account/myprofile khi backend sẵn sàng
+    // Khi có endpoint upload avatar (multer + Cloudinary), build FormData ở đây:
+    //   const fd = new FormData();
+    //   fd.append('avatar', avatarFile);
+    //   fd.append('headline', form.headline);
+    //   ...
+    //   await fetchWithAuth(API.updateProfile, { method: 'PUT', body: fd, headers: {} });
     setSaving(true);
-    console.log('Save profile:', { ...form, avatar: preview });
+    console.log('Save profile:', { ...form, avatarFile });
     setTimeout(() => setSaving(false), 500);
+  };
+
+  const handlePasswordChange = (field) => (e) => {
+    setPasswordError('');
+    setPasswordForm((prev) => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const handleSavePassword = async () => {
+    const { currentPassword, newPassword, confirmPassword } = passwordForm;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError('Vui lòng nhập đầy đủ các trường.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordError('Mật khẩu mới phải có ít nhất 6 ký tự.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Mật khẩu xác nhận không khớp.');
+      return;
+    }
+
+    // TODO: nối API đổi mật khẩu khi backend sẵn sàng (ví dụ PUT /account/password)
+    setSavingPassword(true);
+    setPasswordError('');
+    try {
+      console.log('Change password:', { currentPassword, newPassword });
+      // const res = await fetchWithAuth(API.changePassword, {
+      //   method: 'PUT',
+      //   body: JSON.stringify({ currentPassword, newPassword }),
+      // });
+      // if (!res.ok) {
+      //   const body = await res.json().catch(() => ({}));
+      //   throw new Error(body.message || 'Đổi mật khẩu thất bại');
+      // }
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      setPasswordError(err.message || 'Đổi mật khẩu thất bại.');
+    } finally {
+      setSavingPassword(false);
+    }
   };
 
   if (!user) return <p className="profile-page__loading">Đang tải...</p>;
@@ -89,24 +148,33 @@ export default function ProfilePage() {
     switch (activeTab) {
       case 'profile':
         return (
-          <ProfileInfoTab
-            user={user}
-            myCourses={myCourses}
-            onEdit={() => setActiveTab('edit')}
-          />
+          <div className="profile-view-grid">
+            <ProfileInfoTab
+              user={user}
+              myCourses={myCourses}
+              onEdit={() => setActiveTab('edit')}
+            />
+          </div>
         );
       case 'edit':
         return (
-          <EditProfileTab
-            form={form}
-            handleChange={handleChange}
-            preview={preview}
-            handleUploadImage={handleUploadImage}
-            handleSaveProfile={handleSaveProfile}
-            saving={saving}
-            onClose={() => setActiveTab('profile')}
-            onCancel={() => setActiveTab('profile')}
-          />
+          <div className="profile-edit-grid">
+            <EditProfileTab
+              form={form}
+              handleChange={handleChange}
+              preview={preview}
+              handleAvatarFileChange={handleAvatarFileChange}
+              handleSaveProfile={handleSaveProfile}
+              saving={saving}
+              onClose={() => setActiveTab('profile')}
+              onCancel={() => setActiveTab('profile')}
+              passwordForm={passwordForm}
+              handlePasswordChange={handlePasswordChange}
+              handleSavePassword={handleSavePassword}
+              savingPassword={savingPassword}
+              passwordError={passwordError}
+            />
+          </div>
         );
       case 'courses':
         return <MyCoursesTab myCourses={myCourses} />;
@@ -120,7 +188,6 @@ export default function ProfilePage() {
         return null;
     }
   };
-
   return (
     <div className="profile-page">
       <div className="profile-page__inner">

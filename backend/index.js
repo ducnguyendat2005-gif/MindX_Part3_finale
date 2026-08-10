@@ -59,6 +59,8 @@ app.get('/account/reviews',verifyToken,courseController.getReviews)
 
 app.put('/account/review/:id',verifyToken,courseController.putReviews)
 
+app.delete('/account/review/:id',verifyToken,courseController.deleteReviews)
+
 app.post('/account/refresh-token',retakeToken)
 
 

@@ -24,6 +24,9 @@ export const API = {
   checkout: `${BASE_URL}/account/checkout`,
   admin: `${BASE_URL}/admin`,
   postReview: (courseId) => `${BASE_URL}/courses/${courseId}/reviews`,
+  myReviews: `${BASE_URL}/account/reviews`,
+  updateReview: (reviewId) => `${BASE_URL}/account/review/${reviewId}`,
+  deleteReview: (id) => `${BASE_URL}/account/review/${id}`,
 };
 
 // Lưu / đọc / xóa token tập trung 1 chỗ, tránh rải localStorage.getItem khắp nơi

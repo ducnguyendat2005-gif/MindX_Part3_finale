@@ -80,7 +80,7 @@ const courseController = {
         try {
             const user = req.user ;
             const reviews = await ReviewModel.find({accountId:user._id}).populate('courseId','title -_id')
-            res.status(201).json({data:reviews,message: 'Review retrieved', success: true })
+            res.status(200).json({data:reviews,message: 'Review retrieved', success: true })
         }catch(error){
             next(error)
         }
@@ -89,8 +89,41 @@ const courseController = {
         try{
             const user = req.user;
             const { id } = req.params;
+            const { rating, comment } = req.body
 
-            res.status(201).json({data:id,message: 'Review retrieved', success: true })
+            const updated = await ReviewModel.findOneAndUpdate(
+                { _id: id, accountId: user._id },
+                { $set: { rating, comment } },
+                { new: true, runValidators: true }
+            ).populate('courseId', 'title -_id');;
+
+            if (!updated) {
+                const err = new Error('Review not found or not yours to edit');
+                err.status = 404; 
+                throw err;
+            }
+            res.status(200).json({data:updated,message: 'Review updated', success: true })
+        }
+        catch(error){
+            next(error)
+        }
+    },
+    deleteReviews:async (req,res,next) => {
+        try{
+            const user = req.user;
+            const { id } = req.params;
+            const { rating, comment } = req.body
+
+            const deleted = await ReviewModel.findOneAndDelete(
+                { _id: id, accountId: user._id }
+            ).populate('courseId', 'title -_id');;
+
+            if (!deleted) {
+                const err = new Error('Review not found or not yours to edit');
+                err.status = 404; 
+                throw err;
+            }
+            res.status(200).json({data:deleted,message: 'Review updated', success: true })
         }
         catch(error){
             next(error)

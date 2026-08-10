@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 
 import "./App.css";
 import Header from "./components/Header/Header";
@@ -14,38 +13,16 @@ import Checkout from './pages/CheckoutPage/Checkout.jsx'
 import BuyNPage from './pages/BuyNowPage/BuyNPage.jsx'
 import AIWidget from './components/AIWidget/AIWidget';
 import ProfilePage from './pages/Profilepage/Profilepage.jsx';
-import MyProfilePage from './pages/MyProfilePage/MyProfilePage.jsx'
-import MyReviewsPage from './pages/Myreviewspage/Myreviewspage.jsx'
-import TeachersPage from './pages/Teacherspage/Teacherspage.jsx'
-import MessagePage from './pages/Messagepage/Mesagepage.jsx'
 import AdminPage from './pages/Admin/Admin.jsx'
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
 import { Routes, Route } from "react-router-dom";
-import { API, tokenStorage, fetchWithAuth } from "./config/api.js";
+
 
 function App() {
-  // Verify session 1 lần khi app khởi động (F5, mở lại tab...)
-  useEffect(() => {
-    const verifySession = async () => {
-      const AT = tokenStorage.getAT();
-      if (!AT) return; // chưa từng đăng nhập thì thôi, khỏi gọi API
-
-      try {
-        const res = await fetchWithAuth(API.myprofile);
-        if (!res.ok) {
-          tokenStorage.clear();
-          window.dispatchEvent(new Event('userUpdated'));
-        }
-      } catch (err) {
-        // lỗi mạng, không chắc token hỏng hay không -> không clear vội
-        console.error('Verify session failed:', err);
-      }
-    };
-    verifySession();
-  }, []);
-
-  return (
+    return (
     <>
+    <AuthProvider>
       <Header></Header>
       <Routes>
         <Route path="/" element={<HomePage />} /> 
@@ -67,28 +44,13 @@ function App() {
           element={<ProtectedRoute><ProfilePage /></ProtectedRoute>}
         />
         <Route
-          path='/myprofile'
-          element={<ProtectedRoute><MyProfilePage /></ProtectedRoute>}
-        />
-        <Route
-          path='/myreviews'
-          element={<ProtectedRoute><MyReviewsPage /></ProtectedRoute>}
-        />
-        <Route
-          path='/teachers'
-          element={<ProtectedRoute><TeachersPage /></ProtectedRoute>}
-        />
-        <Route
-          path='/message'
-          element={<ProtectedRoute><MessagePage /></ProtectedRoute>}
-        />
-        <Route
           path='/admin'
           element={<ProtectedRoute requiredRole="admin"><AdminPage /></ProtectedRoute>}
         />
       </Routes>
       <Footer></Footer>
       <AIWidget /> 
+      </AuthProvider>
     </>
   );
 }
