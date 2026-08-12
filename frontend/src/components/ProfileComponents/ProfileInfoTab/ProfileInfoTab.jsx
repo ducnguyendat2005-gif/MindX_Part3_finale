@@ -39,8 +39,8 @@ export default function ProfileInfoTab({ user, myCourses, onEdit }) {
             { label: 'Last name', value: user.Lname },
             { label: 'Username', value: user.Username },
             { label: 'Email', value: user.Email },
-            { label: 'Headline', value: user.headline || '—' },
-            { label: 'Language', value: user.language || '—' },
+            { label: 'Learning goal', value: user.learningGoal || '—' },
+            { label: 'Level', value: user.level || '—' },
           ].map(f => (
             <div key={f.label} className="info-field">
               <span className="info-field__label">{f.label}</span>

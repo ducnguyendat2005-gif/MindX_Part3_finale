@@ -13,14 +13,24 @@ dotenv.config();
 const accountController = {
     registerCustomer: async (req, res, next) => {
         try {
-            const { Fname, Lname, Username, Email, pass } = req.body;
+            const { Fname, Lname, Username, Email, pass,interests,level,learningGoal } = req.body;
 
             const saltRounds = 10;
 
             const salt = bcrypt.genSaltSync(saltRounds);
             const hash = bcrypt.hashSync(pass, salt);
 
-            const createdAccount = await AccountModel.create({ Fname, Lname, Username, Email, pass: hash, role: "user" })
+            const createdAccount = await AccountModel.create({ 
+                Fname, 
+                Lname,
+                Username,
+                Email, 
+                pass: hash, 
+                role: "user",
+                interests,
+                level,
+                learningGoal,
+             })
             res.status(201).send({ data: createdAccount, message: 'Register successful!', success: true });
         }
         catch (error) {
@@ -118,6 +128,7 @@ const accountController = {
         }
     },
     teacherRegister:async (req, res,next) =>{
+        let createdAccount
         try{
             const {
                 Fname,
@@ -125,7 +136,6 @@ const accountController = {
                 Username,
                 Email,
                 pass,
-                role,
                 expertise,
                 experienceYears,
                 bio,
@@ -146,12 +156,13 @@ const accountController = {
             const salt = bcrypt.genSaltSync(saltRounds);
             const hash = bcrypt.hashSync(pass, salt);
 
-            const createdAccount = await AccountModel.create({ Fname, Lname, Username, Email, pass: hash, role :"teacher" })
+            createdAccount = await AccountModel.create({ Fname, Lname, Username, Email, pass: hash, role :"teacher" })
             const createInstructor = await InstructorModel.create({
                 name :Username,
                 title:expertise,
                 thumbnail:DEFAULT_THUMBNAIL,
                 bio:bio,
+                yearsOfExperience: Number(experienceYears) || 0, 
                 portfolioUrl: portfolioUrl,  
                 totalStudents : 0,
                 totalCourses : 0,
@@ -161,6 +172,56 @@ const accountController = {
             res.status(201).send({ data: createInstructor, message: 'Register successful!', success: true });
         }
         catch (error){
+        if (createdAccount?._id) {
+            await AccountModel.findByIdAndDelete(createdAccount._id).catch(() => {});
+        }
+            next(error)
+        }
+    },
+    updateProfile:async (req,res,next) =>{
+        try {
+            const accountId = req.user._id;
+            
+            const { Fname, Lname, description, learningGoal, level, interests, avatar } = req.body;
+
+            const updated = await AccountModel.findByIdAndUpdate(
+            accountId,
+            { $set: { Fname, Lname, description, learningGoal, level, interests, avatar } },
+            { new: true, runValidators: true }
+            );
+
+            if (!updated) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+            }
+
+            res.status(200).json({ success: true, data: updated, message: 'Cập nhật thành công' });
+        } catch (error) {
+            next(error);
+        }
+    },
+    changePassword:async (req,res,next) =>{
+        try{
+            const user = req.user;
+            const { oldPassword, newPassword } = req.body;
+            const prePass = (await AccountModel.findById(user._id).select('pass -_id').lean())?.pass
+
+            const isOldMatch = await bcrypt.compare(oldPassword, prePass);
+            if (!isOldMatch) throw new Error ("email hoac password cu sai")
+
+            const saltRounds = 10;
+            
+            const salt = bcrypt.genSaltSync(saltRounds);
+            const hash = bcrypt.hashSync(newPassword, salt);
+
+            const updated = await AccountModel.findByIdAndUpdate(
+                user._id,
+                {pass:hash},
+                { new: true, runValidators: true }
+            )
+            console.log(prePass);
+            res.status(200).json({ success: true, data: updated, message: 'Cập nhật thành công' });
+        }
+        catch(error){
             next(error)
         }
     }

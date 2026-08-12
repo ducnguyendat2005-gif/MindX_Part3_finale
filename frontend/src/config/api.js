@@ -21,6 +21,10 @@ export const API = {
   // ── Protected — cần đăng nhập (gửi kèm AT) ──
   mycourses: `${BASE_URL}/account/mycourses`,
   myprofile: `${BASE_URL}/account/myprofile`,
+  myTeacherProfile: `${BASE_URL}/account/myprofile/teacher`, 
+  updateAccount: `${BASE_URL}/account/update-account`,        
+  updateInstructor: `${BASE_URL}/account/update-instructor`,
+  changePassword: `${BASE_URL}/account/change-password`,
   checkout: `${BASE_URL}/account/checkout`,
   admin: `${BASE_URL}/admin`,
   postReview: (courseId) => `${BASE_URL}/courses/${courseId}/reviews`,

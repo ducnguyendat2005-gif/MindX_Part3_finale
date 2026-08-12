@@ -39,6 +39,13 @@ app.post(
 );
 
 app.post('/register',validateReg,accountController.registerCustomer)
+// index.js
+app.put('/account/update-account', verifyToken, accountController.updateProfile)     
+
+// index.js
+app.put('/account/change-password', verifyToken, accountController.changePassword);
+
+app.put('/account/update-instructor', verifyToken, teacherController.updateInstructorProfile) 
 
 app.post('/account/check-duplicate',checkDuplicateEmail)
 
@@ -48,6 +55,7 @@ app.get('/account/mycourses',verifyToken,accountController.getMycourses)
 
 app.get('/account/myprofile',verifyToken,accountController.getAllUserInfo)
 
+app.get('/account/myprofile/teacher',verifyToken,teacherController.getAllTeacherInfo)
 
 app.get('/admin',verifyToken,isAdmin,accountController.getAllAdminInfo)
 

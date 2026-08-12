@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { X, Image as ImageIcon, Lock } from 'lucide-react';
+import { X, Image as ImageIcon, Lock, CheckCircle2 } from 'lucide-react';
 import './EditProfileTab.scss';
 
 export default function EditProfileTab({
@@ -17,6 +17,7 @@ export default function EditProfileTab({
   handleSavePassword,
   savingPassword,
   passwordError,
+  passwordSuccess
 }) {
   const fileInputRef = useRef(null);
   const [localPreview, setLocalPreview] = useState(null);
@@ -70,12 +71,12 @@ export default function EditProfileTab({
         </div>
 
         <div className="profile-card__field">
-          <label>Headline</label>
+          <label>Learning goal</label>
           <input
             type="text"
             placeholder="Label"
-            value={form.headline}
-            onChange={handleChange('headline')}
+            value={form.learningGoal}
+            onChange={handleChange('learningGoal')}
           />
         </div>
 
@@ -90,11 +91,13 @@ export default function EditProfileTab({
         </div>
 
         <div className="profile-card__field">
-          <label>Language</label>
-          <select value={form.language} onChange={handleChange('language')}>
-            <option value="">Label</option>
-            <option value="vi">Tiếng Việt</option>
-            <option value="en">English</option>
+          <label>Level</label>
+          <select value={form.level} onChange={handleChange('level')}>
+            <option value="">Select level</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+            <option value="Expert">Expert</option>
           </select>
         </div>
       </section>
@@ -186,6 +189,12 @@ export default function EditProfileTab({
 
         {passwordError && (
           <p className="profile-card__error">{passwordError}</p>
+        )}
+        {passwordSuccess && (
+          <p className="profile-card__success">
+            <CheckCircle2 size={16} />
+            {passwordSuccess}
+          </p>
         )}
 
         <div className="form-actions">

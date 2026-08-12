@@ -1,0 +1,376 @@
+// ============================================================
+// TeacherEditTab.module.scss — teacher info, avatar, change password
+// ============================================================
+@use '../../../pages/Profilepage/variables.scss' as *;
+
+.profileCardTeacher,
+.profileCardAva,
+.profileCardPass {
+  position: relative;
+  border-radius: 1rem;
+  padding: 2rem 1.5rem 1.5rem;
+  background-color: $color-white;
+  border: 1px solid $color-gray-100;
+}
+
+.profileCardTeacher { grid-area: INF; }
+.profileCardAva { grid-area: AVA; }
+.profileCardPass { grid-area: PASS; }
+
+.profileCardClose {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: $color-gray-400;
+
+  &:hover {
+    color: $color-gray-700;
+  }
+}
+
+.profileCardRow {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+  }
+
+  .profileCardField {
+    flex: 1;
+  }
+}
+
+.profileCardTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom:15px;
+}
+
+.profileCardTitleIcon {
+  color: $color-gray-500;
+}
+
+.profileCardField {
+  margin-bottom: 1.25rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+  label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $color-gray-700;
+    margin-bottom: 0.5rem;
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid $color-gray-200;
+    border-radius: $radius-sm;
+    font-size: 0.875rem;
+    color: $color-gray-900;
+    background-color: $color-white;
+    outline: none;
+    transition: border-color $transition-default, box-shadow $transition-default;
+
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px $color-white inset !important;
+      -webkit-text-fill-color: $color-gray-900 !important;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+
+    &::placeholder {
+      color: $color-gray-400;
+    }
+
+    &:focus {
+      border-color: $color-blue-500;
+      box-shadow: 0 0 0 2px rgba($color-blue-500, 0.2);
+    }
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.profileCardHint {
+  font-size: 0.8125rem;
+  color: $color-gray-500;
+  margin: 0.25rem 0 0;
+}
+
+.profileCardError {
+  font-size: 0.8125rem;
+  color: $color-red-500;
+  margin: -0.5rem 0 1rem;
+}
+
+.profileCardSuccess {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #16a34a;
+  background-color: rgba(22, 163, 74, 0.1);
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-top: 8px;
+  animation: fadeSlideIn 0.25s ease-out;
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.portfolioFileList {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: $color-gray-700;
+
+    a {
+      color: $color-blue-500;
+      text-decoration: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 16rem;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// ── Avatar preview ──
+.imagePreview {
+  width: 100%;
+  max-width: 22rem;
+  aspect-ratio: 16 / 10;
+  background-color: $color-gray-100;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.imagePreviewPlaceholder {
+  width: 2rem;
+  height: 2rem;
+  color: $color-gray-400;
+}
+
+.imagePreviewImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imagePreviewAvatar {
+  max-width: 9rem;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+}
+
+.imageUploadRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+
+  input {
+    flex: 1;
+  }
+}
+
+.imageUploadRowHint {
+  font-size: 0.8125rem;
+  color: $color-gray-500;
+}
+
+// ── Actions & buttons ──
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: end;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+.btn {
+  padding: 0.625rem 1.25rem;
+  border-radius: $radius-sm;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btnGhost {
+  background-color: transparent;
+  color: $color-gray-600;
+  border-color: $color-gray-200;
+  height: 38.4px;
+
+  &:hover {
+    background-color: $color-gray-50;
+    color: $color-gray-900;
+  }
+}
+
+.btnSecondary {
+  background-color: $color-gray-100;
+  color: $color-gray-700;
+  border-color: $color-gray-200;
+
+  &:hover {
+    background-color: $color-gray-200;
+  }
+}
+
+.btnPrimary {
+  background-color: $color-blue-500;
+  color: $color-white;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// ============================================================
+// DARK THEME
+// ============================================================
+:global([data-theme="dark"]) {
+  .profileCardTeacher,
+  .profileCardAva,
+  .profileCardPass {
+    background-color: #0f172a;
+    border-color: #334155;
+  }
+
+  .profileCardClose {
+    color: #64748b;
+
+    &:hover {
+      color: #f8fafc;
+    }
+  }
+
+  .profileCardTitleIcon {
+    color: #94a3b8;
+  }
+
+  .profileCardHint {
+    color: #64748b;
+  }
+
+  .profileCardError {
+    color: #f87171;
+  }
+
+  .profileCardField {
+    label {
+      color: #cbd5e1;
+    }
+
+    input,
+    textarea {
+      background-color: #111827;
+      border-color: #334155;
+      color: #f8fafc;
+
+      &:-webkit-autofill,
+      &:-webkit-autofill:hover,
+      &:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px #111827 inset !important;
+        -webkit-text-fill-color: #f8fafc !important;
+        transition: background-color 5000s ease-in-out 0s;
+      }
+
+      &::placeholder {
+        color: #64748b;
+      }
+
+      &:focus {
+        border-color: $color-blue-500;
+      }
+    }
+  }
+
+  .portfolioFileList li {
+    color: #cbd5e1;
+  }
+
+  .imagePreview {
+    background-color: #111827;
+  }
+
+  .imagePreviewPlaceholder {
+    color: #64748b;
+  }
+
+  .imageUploadRowHint {
+    color: #64748b;
+  }
+
+  .btnGhost {
+    color: #cbd5e1;
+    border-color: #334155;
+
+    &:hover {
+      background-color: #111827;
+      color: #f8fafc;
+    }
+  }
+
+  .btnSecondary {
+    background-color: #111827;
+    color: #cbd5e1;
+    border-color: #334155;
+
+    &:hover {
+      background-color: #1e293b;
+    }
+  }
+}

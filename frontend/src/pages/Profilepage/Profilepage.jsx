@@ -6,6 +6,8 @@ import ProfileInfoTab from '../../components/ProfileComponents/ProfileInfoTab/Pr
 import EditProfileTab from '../../components/ProfileComponents/EditProfileTab/EditProfileTab.jsx';
 import MyCoursesTab from '../../components/ProfileComponents/MyCoursesTab/MyCoursesTab.jsx';
 import TeachersTab from '../../components/ProfileComponents/TeacherTab/TeacherTab.jsx';
+import TeacherEditTab from '../../components/ProfileComponents/TeacherEditTab/TeacherEditTab.jsx';
+import TeacherInfoTab from '../../components/ProfileComponents/TeacherInfoTab/TeacherInfoTab.jsx';
 import MessageTab from '../../components/ProfileComponents/MessageTab/MessageTab.jsx';
 import MyReviewsTab from '../../components/ProfileComponents/MyReviewTab/MyReviewTab.jsx';
 import './ProfilePage.scss';
@@ -14,19 +16,29 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [myCourses, setMyCourses] = useState([]);
+  const [instructorInfo, setInstructorInfo] = useState(null); 
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(location.state?.tab || 'profile');
 
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
-    headline: '',
     description: '',
-    language: '',
+    learningGoal: '',
+    level: '',
+    interests: [],
     imageUrl: '',
   });
   const [preview, setPreview] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null); // file thật, gửi lên khi Save changes
+  // ── Teacher edit ──
+  const [instructorForm, setInstructorForm] = useState({
+    title: '',
+    bio: '',
+    yearsOfExperience: '',
+  });
+  const [existingPortfolio, setExistingPortfolio] = useState([]);
+  const [savingInstructor, setSavingInstructor] = useState(false);
   const [saving, setSaving] = useState(false);
 
   // ── Đổi mật khẩu ──
@@ -37,6 +49,7 @@ export default function ProfilePage() {
   });
   const [savingPassword, setSavingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
 
   useEffect(() => {
     const stored = localStorage.getItem('loggedInUser');
@@ -53,14 +66,38 @@ export default function ProfilePage() {
           myCourses: (profileResult.courses || []).map(e => e.courseId),
         };
         setUser(merged);
+        // Role được lấy từ API đã xác thực, không dựa vào localStorage để phân quyền UI.
+        setActiveTab((currentTab) => {
+          if (merged.role === 'teacher') {
+            return ['profile', 'edit'].includes(currentTab) ? 'teacherInfo' : currentTab;
+          }
+          return ['teacherInfo', 'teacherEdit'].includes(currentTab) ? 'profile' : currentTab;
+        });
+        if (merged.role === 'teacher') {
+          const teacherRes = await fetchWithAuth(API.myTeacherProfile);
+          if (teacherRes.ok) {
+            const teacherResult = await teacherRes.json();
+            const instructor = teacherResult.instructor;
+            if (instructor) {
+              setInstructorInfo(instructor); // lưu full object cho tab view
+              setInstructorForm({
+                title: instructor.title ?? '',
+                bio: instructor.bio ?? '',
+                yearsOfExperience: instructor.yearsOfExperience ?? '',
+              });
+              setExistingPortfolio(instructor.portfolioUrl ?? []);
+            }
+          }
+        }
         localStorage.setItem('loggedInUser', JSON.stringify(merged));
 
         setForm({
           firstName: merged.Fname ?? '',
           lastName: merged.Lname ?? '',
-          headline: merged.headline ?? '',
           description: merged.description ?? '',
-          language: merged.language ?? '',
+          learningGoal: merged.learningGoal ?? '',
+          level: merged.level ?? '',
+          interests: merged.interests ?? [],
           imageUrl: merged.avatar ?? '',
         });
         if (merged.avatar) setPreview(merged.avatar);
@@ -88,16 +125,73 @@ export default function ProfilePage() {
   };
 
   const handleSaveProfile = async () => {
-    // TODO: nối API PUT /account/myprofile khi backend sẵn sàng
-    // Khi có endpoint upload avatar (multer + Cloudinary), build FormData ở đây:
-    //   const fd = new FormData();
-    //   fd.append('avatar', avatarFile);
-    //   fd.append('headline', form.headline);
-    //   ...
-    //   await fetchWithAuth(API.updateProfile, { method: 'PUT', body: fd, headers: {} });
     setSaving(true);
-    console.log('Save profile:', { ...form, avatarFile });
-    setTimeout(() => setSaving(false), 500);
+    try {
+      const res = await fetchWithAuth(API.updateAccount, {
+        method: 'PUT',
+        body: JSON.stringify({
+          Fname: form.firstName,
+          Lname: form.lastName,
+          description: form.description,
+          learningGoal: form.learningGoal,
+          level: form.level,
+          interests: form.interests,
+          avatar: form.imageUrl,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || 'Cập nhật thông tin thất bại');
+      }
+      const result = await res.json();
+      setUser(result.data);
+      localStorage.setItem('loggedInUser', JSON.stringify(result.data));
+      setForm((prev) => ({
+        ...prev,
+        firstName: result.data.Fname ?? '',
+        lastName: result.data.Lname ?? '',
+        description: result.data.description ?? '',
+        learningGoal: result.data.learningGoal ?? '',
+        level: result.data.level ?? '',
+        interests: result.data.interests ?? [],
+        imageUrl: result.data.avatar ?? '',
+      }));
+      setPreview(result.data.avatar ?? null);
+      setActiveTab('profile');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+  const handleInstructorChange = (field) => (e) =>
+  setInstructorForm((prev) => ({ ...prev, [field]: e.target.value }));
+
+  const handleSaveInstructor = async () => {
+    setSavingInstructor(true);
+    try {
+      const res = await fetchWithAuth(API.updateInstructor, {
+        method: 'PUT',
+        body: JSON.stringify(instructorForm),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || 'Cập nhật thông tin giảng viên thất bại');
+      }
+      const result = await res.json();
+      setInstructorInfo(result.data); // đồng bộ lại tab view
+      setInstructorForm({
+        title: result.data.title ?? '',
+        bio: result.data.bio ?? '',
+        yearsOfExperience: result.data.yearsOfExperience ?? '',
+      });
+      setActiveTab('teacherInfo');
+    } catch (err) {
+      console.error(err);
+      // TODO: hiện toast/error UI nếu bạn có sẵn component thông báo
+    } finally {
+      setSavingInstructor(false);
+    }
   };
 
   const handlePasswordChange = (field) => (e) => {
@@ -121,20 +215,21 @@ export default function ProfilePage() {
       return;
     }
 
-    // TODO: nối API đổi mật khẩu khi backend sẵn sàng (ví dụ PUT /account/password)
     setSavingPassword(true);
     setPasswordError('');
+    setPasswordSuccess('');
     try {
-      console.log('Change password:', { currentPassword, newPassword });
-      // const res = await fetchWithAuth(API.changePassword, {
-      //   method: 'PUT',
-      //   body: JSON.stringify({ currentPassword, newPassword }),
-      // });
-      // if (!res.ok) {
-      //   const body = await res.json().catch(() => ({}));
-      //   throw new Error(body.message || 'Đổi mật khẩu thất bại');
-      // }
+      const res = await fetchWithAuth(API.changePassword, {
+        method: 'PUT',
+        body: JSON.stringify({ oldPassword: currentPassword, newPassword }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(body.message || 'Đổi mật khẩu thất bại');
+      }
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setPasswordSuccess(body.message || 'Đổi mật khẩu thành công!'); // 👈 set success
+      setTimeout(() => setPasswordSuccess(''), 3000); // tự ẩn sau 3s
     } catch (err) {
       setPasswordError(err.message || 'Đổi mật khẩu thất bại.');
     } finally {
@@ -144,38 +239,65 @@ export default function ProfilePage() {
 
   if (!user) return <p className="profile-page__loading">Đang tải...</p>;
 
+  const isTeacher = user.role === 'teacher';
+
+  const renderStudentInfo = () => (
+    <div className="profile-view-grid">
+      <ProfileInfoTab user={user} myCourses={myCourses} onEdit={() => setActiveTab('edit')} />
+    </div>
+  );
+
+  const renderStudentEdit = () => (
+    <div className="profile-edit-grid">
+      <EditProfileTab form={form} handleChange={handleChange} preview={preview}
+        handleAvatarFileChange={handleAvatarFileChange} handleSaveProfile={handleSaveProfile}
+        saving={saving} onClose={() => setActiveTab('profile')} onCancel={() => setActiveTab('profile')}
+        passwordForm={passwordForm} handlePasswordChange={handlePasswordChange}
+        handleSavePassword={handleSavePassword} savingPassword={savingPassword} passwordError={passwordError}
+        passwordSuccess={passwordSuccess}  />
+    </div>
+  );
+
+  const renderTeacherInfo = () => (
+    <TeacherInfoTab instructorInfo={instructorInfo} onEdit={() => setActiveTab('teacherEdit')} />
+  );
+
+  const renderTeacherEdit = () => (
+    <div className="profile-edit-grid">
+      <TeacherEditTab
+        form={instructorForm}
+        handleChange={handleInstructorChange}
+        existingPortfolio={existingPortfolio}
+        handleSaveInstructor={handleSaveInstructor}
+        saving={savingInstructor}
+        onClose={() => setActiveTab('teacherInfo')}
+        onCancel={() => setActiveTab('teacherInfo')}
+        // avatar (dùng chung logic account với student)
+        preview={preview}
+        handleAvatarFileChange={handleAvatarFileChange}
+        handleSaveProfile={handleSaveProfile}
+        savingAvatar={saving}
+        // password
+        passwordForm={passwordForm}
+        handlePasswordChange={handlePasswordChange}
+        handleSavePassword={handleSavePassword}
+        savingPassword={savingPassword}
+        passwordError={passwordError}
+        passwordSuccess={passwordSuccess}
+      />
+    </div>
+  );
+
   const renderTab = () => {
     switch (activeTab) {
       case 'profile':
-        return (
-          <div className="profile-view-grid">
-            <ProfileInfoTab
-              user={user}
-              myCourses={myCourses}
-              onEdit={() => setActiveTab('edit')}
-            />
-          </div>
-        );
+        return isTeacher ? renderTeacherInfo() : renderStudentInfo();
       case 'edit':
-        return (
-          <div className="profile-edit-grid">
-            <EditProfileTab
-              form={form}
-              handleChange={handleChange}
-              preview={preview}
-              handleAvatarFileChange={handleAvatarFileChange}
-              handleSaveProfile={handleSaveProfile}
-              saving={saving}
-              onClose={() => setActiveTab('profile')}
-              onCancel={() => setActiveTab('profile')}
-              passwordForm={passwordForm}
-              handlePasswordChange={handlePasswordChange}
-              handleSavePassword={handleSavePassword}
-              savingPassword={savingPassword}
-              passwordError={passwordError}
-            />
-          </div>
-        );
+        return isTeacher ? renderTeacherEdit() : renderStudentEdit();
+      case 'teacherEdit':
+        return isTeacher ? renderTeacherEdit() : renderStudentInfo();
+      case 'teacherInfo':
+        return isTeacher ? renderTeacherInfo() : renderStudentInfo();
       case 'courses':
         return <MyCoursesTab myCourses={myCourses} />;
       case 'teachers':
