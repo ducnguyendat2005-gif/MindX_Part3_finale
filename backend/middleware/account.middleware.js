@@ -59,6 +59,16 @@ export const isAdmin = async (req,res,next) =>{
     }
 }
 
+export const isTeacher = (req, res, next) => {
+    if (req.user?.role !== 'teacher') {
+        return res.status(403).json({
+            message: 'Chỉ giáo viên mới được thực hiện thao tác này',
+            success: false,
+        });
+    }
+    next();
+};
+
 export const checkDuplicateEmail = async (req,res,next) => {
     try {
         const {email} = req.body;

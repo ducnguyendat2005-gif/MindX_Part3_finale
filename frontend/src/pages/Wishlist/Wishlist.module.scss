@@ -1,0 +1,80 @@
+.wishlistPage {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.wishlistHeader {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.wishlistHeader h1 {
+  font-size: 2.25rem;
+  margin: 0;
+}
+
+.wishlistHeader p {
+  color: var(--muted-text-color);
+  margin: 0;
+}
+
+.emptyState {
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 48px;
+  text-align: center;
+  background: var(--surface-alt);
+}
+
+.emptyState p {
+  font-size: 1.1rem;
+  margin-bottom: 24px;
+}
+
+.browseButton {
+  border: none;
+  background: var(--primary-color);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.browseButton:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.courseGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.courseCardWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.removeButton {
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-color);
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.removeButton:hover {
+  background: var(--surface-alt);
+  transform: translateY(-1px);
+}

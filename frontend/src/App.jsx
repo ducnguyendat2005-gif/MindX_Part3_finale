@@ -12,6 +12,7 @@ import CartPage from './pages/CartPage/CartPage.jsx'
 import Checkout from './pages/CheckoutPage/Checkout.jsx'
 import BuyNPage from './pages/BuyNowPage/BuyNPage.jsx'
 import AIWidget from './components/AIWidget/AIWidget';
+import Wishlist from './pages/Wishlist/Wishlist.jsx';
 import ProfilePage from './pages/Profilepage/Profilepage.jsx';
 import AdminPage from './pages/Admin/Admin.jsx'
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -42,6 +43,10 @@ function App() {
         <Route
           path='/profile'
           element={<ProtectedRoute><ProfilePage /></ProtectedRoute>}
+        />
+        <Route
+          path='/wishlist'
+          element={<ProtectedRoute><Wishlist /></ProtectedRoute>}
         />
         <Route
           path='/admin'

@@ -1,15 +1,49 @@
 import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const storage = multer.memoryStorage();
+const portfolioStorage = multer.memoryStorage();
 
-const fileFilter = (req, file, cb) => {
+const portfolioFileFilter = (_req, file, cb) => {
   const allowed = ['application/pdf', 'image/jpeg', 'image/png'];
   if (allowed.includes(file.mimetype)) cb(null, true);
   else cb(new Error('Chỉ chấp nhận file PDF, JPG hoặc PNG'), false);
 };
 
 export const uploadPortfolio = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB / file
-}).array('portfolioFiles', 3); // ← đổi .single() thành .array(), tối đa 3 file
+  storage: portfolioStorage,
+  fileFilter: portfolioFileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 },
+}).array('portfolioFiles', 3);
+
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const courseUploadDir = path.resolve(currentDir, '../../uploads/courses');
+fs.mkdirSync(courseUploadDir, { recursive: true });
+
+const courseStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, courseUploadDir),
+  filename: (_req, file, cb) => {
+    const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '-');
+    cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`);
+  },
+});
+
+const courseFileFilter = (_req, file, cb) => {
+  const allowed = [
+    'image/jpeg', 'image/png', 'image/gif',
+    'video/mp4', 'video/webm',
+  ];
+  if (allowed.includes(file.mimetype)) return cb(null, true);
+  cb(new Error('Chỉ chấp nhận ảnh JPG, PNG, GIF hoặc video MP4, WebM'));
+};
+
+export const uploadCourseMedia = multer({
+  storage: courseStorage,
+  fileFilter: courseFileFilter,
+  limits: { fileSize: 250 * 1024 * 1024 },
+}).fields([
+  { name: 'thumbnail', maxCount: 1 },
+  { name: 'promoVideo', maxCount: 1 },
+  { name: 'lessonVideos', maxCount: 100 },
+]);

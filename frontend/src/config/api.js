@@ -20,6 +20,10 @@ export const API = {
 
   // ── Protected — cần đăng nhập (gửi kèm AT) ──
   mycourses: `${BASE_URL}/account/mycourses`,
+  teachingCourses: `${BASE_URL}/account/teaching-courses?status=published`,
+  teachingDrafts: `${BASE_URL}/account/teaching-courses?status=draft`,
+  teachingCourseById: (id) => `${BASE_URL}/account/teaching-courses/${id}`,
+  createCourse: `${BASE_URL}/account/teaching-courses`,
   myprofile: `${BASE_URL}/account/myprofile`,
   checkout: `${BASE_URL}/account/checkout`,
   admin: `${BASE_URL}/admin`,
@@ -52,15 +56,19 @@ export const tokenStorage = {
  * Nếu RT cũng hết hạn/không hợp lệ → xóa hết token, chuyển về /signin.
  */
 export const fetchWithAuth = async (url, options = {}) => {
-  const doFetch = (accessToken) =>
-    fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-        ...options.headers,
-      },
-    });
+  const doFetch = (accessToken) => {
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+      ...options.headers,
+    };
+
+    // Let the browser add the multipart boundary for FormData.
+    if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    return fetch(url, { ...options, headers });
+  };
 
   let res = await doFetch(tokenStorage.getAT());
 

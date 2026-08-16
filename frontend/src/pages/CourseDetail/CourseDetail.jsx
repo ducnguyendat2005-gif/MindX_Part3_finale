@@ -21,6 +21,8 @@ import google from "../../assets/google.jpg";
 import microsoft from "../../assets/microsoft.png";
 import twitter from "../../assets/twitter.png";
 
+const WISHLIST_KEY = 'wishlistedCourses';
+
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
@@ -167,11 +169,13 @@ const CourseDetail = () => {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('description');
-  const [user,setUser] = useState(null);
+  const [user, setUser] = useState(null);
   const [added, setAdded] = useState(false);
-  const isOwned = user?.myCourses?.some(c => String(c._id) === String(id)) ?? false;
+  const [isFavorite, setIsFavorite] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const navigate = useNavigate();
+
+  const isOwned = user?.myCourses?.some(c => String(c._id) === String(id)) ?? false;
 
   useEffect(() => {
     const loadUser = () => {
@@ -182,6 +186,11 @@ const CourseDetail = () => {
     window.addEventListener('userUpdated', loadUser);
     return () => window.removeEventListener('userUpdated', loadUser);
   }, []);
+
+  useEffect(() => {
+    const savedList = JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
+    setIsFavorite(savedList.some((item) => String(item._id) === String(id)));
+  }, [id]);
 
   const handleAddtoCart = () => {
     const existing = JSON.parse(localStorage.getItem('insideCarts') || '[]');
@@ -197,9 +206,31 @@ const CourseDetail = () => {
     setAdded(true);
   };
 
+  const handleToggleWishlist = () => {
+    if (!user) {
+      navigate('/signin');
+      return;
+    }
+
+    const existing = JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
+    const alreadySaved = existing.some((item) => String(item._id) === String(course._id));
+
+    let updated;
+    if (alreadySaved) {
+      updated = existing.filter((item) => String(item._id) !== String(course._id));
+      setIsFavorite(false);
+    } else {
+      updated = [...existing, course];
+      setIsFavorite(true);
+    }
+
+    localStorage.setItem(WISHLIST_KEY, JSON.stringify(updated));
+    window.dispatchEvent(new Event('wishlistUpdated'));
+  };
+
   const handleBuynow = () => {
     if (!user) {
-      navigate('/sign-in');
+      navigate('/signin');
       return;
     }
     navigate(`/home/course-page/${id}/buynow`, {
@@ -331,7 +362,7 @@ useEffect(() => {
               ) : (
                 <>
                   <button
-                    onClick={() => user ? handleAddtoCart() : navigate('/sign-in')}
+                    onClick={() => user ? handleAddtoCart() : navigate('/signin')}
                     className={`${styles.addToCartButton} ${added ? styles.addToCartAdded : ''}`}
                   >
                     {added ? (
@@ -349,6 +380,10 @@ useEffect(() => {
                   </button>
                   <button onClick={() => handleBuynow()} className={styles.buyNowButton}>
                     Buy Now
+                  </button>
+                  <button onClick={handleToggleWishlist} className={`${styles.wishlistButton} ${isFavorite ? styles.favorited : ''}`}>
+                    <span className={styles.heartIcon} aria-hidden="true">{isFavorite ? '♥' : '♡'}</span>
+                    {isFavorite ? 'Saved' : 'Add to Wishlist'}
                   </button>
                 </>
               )}
