@@ -10,6 +10,7 @@ import TeacherEditTab from '../../components/ProfileComponents/TeacherEditTab/Te
 import TeacherInfoTab from '../../components/ProfileComponents/TeacherInfoTab/TeacherInfoTab.jsx';
 import MessageTab from '../../components/ProfileComponents/MessageTab/MessageTab.jsx';
 import MyReviewsTab from '../../components/ProfileComponents/MyReviewTab/MyReviewTab.jsx';
+import CreateCourseTab from '../../components/ProfileComponents/CreateCourseTab/CreateCourseTab.jsx';
 import './ProfilePage.scss';
 
 export default function ProfilePage() {
@@ -102,7 +103,10 @@ export default function ProfilePage() {
         });
         if (merged.avatar) setPreview(merged.avatar);
 
-        const coursesRes = await fetchWithAuth(API.mycourses);
+        const coursesEndpoint = merged.role === 'teacher'
+          ? API.teachingCourses
+          : API.mycourses;
+        const coursesRes = await fetchWithAuth(coursesEndpoint);
         if (coursesRes.ok) {
           const coursesResult = await coursesRes.json();
           setMyCourses(coursesResult.data || []);
@@ -219,6 +223,17 @@ export default function ProfilePage() {
     setPasswordForm((prev) => ({ ...prev, [field]: e.target.value }));
   };
 
+  const handleCreateCourse = () => {
+    setActiveTab('create-course');
+  };
+
+  const handleCreatedCourse = (newCourse) => {
+    if (newCourse?.status === 'published') {
+      setMyCourses((prev) => [newCourse, ...prev]);
+      setActiveTab('courses');
+    }
+  };
+
   const handleSavePassword = async () => {
     const { currentPassword, newPassword, confirmPassword } = passwordForm;
 
@@ -326,6 +341,13 @@ export default function ProfilePage() {
         return <MessageTab />;
       case 'reviews':
         return <MyReviewsTab />;
+      case 'create-course':
+        return (
+          <CreateCourseTab
+            onCancel={() => setActiveTab('courses')}
+            onCreated={handleCreatedCourse}
+          />
+        );
       default:
         return null;
     }
@@ -337,6 +359,7 @@ export default function ProfilePage() {
           user={{ ...user, avatar: preview }}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
+          onCreateCourse={handleCreateCourse}
         />
         <main className="profile-page__main">
           {renderTab()}

@@ -96,6 +96,27 @@ const accountController = {
             next(error)
         }
     },
+    getTeachingCourses: async (req, res, next) => {
+        try {
+            const instructor = await InstructorModel.findOne({ accountId: req.user._id });
+            if (!instructor) {
+                return res.status(200).json({ data: [], message: 'No instructor profile', success: true });
+            }
+
+            const courseFilter = { instructorId: instructor._id };
+            if (['draft', 'published'].includes(req.query.status)) {
+                courseFilter.status = req.query.status;
+            }
+
+            const courses = await CourseModel.find(courseFilter)
+                .populate('instructorId', 'name title bio totalStudents totalCourses totalReviews thumbnail')
+                .sort({ createdAt: -1 });
+
+            res.status(200).json({ data: courses, message: 'Retrieve successful!', success: true });
+        } catch (error) {
+            next(error);
+        }
+    },
     getAllUserInfo: async (req, res, next) => {
         try {
             const user = req.user;

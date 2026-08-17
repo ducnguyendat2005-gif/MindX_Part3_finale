@@ -1,5 +1,5 @@
 import React from 'react';
-import { Share2 } from 'lucide-react';
+import { Share2, Plus } from 'lucide-react';
 import './Sidebar.scss';
 
 const BASE_NAV_ITEMS = [
@@ -10,9 +10,8 @@ const BASE_NAV_ITEMS = [
   { key: 'reviews', label: 'My Reviews' },
 ];
 
-export default function Sidebar({ user, activeTab, setActiveTab }) {
-  const isTeacher = user?.role === 'teacher';
-
+export default function Sidebar({ user, activeTab, setActiveTab, onCreateCourse }) {
+  const isTeacher = user?.role === 'teacher' || user?.Role === 'teacher';
   const navItems = isTeacher
     ? [{ key: 'teacherInfo', label: 'Profile' }, ...BASE_NAV_ITEMS.slice(1)]
     : BASE_NAV_ITEMS;
@@ -50,6 +49,17 @@ export default function Sidebar({ user, activeTab, setActiveTab }) {
           </button>
         ))}
       </nav>
+
+      {isTeacher && (
+        <button
+          type="button"
+          className="sidebar__create-course-btn"
+          onClick={onCreateCourse}
+        >
+          <Plus className="sidebar__create-course-icon" size={16} />
+          Create Course
+        </button>
+      )}
     </aside>
   );
 }

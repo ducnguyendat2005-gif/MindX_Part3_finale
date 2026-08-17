@@ -20,6 +20,10 @@ export const API = {
 
   // ── Protected — cần đăng nhập (gửi kèm AT) ──
   mycourses: `${BASE_URL}/account/mycourses`,
+  teachingCourses: `${BASE_URL}/account/teaching-courses?status=published`,
+  teachingDrafts: `${BASE_URL}/account/teaching-courses?status=draft`,
+  teachingCourseById: (id) => `${BASE_URL}/account/teaching-courses/${id}`,
+  createCourse: `${BASE_URL}/account/teaching-courses`,
   myprofile: `${BASE_URL}/account/myprofile`,
   myTeacherProfile: `${BASE_URL}/account/myprofile/teacher`, 
   updateAccount: `${BASE_URL}/account/update-account`,        
@@ -73,11 +77,12 @@ export const fetchWithAuth = async (url, options = {}) => {
       Authorization: `Bearer ${accessToken}`,
       ...options.headers,
     };
-    // Nếu body là FormData (có kèm file) thì để browser tự set Content-Type kèm boundary,
-    // không được set cứng 'application/json' vì sẽ làm hỏng multipart request
-    if (!(options.body instanceof FormData)) {
+
+    // Let the browser add the multipart boundary for FormData.
+    if (!(options.body instanceof FormData) && !headers['Content-Type']) {
       headers['Content-Type'] = 'application/json';
     }
+
     return fetch(url, { ...options, headers });
   };
 

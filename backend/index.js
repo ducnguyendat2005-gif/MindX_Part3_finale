@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { errorHandler } from './middleware/errorHandler.middleware.js'
 import { validateReg,validateLogin ,isAdmin ,checkDuplicateEmail } from './middleware/account.middleware.js'
 import { checkUserCoupon } from './middleware/coupon.middleware.js'
+import { validateReg,validateLogin ,isAdmin, isTeacher, checkDuplicateEmail } from './middleware/account.middleware.js'
 import courseController from './controller/course.controller.js';
 import commentController from './controller/comment.controller.js';
 import accountController from './controller/accounts.controller.js'
@@ -10,8 +11,11 @@ import teacherController from './controller/teacher.controller.js'
 import couponController from './controller/coupon.controller.js';
 import orderController from './controller/order.controller.js';
 import { uploadPortfolio } from './src/middleware/upload.middleware.js';
+import { uploadPortfolio, uploadCourseMedia } from './src/middleware/upload.middleware.js';
 import cors from 'cors'
 import { retakeToken } from './middleware/retakeToken.middleware.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import dotenv from "dotenv";
 import { verifyToken } from './middleware/verifyToken.middleware.js';
@@ -20,6 +24,12 @@ dotenv.config();
 const app = express();
 app.use(cors({ origin:'http://localhost:5173', credentials: true }));
 app.use(express.json());
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+app.use('/uploads', express.static(path.join(currentDir, 'uploads')));
+
+app.get('/health', (_req, res) => {
+  res.status(200).json({ success: true, service: 'backend' });
+});
 
 console.log(process.env.PORT);
 console.log(process.env.MONGO_URI);
@@ -55,6 +65,25 @@ app.post('/login',validateLogin,accountController.accLogin)
 
 app.get('/account/mycourses',verifyToken,accountController.getMycourses)
 
+app.get('/account/teaching-courses', verifyToken, isTeacher, accountController.getTeachingCourses)
+app.get('/account/teaching-courses/:id', verifyToken, isTeacher, courseController.getTeachingCoursebyId)
+
+app.post(
+  '/account/teaching-courses',
+  verifyToken,
+  isTeacher,
+  uploadCourseMedia,
+  courseController.createCourse
+)
+
+app.put(
+  '/account/teaching-courses/:id',
+  verifyToken,
+  isTeacher,
+  uploadCourseMedia,
+  courseController.updateCourse
+)
+
 app.get('/account/myprofile',verifyToken,accountController.getAllUserInfo)
 
 app.get('/account/myprofile/teacher',verifyToken,teacherController.getAllTeacherInfo)
@@ -85,10 +114,17 @@ app.get('/account/vnpay/return', orderController.vnpayReturn); // không verifyT
 
 app.post('/account/refresh-token',retakeToken)
 
+// Always return JSON for unknown API routes instead of Express's HTML 404 page.
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
+  });
+});
 
 
 app.use(errorHandler);
-mongoose.connect("mongodb://localhost:27017/final3")
+mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/final3")
   .then(() => console.log('MongoDB connected!'))
   .catch((err) => console.log('MongoDB error:', err));
 
