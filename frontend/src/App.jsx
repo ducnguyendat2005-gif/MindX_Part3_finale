@@ -15,6 +15,7 @@ import AIWidget from './components/AIWidget/AIWidget';
 import Wishlist from './pages/Wishlist/Wishlist.jsx';
 import ProfilePage from './pages/Profilepage/Profilepage.jsx';
 import AdminPage from './pages/Admin/Admin.jsx'
+import PaymentResult from './pages/PaymentResult/PaymentResult.jsx';
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { Routes, Route } from "react-router-dom";
@@ -35,6 +36,7 @@ function App() {
         <Route path='/home/course-page/:id' element={<CourseDetail />}/> 
         <Route path="/home/cartpage/checkout" element={<Checkout/>}/>
         <Route path='/home/course-page/:id/buynow' element={<BuyNPage/>}></Route>
+        <Route path="/payment-result" element={<PaymentResult />} />
 
         <Route
           path="/mycoursespage/:id"

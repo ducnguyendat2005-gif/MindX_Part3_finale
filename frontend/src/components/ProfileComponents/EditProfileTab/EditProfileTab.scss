@@ -105,6 +105,34 @@
   color: $color-red-500;
   margin: -0.5rem 0 1rem;
 }
+.profile-card__success {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #16a34a; // xanh lá, tương phản với error đỏ
+  background-color: rgba(22, 163, 74, 0.1);
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-top: 8px;
+  animation: fadeSlideIn 0.25s ease-out;
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 .image-preview {
   width: 100%;

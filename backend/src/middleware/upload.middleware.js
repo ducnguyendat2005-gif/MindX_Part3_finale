@@ -4,7 +4,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const portfolioStorage = multer.memoryStorage();
-
 const portfolioFileFilter = (_req, file, cb) => {
   const allowed = ['application/pdf', 'image/jpeg', 'image/png'];
   if (allowed.includes(file.mimetype)) cb(null, true);
@@ -14,13 +13,23 @@ const portfolioFileFilter = (_req, file, cb) => {
 export const uploadPortfolio = multer({
   storage: portfolioStorage,
   fileFilter: portfolioFileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB / file
+}).array('portfolioFiles', 3); // ← đổi .single() thành .array(), tối đa 3 file
+
+const avatarFileFilter = (req, file, cb) => {
+  const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+  if (allowed.includes(file.mimetype)) cb(null, true);
+  else cb(new Error('Chỉ chấp nhận file JPG, PNG hoặc WEBP'), false);
+};
+export const uploadAvatar = multer({
+  storage: portfolioStorage,
+  fileFilter: avatarFileFilter,
   limits: { fileSize: 5 * 1024 * 1024 },
-}).array('portfolioFiles', 3);
+}).single('avatar');  // ← field name FE phải append đúng là 'avatar'
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const courseUploadDir = path.resolve(currentDir, '../../uploads/courses');
 fs.mkdirSync(courseUploadDir, { recursive: true });
-
 const courseStorage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, courseUploadDir),
   filename: (_req, file, cb) => {
@@ -28,7 +37,6 @@ const courseStorage = multer.diskStorage({
     cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`);
   },
 });
-
 const courseFileFilter = (_req, file, cb) => {
   const allowed = [
     'image/jpeg', 'image/png', 'image/gif',
@@ -37,7 +45,6 @@ const courseFileFilter = (_req, file, cb) => {
   if (allowed.includes(file.mimetype)) return cb(null, true);
   cb(new Error('Chỉ chấp nhận ảnh JPG, PNG, GIF hoặc video MP4, WebM'));
 };
-
 export const uploadCourseMedia = multer({
   storage: courseStorage,
   fileFilter: courseFileFilter,

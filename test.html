@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Byway - Create Course</title>
+    <style>
+        /* Base Styles (Giữ nguyên style gốc) */
+        :root {
+            --primary-dark: #0f172a;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --bg-light: #f9fafb;
+            --border-color: #e5e7eb;
+            --blue-light: #eff6ff;
+            --blue-text: #1d4ed8;
+            --blue-btn: #2563eb;
+            --blue-btn-hover: #1d4ed8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary-dark);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background-color: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon-inner {
+            width: 16px;
+            height: 16px;
+            background-color: #4ade80;
+            border-radius: 50%;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border-color: #475569;
+        }
+
+        .btn-outline:hover {
+            background: #1e293b;
+        }
+
+        .btn-primary {
+            background: var(--blue-btn);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--blue-btn-hover);
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 32px;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Form Elements */
+        .card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: var(--text-main);
+            background-color: white;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--blue-btn);
+            box-shadow: 0 0 0 3px var(--blue-light);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            background-color: var(--bg-light);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .upload-area:hover {
+            background-color: var(--blue-light);
+            border-color: #93c5fd;
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            color: #9ca3af;
+            margin-bottom: 12px;
+        }
+
+        .upload-text {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .upload-text span {
+            color: var(--blue-btn);
+            font-weight: 600;
+        }
+
+        /* Curriculum Builder */
+        .section-box {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-light);
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 16px;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .lesson-list {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .lesson-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        .drag-icon {
+            color: #9ca3af;
+            cursor: grab;
+        }
+
+        .btn-add {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--blue-btn);
+            font-size: 0.875rem;
+            font-weight: 600;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px 0;
+        }
+
+        .btn-add:hover {
+            text-decoration: underline;
+        }
+
+        .remove-btn {
+            color: #ef4444;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .remove-btn:hover {
+            background: #fee2e2;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header for Instructor -->
+    <header>
+        <div class="logo-container">
+            <div class="logo-icon">
+                <div class="logo-icon-inner"></div>
+            </div>
+            <span>Byway | Instructor Dashboard</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-outline">Save Draft</button>
+            <button class="btn btn-primary">Publish Course</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Left Column: Main Editing Area -->
+        <div class="main-content">
+            
+            <!-- Basic Information -->
+            <div class="card">
+                <h2 class="card-title">Basic Information</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Course Title</label>
+                    <input type="text" class="form-control" placeholder="e.g. Introduction to User Experience Design" value="Introduction to User Experience Design">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Course Overview</label>
+                    <textarea class="form-control" rows="4" placeholder="Briefly describe what this course is about...">Embark on a transformative journey into the dynamic world of User Experience (UX) Design with our comprehensive course...</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Key Learning Objectives (One per line)</label>
+                    <textarea class="form-control" rows="4" placeholder="What will students learn?">- Gain a clear understanding of what UX Design entails.
+- Explore the fundamental principles of user-centered design.
+- Learn about information architecture, interaction design, and visual design.</textarea>
+                </div>
+            </div>
+
+            <!-- Curriculum Builder -->
+            <div class="card">
+                <h2 class="card-title">Curriculum Builder</h2>
+                
+                <div id="curriculum-container">
+                    <!-- Section 1 -->
+                    <div class="section-box">
+                        <div class="section-header">
+                            <svg class="drag-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+                            <input type="text" class="form-control" value="Introduction to UX Design" style="flex: 1;">
+                            <button class="remove-btn"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        </div>
+                        <div class="lesson-list" id="lesson-list-1">
+                            <!-- Lesson Item -->
+                            <div class="lesson-item">
+                                <svg class="drag-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+                                <input type="text" class="form-control" value="What is User Experience (UX) Design?" style="flex: 2;">
+                                <input type="text" class="form-control" value="4min" style="flex: 1; max-width: 80px;" placeholder="Duration">
+                                <button class="btn btn-outline" style="color: var(--text-main); border-color: var(--border-color); padding: 8px;">Upload Video</button>
+                                <button class="remove-btn"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                            </div>
+                            <!-- Lesson Item -->
+                            <div class="lesson-item">
+                                <svg class="drag-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+                                <input type="text" class="form-control" value="Historical Overview of UX Design" style="flex: 2;">
+                                <input type="text" class="form-control" value="4min" style="flex: 1; max-width: 80px;" placeholder="Duration">
+                                <button class="btn btn-outline" style="color: var(--text-main); border-color: var(--border-color); padding: 8px;">Upload Video</button>
+                                <button class="remove-btn"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                            </div>
+                            
+                            <button class="btn-add" onclick="addLesson('lesson-list-1')">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                Add Lesson
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-add" style="font-size: 1rem; margin-top: 8px;" onclick="addSection()">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Add New Section
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Settings & Media -->
+        <aside class="sidebar">
+            
+            <div class="card">
+                <h2 class="card-title">Course Media</h2>
+                <div class="form-group">
+                    <label class="form-label">Course Thumbnail</label>
+                    <div class="upload-area">
+                        <svg class="upload-icon mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto; display: block;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <p class="upload-text"><span>Click to upload</span> or drag and drop</p>
+                        <p class="upload-text" style="font-size: 0.75rem; margin-top: 4px;">PNG, JPG or GIF (max. 800x400px)</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Promotional Video</label>
+                    <div class="upload-area">
+                        <svg class="upload-icon mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto; display: block;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        <p class="upload-text"><span>Upload Video</span> (MP4, WebM)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">Settings</h2>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-control">
+                        <option>Design</option>
+                        <option>Development</option>
+                        <option>Marketing</option>
+                        <option>Business</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Level</label>
+                    <select class="form-control">
+                        <option>Beginner</option>
+                        <option>Intermediate</option>
+                        <option>Advanced</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Price (USD)</label>
+                    <input type="number" class="form-control" placeholder="0.00" value="49.99">
+                </div>
+            </div>
+            
+        </aside>
+    </main>
+
+    <script>
+        let sectionCount = 1;
+
+        // Hàm thêm Bài học (Lesson) vào một Chương (Section)
+        function addLesson(listId) {
+            const list = document.getElementById(listId);
+            const lessonHtml = `
+                <div class="lesson-item">
+                    <svg class="drag-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+                    <input type="text" class="form-control" placeholder="New Lesson Title" style="flex: 2;">
+                    <input type="text" class="form-control" placeholder="0min" style="flex: 1; max-width: 80px;">
+                    <button class="btn btn-outline" style="color: var(--text-main); border-color: var(--border-color); padding: 8px;">Upload Video</button>
+                    <button class="remove-btn" onclick="this.parentElement.remove()"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                </div>
+            `;
+            // Chèn lesson mới lên trên nút "Add Lesson"
+            list.insertAdjacentHTML('beforeend', lessonHtml);
+            // Di chuyển nút "Add Lesson" xuống cuối cùng
+            const btnAdd = list.querySelector('.btn-add');
+            list.appendChild(btnAdd);
+        }
+
+        // Hàm thêm Chương mới (Section)
+        function addSection() {
+            sectionCount++;
+            const container = document.getElementById('curriculum-container');
+            const listId = `lesson-list-${sectionCount}`;
+            const sectionHtml = `
+                <div class="section-box">
+                    <div class="section-header">
+                        <svg class="drag-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+                        <input type="text" class="form-control" placeholder="New Section Title" style="flex: 1;">
+                        <button class="remove-btn" onclick="this.parentElement.parentElement.remove()"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    </div>
+                    <div class="lesson-list" id="${listId}">
+                        <button class="btn-add" onclick="addLesson('${listId}')">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Add Lesson
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', sectionHtml);
+        }
+    </script>
+</body>
+</html>

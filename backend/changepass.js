@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 const saltRounds = 10;
 
-const pass = "ducdat"
+const pass = "user123"
 const salt = bcrypt.genSaltSync(saltRounds);
 const hash = bcrypt.hashSync(pass, salt);
 
