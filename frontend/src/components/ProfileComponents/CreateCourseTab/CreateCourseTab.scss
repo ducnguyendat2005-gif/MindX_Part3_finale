@@ -1,0 +1,445 @@
+// ============================================================
+// CreateCourseTab.scss
+// BEM-based styles for the Create Course page
+// ============================================================
+
+// ----- Variables -----
+$color-white: #ffffff;
+$color-bg-light: #f9fafb;
+$color-border: #e5e7eb;
+$color-text-main: #1f2937;
+$color-text-muted: #6b7280;
+$color-slate-900: #0f172a;
+$color-blue-light: #eff6ff;
+$color-blue-500: #3b82f6;
+$color-blue-600: #2563eb;
+$color-blue-700: #1d4ed8;
+$color-red-500: #ef4444;
+$color-red-50: #fee2e2;
+$color-gray-400: #9ca3af;
+
+$radius-sm: 0.5rem;
+$radius-md: 0.75rem;
+
+$transition-default: 200ms ease;
+
+// ----- Page shell -----
+.cc {
+  max-width: 80rem;
+  margin: 0 auto;
+
+  &__error {
+    background-color: $color-red-50;
+    color: $color-red-500;
+    border-radius: $radius-sm;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+
+  &__success {
+    background-color: #dcfce7;
+    color: #166534;
+    border-radius: $radius-sm;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    @media (min-width: 640px) {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  &__header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  &__heading {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $color-slate-900;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__aside {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+// ----- Buttons -----
+.cc-btn {
+  padding: 0.5rem 1rem;
+  border-radius: $radius-sm;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color $transition-default, opacity $transition-default;
+  font-family: inherit;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &--outline {
+    background: transparent;
+    color: $color-text-main;
+    border-color: $color-border;
+
+    &:hover:not(:disabled) {
+      background-color: $color-bg-light;
+    }
+  }
+
+  &--primary {
+    background-color: $color-blue-600;
+    color: $color-white;
+
+    &:hover:not(:disabled) {
+      background-color: $color-blue-700;
+    }
+  }
+
+  &--icon {
+    padding: 0.5rem;
+    white-space: nowrap;
+  }
+}
+
+.cc-btn-add {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: $color-blue-600;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  font-family: inherit;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &--lg {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+  }
+}
+
+.cc-remove-btn {
+  color: $color-red-500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: $radius-sm;
+  display: inline-flex;
+  transition: background-color $transition-default;
+
+  &:hover {
+    background-color: $color-red-50;
+  }
+}
+
+// ----- Card -----
+.cc-card {
+  background-color: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid $color-border;
+    color: $color-text-main;
+  }
+}
+
+// ----- Form elements -----
+.cc-form-group {
+  margin-bottom: 1.25rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.cc-form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: $color-text-main;
+}
+
+.cc-form-control {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  font-size: 0.875rem;
+  color: $color-text-main;
+  background-color: $color-white;
+  font-family: inherit;
+  transition: border-color $transition-default, box-shadow $transition-default;
+
+  &:focus {
+    outline: none;
+    border-color: $color-blue-600;
+    box-shadow: 0 0 0 3px $color-blue-light;
+  }
+
+  &::placeholder {
+    color: $color-gray-400;
+  }
+}
+
+textarea.cc-form-control {
+  resize: vertical;
+  min-height: 6rem;
+}
+
+// ----- Curriculum builder -----
+.cc-curriculum {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.cc-section {
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  background-color: $color-bg-light;
+  overflow: hidden;
+
+  &__header {
+    padding: 1rem;
+    background-color: $color-white;
+    border-bottom: 1px solid $color-border;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+}
+
+.cc-lesson-list {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cc-lesson-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: $color-white;
+  padding: 0.75rem;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+
+  .cc-form-control {
+    width: auto;
+  }
+}
+
+.cc-drag-icon {
+  color: $color-gray-400;
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+// ----- Upload area -----
+.cc-upload-area {
+  border: 2px dashed $color-border;
+  border-radius: $radius-sm;
+  padding: 2.5rem 1.25rem;
+  text-align: center;
+  background-color: $color-bg-light;
+  cursor: pointer;
+  transition: background-color $transition-default, border-color $transition-default;
+
+  &:hover {
+    background-color: $color-blue-light;
+    border-color: #93c5fd;
+  }
+
+  &__preview {
+    max-width: 100%;
+    max-height: 10rem;
+    border-radius: $radius-sm;
+    object-fit: cover;
+  }
+}
+
+.cc-upload-icon {
+  width: 3rem;
+  height: 3rem;
+  color: $color-gray-400;
+  margin: 0 auto 0.75rem;
+  display: block;
+}
+
+.cc-upload-text {
+  font-size: 0.875rem;
+  color: $color-text-muted;
+
+  span {
+    color: $color-blue-600;
+    font-weight: 600;
+  }
+
+  &--sm {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+  }
+}
+
+// ============================================================
+// DARK THEME
+// ============================================================
+[data-theme="dark"] {
+  .cc__heading {
+    color: #f8fafc;
+  }
+
+  .cc__error {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+  }
+
+  .cc-btn--outline {
+    color: #f8fafc;
+    border-color: #334155;
+
+    &:hover:not(:disabled) {
+      background-color: #1e293b;
+    }
+  }
+
+  .cc-btn--primary {
+    background-color: #3b82f6;
+
+    &:hover:not(:disabled) {
+      background-color: #2563eb;
+    }
+  }
+
+  .cc-btn-add {
+    color: #60a5fa;
+  }
+
+  .cc-remove-btn {
+    color: #f87171;
+
+    &:hover {
+      background-color: rgba(239, 68, 68, 0.15);
+    }
+  }
+
+  .cc-card {
+    background-color: #0f172a;
+    border-color: #334155;
+
+    &__title {
+      color: #f8fafc;
+      border-bottom-color: #334155;
+    }
+  }
+
+  .cc-form-label {
+    color: #e2e8f0;
+  }
+
+  .cc-form-control {
+    background-color: #020617;
+    border-color: #334155;
+    color: #f8fafc;
+
+    &::placeholder {
+      color: #64748b;
+    }
+
+    &:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    }
+  }
+
+  .cc-section {
+    background-color: #0b1220;
+    border-color: #334155;
+
+    &__header {
+      background-color: #0f172a;
+      border-bottom-color: #334155;
+    }
+  }
+
+  .cc-lesson-item {
+    background-color: #0f172a;
+    border-color: #334155;
+  }
+
+  .cc-drag-icon {
+    color: #64748b;
+  }
+
+  .cc-upload-area {
+    background-color: #0b1220;
+    border-color: #334155;
+
+    &:hover {
+      background-color: rgba(59, 130, 246, 0.1);
+      border-color: #3b82f6;
+    }
+  }
+
+  .cc-upload-icon {
+    color: #64748b;
+  }
+
+  .cc-upload-text {
+    color: #94a3b8;
+
+    span {
+      color: #60a5fa;
+    }
+  }
+}

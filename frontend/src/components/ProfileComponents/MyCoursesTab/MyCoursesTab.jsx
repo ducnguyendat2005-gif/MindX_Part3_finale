@@ -6,8 +6,8 @@ import './MyCoursesTab.scss';
 
 const img = "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=400";
 
-export default function MyCoursesTab() {
-  const [course, setCourse] = useState([]);
+export default function MyCoursesTab({ myCourses }) {
+  const [course, setCourse] = useState(myCourses || []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -23,10 +23,21 @@ export default function MyCoursesTab() {
   const sortRef = useRef(null);
 
   useEffect(() => {
+    if (Array.isArray(myCourses)) {
+      setCourse(myCourses);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     const fetchMyCourses = async () => {
       try {
         setLoading(true);
-        const res = await fetchWithAuth(API.mycourses);
+        const storedUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+        const endpoint = storedUser.role === 'teacher'
+          ? API.teachingCourses
+          : API.mycourses;
+        const res = await fetchWithAuth(endpoint);
         if (!res.ok) throw new Error(`Lỗi: ${res.status}`);
         const result = await res.json();
         setCourse(result.data || []);
@@ -37,7 +48,7 @@ export default function MyCoursesTab() {
       }
     };
     fetchMyCourses();
-  }, []);
+  }, [myCourses]);
 
   // Đóng dropdown khi click ra ngoài
   useEffect(() => {

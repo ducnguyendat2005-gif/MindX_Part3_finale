@@ -157,7 +157,7 @@ function Lesson({ lesson, isActive, onSelect }) {
     const next = !completed;
     setCompleted(next);
     localStorage.setItem(storageKey, String(next));
-    onSelect(lesson.storageId);
+    onSelect(lesson);
   };
 
   const lessonClass = [
@@ -191,17 +191,21 @@ function buildSections(syllabus = [], courseId = '') {
     id: secIndex + 1,
     title: sec.title,
     defaultExpanded: secIndex === 0,
-    lessons: sec.items.map((item, i) => ({
+    lessons: (sec.lessonDetails?.length
+      ? sec.lessonDetails
+      : (sec.items || []).map((title) => ({ title, duration: sec.duration })))
+      .map((item, i) => ({
       id: i + 1,
       storageId: `${courseId}_sec${secIndex}_les${i}`,
-      title: item,
-      duration: sec.duration || "1 hour",
+      title: item.title,
+      duration: item.duration || sec.duration || "1 hour",
+      videoUrl: item.videoUrl || '',
       current: secIndex === 0 && i === 0,
-    })),
+      })),
   }));
 }
 
-function CourseCompletion({ syllabus, courseId }) {
+function CourseCompletion({ syllabus, courseId, onSelectLesson }) {
   const sections = useMemo(() => buildSections(syllabus, courseId), [syllabus, courseId]);
   const firstLesson = sections[0]?.lessons[0]?.storageId ?? null;
   const [activeLesson, setActiveLesson] = useState(firstLesson);
@@ -216,7 +220,10 @@ function CourseCompletion({ syllabus, courseId }) {
           key={section.id}
           section={section}
           activeLesson={activeLesson}
-          onSelect={setActiveLesson}
+          onSelect={(lesson) => {
+            setActiveLesson(lesson.storageId);
+            onSelectLesson?.(lesson);
+          }}
         />
       ))}
     </div>
@@ -484,12 +491,19 @@ export default function CourseLearning() {
   // Nhận data từ Link state (truyền từ MyCoursePage)
   const { id } = useParams();
   const [course, setCourse] = useState(null);
+  const [activeLesson, setActiveLesson] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const res = await fetch(API.courseById(id));
+        const storedUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+        const courseEndpoint = storedUser.role === 'teacher'
+          ? API.teachingCourseById(id)
+          : API.courseById(id);
+        const res = storedUser.role === 'teacher'
+          ? await fetchWithAuth(courseEndpoint)
+          : await fetch(courseEndpoint);
         const result = await res.json();
         setCourse(result.data);
       } catch (err) {
@@ -531,13 +545,20 @@ export default function CourseLearning() {
 
           {/* Sidebar: Course Completion — dùng syllabus thực */}
           <div className={styles.courseCom}>
-            <CourseCompletion syllabus={syllabus} courseId={String(course._id)} />
+            <CourseCompletion
+              syllabus={syllabus}
+              courseId={String(course._id)}
+              onSelectLesson={setActiveLesson}
+            />
           </div>
 
           {/* Video */}
           <div className={styles.cVid}>
-            <video width="95%" height="95%" controls poster="thumbnail.jpg">
-              <source src={vid} type="video/mp4" />
+            <video width="95%" height="95%" controls poster={course.thumbnail || 'thumbnail.jpg'}>
+              <source
+                src={activeLesson?.videoUrl || course.promotionalVideo || vid}
+                type={activeLesson?.videoUrl?.endsWith('.webm') ? 'video/webm' : 'video/mp4'}
+              />
               Trình duyệt của bạn không hỗ trợ thẻ video.
             </video>
           </div>

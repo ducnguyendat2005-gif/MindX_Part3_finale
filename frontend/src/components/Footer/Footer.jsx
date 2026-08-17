@@ -45,11 +45,11 @@ const Footer = () => {
                 <p>Mail: bywayellu@webkul.in</p>
             </div>
             <div className={styles.partnerButton}>
-                <a href="#" className={styles.iconBtn}><img src={facebook} alt="Facebook" /></a>
-                <a href="#" className={styles.iconBtn}><img src={twitter} alt="Twitter" /></a>
-                <a href="#" className={styles.iconBtn}><img src={google} alt="Google" /></a>
-                <a href="#" className={styles.iconBtn}><img src={github} alt="Github" /></a>
-                <a href="#" className={styles.iconBtn}><img src={microsoft} alt="Microsoft" /></a>
+                <a href="https://www.facebook.com/facebook/" className={styles.iconBtn}><img src={facebook} alt="Facebook" /></a>
+                <a href="https://x.com/?lang=vi" className={styles.iconBtn}><img src={twitter} alt="Twitter" /></a>
+                <a href="https://www.google.com/" className={styles.iconBtn}><img src={google} alt="Google" /></a>
+                <a href="https://github.com/" className={styles.iconBtn}><img src={github} alt="Github" /></a>
+                <a href="https://www.microsoft.com/vi-vn" className={styles.iconBtn}><img src={microsoft} alt="Microsoft" /></a>
             </div>
             </div>
         </div>
