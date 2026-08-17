@@ -6,6 +6,8 @@ import CourseModel from '../model/courses.js'
 import InstructorModel from '../model/instructor.js'
 import ReviewModel from '../model/review.js'
 import CommentModel from '../model/comment.js';
+import { uploadAvatar } from '../src/middleware/upload.middleware.js';
+import { runMiddleware } from '../src/utils/runMiddleware.js';
 import { uploadBufferToCloudinary } from '../src/utils/uploadToCloudinary.js';
 import dotenv from "dotenv";
 dotenv.config();
@@ -43,8 +45,9 @@ const accountController = {
 
             const foundAccount = await AccountModel.findOne({ Email: email }).select("Email role _id")
             const userData = foundAccount.toObject();
+            
 
-            const ATtoken = jwt.sign({ ...userData, type: 'AT' }, process.env.JWT_SECRET_ACCESS, { expiresIn: '2d' });// 👈 thêm type AT
+            const ATtoken = jwt.sign({ ...userData, type: 'AT' }, process.env.JWT_SECRET_ACCESS, { expiresIn: '1d' });// 👈 thêm type AT
             const RTtoken = jwt.sign({ ...userData, type: 'RT' }, process.env.JWT_SECRET_REFRESH, { expiresIn: '7d' });  // 👈 thêm type RT // ⚠️ '1w' không hợp lệ, phải dùng '7d');
 
             res.status(200).json({ data: { ATtoken, RTtoken }, message: 'Login successful!', success: true });
@@ -180,20 +183,29 @@ const accountController = {
     },
     updateProfile:async (req,res,next) =>{
         try {
+            await runMiddleware(req, res, uploadAvatar);
+
             const accountId = req.user._id;
-            
-            const { Fname, Lname, description, learningGoal, level, interests, avatar } = req.body;
+            const { Fname, Lname, description, learningGoal, level, interests } = req.body;
+
+            let avatar;
+            if (req.file) {
+                const result = await uploadBufferToCloudinary(req.file.buffer, req.file.mimetype);
+                avatar = result.secure_url;
+            }
+
+            const updateData = { Fname, Lname, description, learningGoal, level, interests };
+            if (avatar) updateData.avatar = avatar; // chỉ set khi có ảnh mới, tránh đè avatar cũ thành undefined
 
             const updated = await AccountModel.findByIdAndUpdate(
-            accountId,
-            { $set: { Fname, Lname, description, learningGoal, level, interests, avatar } },
-            { new: true, runValidators: true }
+                accountId,
+                { $set: updateData },
+                { new: true, runValidators: true }
             );
 
             if (!updated) {
-            return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+                return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
             }
-
             res.status(200).json({ success: true, data: updated, message: 'Cập nhật thành công' });
         } catch (error) {
             next(error);

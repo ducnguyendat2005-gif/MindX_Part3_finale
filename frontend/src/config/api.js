@@ -26,11 +26,14 @@ export const API = {
   updateInstructor: `${BASE_URL}/account/update-instructor`,
   changePassword: `${BASE_URL}/account/change-password`,
   checkout: `${BASE_URL}/account/checkout`,
+  applyCoupon: `${BASE_URL}/account/apply-coupon`, 
   admin: `${BASE_URL}/admin`,
   postReview: (courseId) => `${BASE_URL}/courses/${courseId}/reviews`,
   myReviews: `${BASE_URL}/account/reviews`,
   updateReview: (reviewId) => `${BASE_URL}/account/review/${reviewId}`,
   deleteReview: (id) => `${BASE_URL}/account/review/${id}`,
+  createMomoOrder: `${BASE_URL}/account/momo/create`,
+  createVnpayOrder: `${BASE_URL}/account/vnpay/create`,
 };
 
 // Lưu / đọc / xóa token tập trung 1 chỗ, tránh rải localStorage.getItem khắp nơi
@@ -42,6 +45,15 @@ export const tokenStorage = {
     if (RTtoken) localStorage.setItem('RTtoken', RTtoken);
   },
   setAT: (ATtoken) => localStorage.setItem('ATtoken', ATtoken),
+  // Only update the cached user while the originating session is still active.
+  setUser: (user, expectedAT) => {
+    const currentAT = localStorage.getItem('ATtoken');
+    if (!currentAT || (expectedAT && currentAT !== expectedAT)) return false;
+
+    localStorage.setItem('loggedInUser', JSON.stringify(user));
+    window.dispatchEvent(new Event('userUpdated'));
+    return true;
+  },
   clear: () => {
     localStorage.removeItem('ATtoken');
     localStorage.removeItem('RTtoken');
@@ -56,15 +68,18 @@ export const tokenStorage = {
  * Nếu RT cũng hết hạn/không hợp lệ → xóa hết token, chuyển về /signin.
  */
 export const fetchWithAuth = async (url, options = {}) => {
-  const doFetch = (accessToken) =>
-    fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-        ...options.headers,
-      },
-    });
+  const doFetch = (accessToken) => {
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+      ...options.headers,
+    };
+    // Nếu body là FormData (có kèm file) thì để browser tự set Content-Type kèm boundary,
+    // không được set cứng 'application/json' vì sẽ làm hỏng multipart request
+    if (!(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
+    return fetch(url, { ...options, headers });
+  };
 
   let res = await doFetch(tokenStorage.getAT());
 

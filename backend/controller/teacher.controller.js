@@ -2,6 +2,9 @@ import InstructorModel from "../model/instructor.js";
 import AccountModel from "../model/account.js";
 import CourseModel from "../model/courses.js";
 import ReviewModel from "../model/review.js";
+import { uploadAvatar } from '../src/middleware/upload.middleware.js';
+import { runMiddleware } from '../src/utils/runMiddleware.js';
+import { uploadBufferToCloudinary } from '../src/utils/uploadToCloudinary.js';
 
 const teacherController = {
     getTopTeacher: async(req ,res ,next) =>{
@@ -22,16 +25,27 @@ const teacherController = {
             return res.status(403).json({ success: false, message: 'Chỉ giáo viên mới được sửa mục này' });
             }
 
+            await runMiddleware(req, res, uploadAvatar);
+
             const { title, bio, yearsOfExperience } = req.body; // whitelist, không cho sửa totalStudents/rating tự tính
 
+            let thumbnail;
+            if (req.file) {
+                const result = await uploadBufferToCloudinary(req.file.buffer, req.file.mimetype);
+                thumbnail = result.secure_url;
+            }
+
+            const updateData = { title, bio, yearsOfExperience };
+            if (thumbnail) updateData.thumbnail = thumbnail;
+
             const updated = await InstructorModel.findOneAndUpdate(
-            { accountId: req.user._id }, // filter theo accountId từ JWT, không tin req.params
-            { $set: { title, bio, yearsOfExperience } },
-            { new: true, runValidators: true }
+                { accountId: req.user._id },
+                { $set: updateData },
+                { new: true, runValidators: true }
             );
 
             if (!updated) {
-            return res.status(404).json({ success: false, message: 'Không tìm thấy hồ sơ giảng viên' });
+                return res.status(404).json({ success: false, message: 'Không tìm thấy hồ sơ giảng viên' });
             }
 
             res.status(200).json({ success: true, data: updated, message: 'Cập nhật hồ sơ giảng viên thành công' });

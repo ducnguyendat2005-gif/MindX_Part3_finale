@@ -263,16 +263,25 @@ function Header() {
         {user ? (
           <div className={styles.profileWrapper} ref={profileRef}>
             <button
-              className={styles.avatarBtn}
-              onClick={() => setProfileOpen((v) => !v)}
-            >
-              {getInitial(user.Fname)}
-            </button>
+            className={styles.avatarBtn}
+            onClick={() => setProfileOpen((v) => !v)}
+          >
+            {user.avatar ? (
+              <img src={user.avatar} alt={user.Username} className={styles.avatarImg} referrerPolicy="no-referrer" />
+            ) : (
+              getInitial(user.Fname)
+            )}
+          </button>
 
             {profileOpen && (
               <div className={styles.profileDropdown}>
                 <div className={styles.profileHeader}>
-                  <div className={styles.profileAvatar}>{getInitial(user.Fname)}</div>
+                  <div className={styles.profileAvatar}>
+                    {user.avatar ? (
+                      <img src={user.avatar} alt={user.Username} className={styles.avatarImg} referrerPolicy="no-referrer" />
+                    ) : (
+                      getInitial(user.Fname)
+                    )}</div>
                   <div>
                     <p className={styles.profileName}>{user.Username}</p>
                     <p className={styles.profileEmail}>{user.Email}</p>

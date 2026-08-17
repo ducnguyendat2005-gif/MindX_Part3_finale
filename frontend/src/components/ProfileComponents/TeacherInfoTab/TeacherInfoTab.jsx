@@ -59,6 +59,16 @@ export default function TeacherInfoTab({ instructorInfo, onEdit }) {
       </div>
 
       <div className={styles.bottomBox}>
+
+        <div className={styles.headerSec}>
+          <h3>Personal Information</h3>
+          <div className={styles.bottomHeader}>
+            <button className={styles.editLink} onClick={onEdit} type="button">
+              Edit
+            </button>
+          </div>
+        </div>
+
         <div className={styles.fieldsRow}>
           <div className={styles.field}>
             <label>Chức danh / chuyên môn</label>
@@ -97,11 +107,7 @@ export default function TeacherInfoTab({ instructorInfo, onEdit }) {
             <p>Chưa có file portfolio nào.</p>
           )}
         </div>
-      <div className={styles.bottomHeader}>
-        <button className={styles.editLink} onClick={onEdit} type="button">
-          Edit
-        </button>
-      </div>
+      
       </div>
 
       {/* Modal xem PDF ngay trong trang */}

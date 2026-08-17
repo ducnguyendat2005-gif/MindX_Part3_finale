@@ -9,10 +9,21 @@
 
 .topBox,
 .bottomBox {
+  > h3{
+    padding-bottom:10px;
+  }
   border-radius: 1rem;
   padding: 1.5rem;
   background-color: $color-white;
   border: 1px solid $color-gray-100;
+
+  .headerSec{
+    display:flex;
+    padding-bottom:14px;
+    > .bottomHeader{
+      margin-left:auto;
+    }
+  }
 }
 
 .header {
@@ -295,7 +306,7 @@
       color: #60a5fa;
     }
   }
-  
+
   .emptyHint {
     color: #64748b;
   }

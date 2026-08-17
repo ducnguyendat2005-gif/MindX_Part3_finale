@@ -89,7 +89,7 @@ export default function ProfilePage() {
             }
           }
         }
-        localStorage.setItem('loggedInUser', JSON.stringify(merged));
+        tokenStorage.setUser(merged, at);
 
         setForm({
           firstName: merged.Fname ?? '',
@@ -125,19 +125,23 @@ export default function ProfilePage() {
   };
 
   const handleSaveProfile = async () => {
+    const sessionAT = tokenStorage.getAT();
+    if (!sessionAT) return navigate('/signin');
+
     setSaving(true);
     try {
+      const formData = new FormData();
+      formData.append('Fname', form.firstName);
+      formData.append('Lname', form.lastName);
+      formData.append('description', form.description);
+      formData.append('learningGoal', form.learningGoal);
+      formData.append('level', form.level);
+      (form.interests || []).forEach((i) => formData.append('interests', i));
+      if (avatarFile) formData.append('avatar', avatarFile); // field name khớp uploadAvatar.single('avatar') bên BE
+
       const res = await fetchWithAuth(API.updateAccount, {
         method: 'PUT',
-        body: JSON.stringify({
-          Fname: form.firstName,
-          Lname: form.lastName,
-          description: form.description,
-          learningGoal: form.learningGoal,
-          level: form.level,
-          interests: form.interests,
-          avatar: form.imageUrl,
-        }),
+        body: formData, // KHÔNG JSON.stringify nữa
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -145,7 +149,7 @@ export default function ProfilePage() {
       }
       const result = await res.json();
       setUser(result.data);
-      localStorage.setItem('loggedInUser', JSON.stringify(result.data));
+      tokenStorage.setUser(result.data, sessionAT);
       setForm((prev) => ({
         ...prev,
         firstName: result.data.Fname ?? '',
@@ -157,6 +161,22 @@ export default function ProfilePage() {
         imageUrl: result.data.avatar ?? '',
       }));
       setPreview(result.data.avatar ?? null);
+
+      // Nếu là teacher và vừa đổi avatar → đồng bộ luôn sang instructor.thumbnail
+      if (user?.role === 'teacher' && avatarFile) {
+        const instructorFd = new FormData();
+        instructorFd.append('avatar', avatarFile);
+        const instructorRes = await fetchWithAuth(API.updateInstructor, {
+          method: 'PUT',
+          body: instructorFd,
+        });
+        if (instructorRes.ok) {
+          const instructorResult = await instructorRes.json();
+          setInstructorInfo(instructorResult.data);
+        }
+      }
+
+      setAvatarFile(null);
       setActiveTab('profile');
     } catch (err) {
       console.error(err);
