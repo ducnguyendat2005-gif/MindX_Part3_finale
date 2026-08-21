@@ -295,12 +295,11 @@ function Header() {
                   </div>
                 </div>
                 <div className={styles.profileDivider} />
-                <button className={styles.profileItem} onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
-                  👤 My Profile
-                </button>
-                <button className={styles.profileItem} onClick={() => { navigate('/profile', { state: { tab: 'courses' } }); setProfileOpen(false); }}>
-                  📚 My Courses
-                </button>
+                {user.role === 'admin' && (
+                  <button className={styles.profileItem} onClick={() => { navigate('/admin'); setProfileOpen(false); }}>
+                    🛡️ Admin
+                  </button>
+                )}
                 <button className={styles.profileItem} onClick={() => { navigate('/home/cartpage'); setProfileOpen(false); }}>
                   🛒 My Cart
                 </button>
