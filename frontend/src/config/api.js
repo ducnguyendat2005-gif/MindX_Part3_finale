@@ -19,6 +19,9 @@ export const API = {
   checkDuplicateEmail: `${BASE_URL}/account/check-duplicate`,
 
   // ── Protected — cần đăng nhập (gửi kèm AT) ──
+  pendingCourses: `${BASE_URL}/admin/courses/pending`,
+  approveCourse: (id) => `${BASE_URL}/admin/courses/${id}/approve`,
+  rejectCourse: (id) => `${BASE_URL}/admin/courses/${id}/reject`,
   mycourses: `${BASE_URL}/account/mycourses`,
   teachingCourses: `${BASE_URL}/account/teaching-courses?status=published`,
   teachingDrafts: `${BASE_URL}/account/teaching-courses?status=draft`,

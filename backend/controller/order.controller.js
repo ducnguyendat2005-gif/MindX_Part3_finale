@@ -131,8 +131,10 @@ const createMomoOrder = async (req, res, next) => {
 // POST /account/momo/ipn — MoMo gọi server-to-server, KHÔNG qua verifyToken
 const momoIPN = async (req, res, next) => {
   try {
-    const payload = req.body;
-
+    const payload = req.body || {};
+    if (!payload.partnerCode) {
+      return res.status(400).json({ message: 'Empty or invalid IPN payload' });
+    }
     if (!verifyMomoSignature(payload)) {
       return res.status(400).json({ message: 'Invalid signature' });
     }
@@ -232,4 +234,55 @@ const vnpayReturn = async (req, res, next) => {
   }
 };
 
-export default { createMomoOrder, momoIPN, createVnpayOrder, vnpayReturn };
+const vnpayIPN = async (req, res, next) => {
+  try {
+    const query = req.query;
+    const signatureValid = verifyVnpaySignature(query);
+
+    const order = await OrderModel.findById(query.vnp_TxnRef);
+
+    if (!order) {
+      return res.status(200).json({ RspCode: '01', Message: 'Order not found' });
+    }
+
+    // Ghi log MỌI lần IPN gọi tới, kể cả chữ ký sai/giả mạo — để demo Compass
+    order.ipnLogs.push({
+      rawPayload: query,
+      signatureValid,
+      resultCode: query.vnp_ResponseCode,
+    });
+    await order.save();
+
+    if (!signatureValid) {
+      return res.status(200).json({ RspCode: '97', Message: 'Invalid signature' });
+    }
+
+    // Kiểm tra số tiền khớp — tránh giả mạo IPN với amount khác
+    const expectedAmount = Math.round(order.amountVnd) * 100;
+    if (Number(query.vnp_Amount) !== expectedAmount) {
+      return res.status(200).json({ RspCode: '04', Message: 'Invalid amount' });
+    }
+
+    if (order.status === 'succeeded' || order.status === 'failed') {
+      // Đơn đã được xử lý (có thể do vnpayReturn xử lý trước) — vẫn báo VNPay là OK
+      return res.status(200).json({ RspCode: '00', Message: 'Confirm Success' });
+    }
+
+    if (query.vnp_ResponseCode === '00') {
+      order.status = 'succeeded';
+      order.providerTransId = query.vnp_TransactionNo;
+      order.paidAt = new Date();
+      await order.save();
+      await finalizeSuccessfulOrder(order);
+    } else {
+      order.status = 'failed';
+      order.failureReason = `${query.vnp_ResponseCode}: ${query.vnp_Message || ''}`;
+      await order.save();
+    }
+
+    res.status(200).json({ RspCode: '00', Message: 'Confirm Success' });
+  } catch (err) {
+    next(err);
+  }
+};
+export default { createMomoOrder, momoIPN, createVnpayOrder, vnpayReturn ,vnpayIPN};

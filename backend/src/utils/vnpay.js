@@ -11,7 +11,10 @@ const {
 
 function sortObject(obj) {
   const sorted = {};
-  Object.keys(obj).sort().forEach((key) => { sorted[key] = obj[key]; });
+  const keys = Object.keys(obj).sort();
+  keys.forEach((key) => {
+    sorted[key] = encodeURIComponent(obj[key]).replace(/%20/g, '+');
+  });
   return sorted;
 }
 
@@ -32,7 +35,7 @@ export const createVnpayUrl = ({ orderId, amount, orderInfo, ipAddr }) => {
     vnp_TxnRef: orderId,
     vnp_OrderInfo: orderInfo,
     vnp_OrderType: 'other',
-    vnp_Amount: Math.round(amount) * 100, // VNPay yêu cầu nhân 100 (không có phần thập phân)
+    vnp_Amount: Math.round(amount) * 100,
     vnp_ReturnUrl: VNPAY_RETURN_URL,
     vnp_IpAddr: ipAddr || '127.0.0.1',
     vnp_CreateDate: createDate,
@@ -40,6 +43,8 @@ export const createVnpayUrl = ({ orderId, amount, orderInfo, ipAddr }) => {
 
   vnp_Params = sortObject(vnp_Params);
 
+  // Giá trị đã encode sẵn trong sortObject, nên dùng encode:false ở đây
+  // để qs không encode lần 2 (tránh double-encode)
   const signData = qs.stringify(vnp_Params, { encode: false });
   const secureHash = crypto
     .createHmac('sha512', VNPAY_HASH_SECRET)
@@ -51,13 +56,14 @@ export const createVnpayUrl = ({ orderId, amount, orderInfo, ipAddr }) => {
   return `${VNPAY_URL}?${qs.stringify(vnp_Params, { encode: false })}`;
 };
 
-// Kiểm tra chữ ký khi VNPay redirect user về returnUrl
 export const verifyVnpaySignature = (query) => {
   const vnp_Params = { ...query };
   const secureHash = vnp_Params.vnp_SecureHash;
   delete vnp_Params.vnp_SecureHash;
   delete vnp_Params.vnp_SecureHashType;
 
+  // req.query đã bị Express decode sẵn, nên phải encode lại y hệt lúc tạo URL
+  // trước khi so khớp chữ ký
   const sorted = sortObject(vnp_Params);
   const signData = qs.stringify(sorted, { encode: false });
   const checkSum = crypto
@@ -67,3 +73,5 @@ export const verifyVnpaySignature = (query) => {
 
   return checkSum === secureHash;
 };
+
+// Kiểm tra chữ ký khi VNPay redirect user về returnUr

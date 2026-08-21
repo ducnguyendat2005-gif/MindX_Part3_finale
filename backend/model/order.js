@@ -7,6 +7,13 @@ const orderItemSchema = new mongoose.Schema({
     title: { type: String },   
 }, { _id: false });
 
+const ipnLogSchema = new mongoose.Schema({
+    rawPayload: { type: mongoose.Schema.Types.Mixed, required: true }, // toàn bộ body MoMo/VNPay gửi về
+    signatureValid: { type: Boolean, required: true },                 // kết quả verify chữ ký
+    resultCode: { type: mongoose.Schema.Types.Mixed },                 // resultCode (MoMo) / vnp_ResponseCode (VNPay)
+    receivedAt: { type: Date, default: Date.now },
+}, { _id: false });
+
 const orderSchema = new mongoose.Schema({
     accountId: { type: mongoose.Schema.Types.ObjectId, ref: 'account', required: true },
     items: [orderItemSchema],
@@ -26,7 +33,8 @@ const orderSchema = new mongoose.Schema({
     },
     payType: { type: String, default: null },       // MoMo: 'qr', 'webApp', 'napas', ... (VNPay: vnp_CardType)
     failureReason: { type: String, default: null },  // resultCode/message khi fail, để biết vì sao
-    paidAt: { type: Date, default: null },  
+    paidAt: { type: Date, default: null },
+    ipnLogs: { type: [ipnLogSchema], default: [] },   // lưu MỌI lần IPN gọi tới, kể cả trùng lặp/giả mạo
 }, { timestamps: true });
 
 const OrderModel = mongoose.model('Orders', orderSchema);

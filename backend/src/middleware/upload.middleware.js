@@ -21,6 +21,7 @@ const avatarFileFilter = (req, file, cb) => {
   if (allowed.includes(file.mimetype)) cb(null, true);
   else cb(new Error('Chỉ chấp nhận file JPG, PNG hoặc WEBP'), false);
 };
+
 export const uploadAvatar = multer({
   storage: portfolioStorage,
   fileFilter: avatarFileFilter,
@@ -37,6 +38,7 @@ const courseStorage = multer.diskStorage({
     cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`);
   },
 });
+
 const courseFileFilter = (_req, file, cb) => {
   const allowed = [
     'image/jpeg', 'image/png', 'image/gif',
@@ -46,7 +48,7 @@ const courseFileFilter = (_req, file, cb) => {
   cb(new Error('Chỉ chấp nhận ảnh JPG, PNG, GIF hoặc video MP4, WebM'));
 };
 export const uploadCourseMedia = multer({
-  storage: courseStorage,
+  storage: portfolioStorage, // dùng chung memoryStorage với portfolio/avatar
   fileFilter: courseFileFilter,
   limits: { fileSize: 250 * 1024 * 1024 },
 }).fields([
