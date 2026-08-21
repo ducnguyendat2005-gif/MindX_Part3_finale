@@ -1,0 +1,330 @@
+@use '../../../pages/Profilepage/variables.scss' as *;
+
+.teacherInfoCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.topBox,
+.bottomBox {
+  > h3{
+    padding-bottom:10px;
+  }
+  border-radius: 1rem;
+  padding: 1.5rem;
+  background-color: $color-white;
+  border: 1px solid $color-gray-100;
+
+  .headerSec{
+    display:flex;
+    padding-bottom:14px;
+    > .bottomHeader{
+      margin-left:auto;
+    }
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.bottomHeader {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+// .stats giữ nguyên, nhưng bỏ margin-bottom vì giờ là phần tử cuối trong topBox
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: $color-gray-900;
+}
+
+.titleIcon {
+  color: $color-gray-500;
+}
+
+.editLink {
+  background: transparent;
+  border: none;
+  color: $color-blue-500;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+  background-color: $color-gray-50;
+  border-radius: $radius-sm;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  color: $color-gray-500;
+
+  svg {
+    color: $color-blue-500;
+  }
+}
+
+.statValue {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: $color-gray-900;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+}
+
+.fieldsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.field {
+  margin-bottom: 1.25rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  label {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: $color-gray-500;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-size: 0.9375rem;
+    color: $color-gray-900;
+    white-space: pre-wrap;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border: 1px solid $color-gray-200;
+    border-radius: $radius-sm;
+    background-color: $color-white;
+    min-height: 2.75rem;
+  }
+}
+
+.emptyHint {
+  color: $color-gray-500;
+  font-size: 0.875rem;
+}
+
+.portfolioList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid $color-gray-200;
+    border-radius: 0.75rem;
+    background-color: $color-white;
+    color: $color-gray-500;
+
+    svg {
+      flex-shrink: 0;
+      color: $color-gray-500;
+    }
+  }
+}
+
+.fileLink {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  color: $color-gray-900;
+  font-size: 0.8125rem;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+    color: $color-blue-500;
+  }
+}
+
+// ── PDF preview modal ──
+.pdfOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.pdfModal {
+  width: min(60rem, 90vw);
+  height: min(42rem, 85vh);
+  background: $color-white;
+  border-radius: $radius-md;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pdfModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid $color-gray-100;
+  font-size: 0.875rem;
+  color: $color-gray-700;
+}
+
+.pdfModalActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pdfOpenTab {
+  color: $color-blue-500;
+  font-size: 0.8125rem;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.pdfClose {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: $color-gray-400;
+
+  &:hover {
+    color: $color-gray-700;
+  }
+}
+
+.pdfFrame {
+  flex: 1;
+  border: none;
+}
+
+// ============================================================
+// DARK THEME
+// ============================================================
+:global([data-theme="dark"]) {
+  .teacherInfoCard {
+    background-color: #0f172a;
+    border-color: #334155;
+      .topBox,
+      .bottomBox {
+        background-color: #0f172a;
+        border-color: #334155;
+      }
+  }
+
+  .title {
+    color: #f8fafc;
+  }
+
+  .titleIcon {
+    color: #94a3b8;
+  }
+
+  .stats {
+    background-color: #111827;
+  }
+
+  .statItem {
+    color: #94a3b8;
+  }
+
+  .statValue {
+    color: #f8fafc;
+  }
+
+.field {
+    label {
+      color: #94a3b8;
+    }
+
+    p {
+      color: #f8fafc;
+      background-color: #1e293b;
+      border-color: #334155;
+    }
+  }
+
+  .portfolioList li {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+
+    svg {
+      color: #94a3b8;
+    }
+  }
+
+  .fileLink {
+    color: #f8fafc;
+
+    &:hover {
+      color: #60a5fa;
+    }
+  }
+
+  .emptyHint {
+    color: #64748b;
+  }
+
+  .pdfModal {
+    background: #0f172a;
+  }
+
+  .pdfModalHeader {
+    border-color: #334155;
+    color: #cbd5e1;
+  }
+
+  .pdfClose {
+    color: #64748b;
+
+    &:hover {
+      color: #f8fafc;
+    }
+  }
+}

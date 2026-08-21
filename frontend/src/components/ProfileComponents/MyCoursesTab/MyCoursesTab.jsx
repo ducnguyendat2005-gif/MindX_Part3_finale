@@ -11,6 +11,9 @@ export default function MyCoursesTab({ myCourses }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const storedUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+  const isTeacher = storedUser.role === 'teacher';
+
   // --- Filter states ---
   const [searchText, setSearchText] = useState('');
   const [sortBy, setSortBy] = useState('relevance');
@@ -18,6 +21,8 @@ export default function MyCoursesTab({ myCourses }) {
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [filterCategory, setFilterCategory] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
+  // Chỉ dùng cho giáo viên: 'published' | 'draft'
+  const [filterStatus, setFilterStatus] = useState('published');
 
   const filterRef = useRef(null);
   const sortRef = useRef(null);
@@ -33,8 +38,7 @@ export default function MyCoursesTab({ myCourses }) {
     const fetchMyCourses = async () => {
       try {
         setLoading(true);
-        const storedUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
-        const endpoint = storedUser.role === 'teacher'
+        const endpoint = isTeacher
           ? API.teachingCourses
           : API.mycourses;
         const res = await fetchWithAuth(endpoint);
@@ -66,6 +70,13 @@ export default function MyCoursesTab({ myCourses }) {
       const matchSearch = !searchText ||
         c.title?.toLowerCase().includes(searchText.toLowerCase()) ||
         c.author?.toLowerCase().includes(searchText.toLowerCase());
+
+      if (isTeacher) {
+        // Giáo viên: lọc theo status thay vì category/level
+        const matchStatus = (c.status || 'published') === filterStatus;
+        return matchSearch && matchStatus;
+      }
+
       const matchCategory = !filterCategory || c.category === filterCategory;
       const matchLevel = !filterLevel || c.level === filterLevel;
       return matchSearch && matchCategory && matchLevel;
@@ -87,7 +98,14 @@ export default function MyCoursesTab({ myCourses }) {
   const categories = [...new Set(course.map(c => c.category).filter(Boolean))];
   const levels = [...new Set(course.map(c => c.level).filter(Boolean))];
 
-  const activeFilterCount = [filterCategory, filterLevel].filter(Boolean).length;
+  const activeFilterCount = isTeacher
+    ? 0 // luôn có 1 trạng thái được chọn, không tính là "filter đang bật"
+    : [filterCategory, filterLevel].filter(Boolean).length;
+
+  const statusLabels = {
+    published: 'Your Courses',
+    draft: 'Draft Courses',
+  };
 
   if (loading) return <p style={{ padding: 24 }}>Đang tải...</p>;
   if (error) return <p style={{ padding: 24, color: 'red' }}>Lỗi: {error}</p>;
@@ -137,52 +155,69 @@ export default function MyCoursesTab({ myCourses }) {
           <div ref={filterRef} style={{ position: 'relative' }}>
             <button className="filter-btn" onClick={() => setShowFilterMenu(v => !v)}>
               <Filter className="filter-btn__icon" />
-              Filter
+              {isTeacher ? statusLabels[filterStatus] : 'Filter'}
               {activeFilterCount > 0 && (
                 <span className="filter-badge">{activeFilterCount}</span>
               )}
             </button>
             {showFilterMenu && (
               <div className="dropdown-menu dropdown-menu--filter">
-                <div className="dropdown-menu__section">
-                  <p className="dropdown-menu__section-title">Category</p>
-                  <button
-                    className={`dropdown-menu__item ${!filterCategory ? 'dropdown-menu__item--active' : ''}`}
-                    onClick={() => setFilterCategory('')}
-                  >All</button>
-                  {categories.map(cat => (
-                    <button
-                      key={cat}
-                      className={`dropdown-menu__item ${filterCategory === cat ? 'dropdown-menu__item--active' : ''}`}
-                      onClick={() => setFilterCategory(cat)}
-                    >
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    </button>
-                  ))}
-                </div>
-                <div className="dropdown-menu__section">
-                  <p className="dropdown-menu__section-title">Level</p>
-                  <button
-                    className={`dropdown-menu__item ${!filterLevel ? 'dropdown-menu__item--active' : ''}`}
-                    onClick={() => setFilterLevel('')}
-                  >All</button>
-                  {levels.map(lv => (
-                    <button
-                      key={lv}
-                      className={`dropdown-menu__item ${filterLevel === lv ? 'dropdown-menu__item--active' : ''}`}
-                      onClick={() => setFilterLevel(lv)}
-                    >
-                      {lv}
-                    </button>
-                  ))}
-                </div>
-                {activeFilterCount > 0 && (
-                  <button
-                    className="dropdown-menu__clear"
-                    onClick={() => { setFilterCategory(''); setFilterLevel(''); }}
-                  >
-                    <X size={12} /> Clear all
-                  </button>
+                {isTeacher ? (
+                  <div className="dropdown-menu__section">
+                    <p className="dropdown-menu__section-title">Status</p>
+                    {Object.entries(statusLabels).map(([key, label]) => (
+                      <button
+                        key={key}
+                        className={`dropdown-menu__item ${filterStatus === key ? 'dropdown-menu__item--active' : ''}`}
+                        onClick={() => { setFilterStatus(key); setShowFilterMenu(false); }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    <div className="dropdown-menu__section">
+                      <p className="dropdown-menu__section-title">Category</p>
+                      <button
+                        className={`dropdown-menu__item ${!filterCategory ? 'dropdown-menu__item--active' : ''}`}
+                        onClick={() => setFilterCategory('')}
+                      >All</button>
+                      {categories.map(cat => (
+                        <button
+                          key={cat}
+                          className={`dropdown-menu__item ${filterCategory === cat ? 'dropdown-menu__item--active' : ''}`}
+                          onClick={() => setFilterCategory(cat)}
+                        >
+                          {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="dropdown-menu__section">
+                      <p className="dropdown-menu__section-title">Level</p>
+                      <button
+                        className={`dropdown-menu__item ${!filterLevel ? 'dropdown-menu__item--active' : ''}`}
+                        onClick={() => setFilterLevel('')}
+                      >All</button>
+                      {levels.map(lv => (
+                        <button
+                          key={lv}
+                          className={`dropdown-menu__item ${filterLevel === lv ? 'dropdown-menu__item--active' : ''}`}
+                          onClick={() => setFilterLevel(lv)}
+                        >
+                          {lv}
+                        </button>
+                      ))}
+                    </div>
+                    {activeFilterCount > 0 && (
+                      <button
+                        className="dropdown-menu__clear"
+                        onClick={() => { setFilterCategory(''); setFilterLevel(''); }}
+                      >
+                        <X size={12} /> Clear all
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             )}

@@ -2,7 +2,7 @@ import React from 'react';
 import { Share2, Plus } from 'lucide-react';
 import './Sidebar.scss';
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { key: 'profile', label: 'Profile' },
   { key: 'courses', label: 'My Courses' },
   { key: 'teachers', label: 'Teachers' },
@@ -12,6 +12,9 @@ const NAV_ITEMS = [
 
 export default function Sidebar({ user, activeTab, setActiveTab, onCreateCourse }) {
   const isTeacher = user?.role === 'teacher' || user?.Role === 'teacher';
+  const navItems = isTeacher
+    ? [{ key: 'teacherInfo', label: 'Profile' }, ...BASE_NAV_ITEMS.slice(1)]
+    : BASE_NAV_ITEMS;
 
   return (
     <aside className="profile-page__sidebar">
@@ -31,11 +34,15 @@ export default function Sidebar({ user, activeTab, setActiveTab, onCreateCourse 
       </div>
 
       <nav className="sidebar__nav">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <button
             key={item.key}
             type="button"
-            className={`sidebar__nav-item ${activeTab === item.key ? 'sidebar__nav-item--active' : ''}`}
+            className={`sidebar__nav-item ${
+              activeTab === item.key || (item.key === 'teacherInfo' && activeTab === 'teacherEdit')
+                ? 'sidebar__nav-item--active'
+                : ''
+            }`}
             onClick={() => setActiveTab(item.key)}
           >
             {item.label}

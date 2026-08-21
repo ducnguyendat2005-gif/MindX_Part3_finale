@@ -19,18 +19,28 @@ export const API = {
   checkDuplicateEmail: `${BASE_URL}/account/check-duplicate`,
 
   // ── Protected — cần đăng nhập (gửi kèm AT) ──
+  pendingCourses: `${BASE_URL}/admin/courses/pending`,
+  approveCourse: (id) => `${BASE_URL}/admin/courses/${id}/approve`,
+  rejectCourse: (id) => `${BASE_URL}/admin/courses/${id}/reject`,
   mycourses: `${BASE_URL}/account/mycourses`,
   teachingCourses: `${BASE_URL}/account/teaching-courses?status=published`,
   teachingDrafts: `${BASE_URL}/account/teaching-courses?status=draft`,
   teachingCourseById: (id) => `${BASE_URL}/account/teaching-courses/${id}`,
   createCourse: `${BASE_URL}/account/teaching-courses`,
   myprofile: `${BASE_URL}/account/myprofile`,
+  myTeacherProfile: `${BASE_URL}/account/myprofile/teacher`, 
+  updateAccount: `${BASE_URL}/account/update-account`,        
+  updateInstructor: `${BASE_URL}/account/update-instructor`,
+  changePassword: `${BASE_URL}/account/change-password`,
   checkout: `${BASE_URL}/account/checkout`,
+  applyCoupon: `${BASE_URL}/account/apply-coupon`, 
   admin: `${BASE_URL}/admin`,
   postReview: (courseId) => `${BASE_URL}/courses/${courseId}/reviews`,
   myReviews: `${BASE_URL}/account/reviews`,
   updateReview: (reviewId) => `${BASE_URL}/account/review/${reviewId}`,
   deleteReview: (id) => `${BASE_URL}/account/review/${id}`,
+  createMomoOrder: `${BASE_URL}/account/momo/create`,
+  createVnpayOrder: `${BASE_URL}/account/vnpay/create`,
 };
 
 // Lưu / đọc / xóa token tập trung 1 chỗ, tránh rải localStorage.getItem khắp nơi
@@ -42,6 +52,15 @@ export const tokenStorage = {
     if (RTtoken) localStorage.setItem('RTtoken', RTtoken);
   },
   setAT: (ATtoken) => localStorage.setItem('ATtoken', ATtoken),
+  // Only update the cached user while the originating session is still active.
+  setUser: (user, expectedAT) => {
+    const currentAT = localStorage.getItem('ATtoken');
+    if (!currentAT || (expectedAT && currentAT !== expectedAT)) return false;
+
+    localStorage.setItem('loggedInUser', JSON.stringify(user));
+    window.dispatchEvent(new Event('userUpdated'));
+    return true;
+  },
   clear: () => {
     localStorage.removeItem('ATtoken');
     localStorage.removeItem('RTtoken');

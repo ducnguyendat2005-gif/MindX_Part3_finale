@@ -40,8 +40,7 @@ export default function SignInPage() {
           ...profileResult.user,
           myCourses: (profileResult.courses || []).map(e => e.courseId),
         };
-        localStorage.setItem('loggedInUser', JSON.stringify(merged));
-        window.dispatchEvent(new Event('userUpdated'));
+        tokenStorage.setUser(merged, ATtoken);
 
         // Decode Access Token để lấy role
         let role = null;

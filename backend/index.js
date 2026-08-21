@@ -1,11 +1,15 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import { errorHandler } from './middleware/errorHandler.middleware.js'
+import { checkUserCoupon } from './middleware/coupon.middleware.js'
 import { validateReg,validateLogin ,isAdmin, isTeacher, checkDuplicateEmail } from './middleware/account.middleware.js'
 import courseController from './controller/course.controller.js';
 import commentController from './controller/comment.controller.js';
 import accountController from './controller/accounts.controller.js'
 import teacherController from './controller/teacher.controller.js'
+import couponController from './controller/coupon.controller.js';
+import orderController from './controller/order.controller.js';
+import adminController from './controller/admin.controller.js'
 import { uploadPortfolio, uploadCourseMedia } from './src/middleware/upload.middleware.js';
 import cors from 'cors'
 import { retakeToken } from './middleware/retakeToken.middleware.js';
@@ -20,7 +24,6 @@ const app = express();
 app.use(cors({ origin:'http://localhost:5173', credentials: true }));
 app.use(express.json());
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
-app.use('/uploads', express.static(path.join(currentDir, 'uploads')));
 
 app.get('/health', (_req, res) => {
   res.status(200).json({ success: true, service: 'backend' });
@@ -28,6 +31,8 @@ app.get('/health', (_req, res) => {
 
 console.log(process.env.PORT);
 console.log(process.env.MONGO_URI);
+console.log('TMN:', JSON.stringify(process.env.VNPAY_TMN_CODE));
+console.log('SECRET:', JSON.stringify(process.env.VNPAY_HASH_SECRET));
 
 app.get('/courses',courseController.getAllCourse)
 
@@ -47,6 +52,12 @@ app.post(
 );
 
 app.post('/register',validateReg,accountController.registerCustomer)
+// index.js
+app.put('/account/update-account', verifyToken, accountController.updateProfile)     
+// index.js
+app.put('/account/change-password', verifyToken, accountController.changePassword);
+
+app.put('/account/update-instructor', verifyToken, teacherController.updateInstructorProfile) 
 
 app.post('/account/check-duplicate',checkDuplicateEmail)
 
@@ -75,6 +86,7 @@ app.put(
 
 app.get('/account/myprofile',verifyToken,accountController.getAllUserInfo)
 
+app.get('/account/myprofile/teacher',verifyToken,teacherController.getAllTeacherInfo)
 
 app.get('/admin',verifyToken,isAdmin,accountController.getAllAdminInfo)
 
@@ -87,6 +99,28 @@ app.get('/account/reviews',verifyToken,courseController.getReviews)
 app.put('/account/review/:id',verifyToken,courseController.putReviews)
 
 app.delete('/account/review/:id',verifyToken,courseController.deleteReviews)
+
+app.post('/admin/add-coupon', verifyToken, isAdmin, couponController.createCoupon);
+
+app.get('/admin/courses/pending', verifyToken, isAdmin,adminController.getPendingCourses)
+
+app.put('/admin/courses/:id/approve', verifyToken, isAdmin,adminController.approvePendingCourses)
+
+app.put('/admin/courses/:id/reject', verifyToken, isAdmin,adminController.rejectPendingCourses)
+
+app.post('/account/apply-coupon', verifyToken,checkUserCoupon, couponController.applyCoupon);
+
+app.post('/account/momo/create', verifyToken, orderController.createMomoOrder);
+app.post(
+  '/account/momo/ipn',
+  express.json({ type: () => true }),
+  orderController.momoIPN
+);
+
+app.post('/account/vnpay/create', verifyToken, orderController.createVnpayOrder);
+app.get('/account/vnpay/return', orderController.vnpayReturn); // không verifyToken — user redirect từ VNPay về
+app.get('/account/vnpay/ipn', orderController.vnpayIPN); // không verifyToken — VNPay gọi trực tiếp, xác thực bằng chữ ký
+// app.get('/admin/coupons', verifyToken, isAdmin, couponController.getAllCoupons);
 
 app.post('/account/refresh-token',retakeToken)
 

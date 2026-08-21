@@ -63,12 +63,7 @@ export default function CartPage() {
     window.dispatchEvent(new Event('cartUpdated'));
   };
   
-  console.log(cart)
-  
-  
-  
-
-  return (
+    return (
     <div className="cart-page">
       <div className="cart-container">
         <div className="cart-breadcrumb">
@@ -80,79 +75,94 @@ export default function CartPage() {
         </div>
 
         <h1 className="cart-title">Shopping Cart</h1>
-        <p className="cart-subtitle">{cart.length} Course{cart.length !== 1 ? 's' : ''} in cart</p>
 
-        <div className="cart-layout">
-          {/* Items */}
-          <div className="cart-items">
-            {cart.map((item) => (
-              <div key={item.id} className="cart-item">
-                <div className="cart-item__image">
-                  <img src={img} alt={item.title} referrerPolicy="no-referrer" />
-                </div>
-                <div className="cart-item__info">
-                  <div className="cart-item__top">
-                    <h3 className="cart-item__title">{item.title}</h3>
-                    <span className="cart-item__price">${item.price.toFixed(2)}</span>
-                  </div>
-                  <p className="cart-item__instructor">By {item.instructor}</p>
+        {cart.length === 0 ? (
+          <div className="cart-empty">
+            <p className="cart-empty__text">Your cart is empty. Start shopping to add courses!</p>
+            <button
+              className="cart-empty__btn"
+              onClick={() => navigate('/course-page')}
+            >
+              Browse Courses
+            </button>
+          </div>
+        ) : (
+          <>
+            <p className="cart-subtitle">{cart.length} Course{cart.length !== 1 ? 's' : ''} in cart</p>
 
-                  <div className="cart-item__rating">
-                    <span className="cart-item__rating-score">{item.rating}</span>
-                    <div className="cart-item__stars">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`star-icon ${i < 4 ? 'star-icon--filled' : 'star-icon--empty'}`} />
-                      ))}
+            <div className="cart-layout">
+              {/* Items */}
+              <div className="cart-items">
+                {cart.map((item) => (
+                  <div key={item.id} className="cart-item">
+                    <div className="cart-item__image">
+                      <img src={img} alt={item.title} referrerPolicy="no-referrer" />
                     </div>
-                    <span className="cart-item__reviews">
-                      ({Array.isArray(item.reviews) ? item.reviews.length : item.reviewsCount} rating)
-                    </span>
-                  </div>
+                    <div className="cart-item__info">
+                      <div className="cart-item__top">
+                        <h3 className="cart-item__title">{item.title}</h3>
+                        <span className="cart-item__price">${item.price.toFixed(2)}</span>
+                      </div>
+                      <p className="cart-item__instructor">By {item.instructor}</p>
 
-                  <div className="cart-item__meta">
-                    <span>{item.duration}</span>
-                    <span>•</span>
-                    <span>{item.lecturesCount} Lectures</span>
-                    <span>•</span>
-                    <span>{item.level}</span>
+                      <div className="cart-item__rating">
+                        <span className="cart-item__rating-score">{item.rating}</span>
+                        <div className="cart-item__stars">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className={`star-icon ${i < 4 ? 'star-icon--filled' : 'star-icon--empty'}`} />
+                          ))}
+                        </div>
+                        <span className="cart-item__reviews">
+                          ({Array.isArray(item.reviews) ? item.reviews.length : item.reviewsCount} rating)
+                        </span>
+                      </div>
+
+                      <div className="cart-item__meta">
+                        <span>{item.duration}</span>
+                        <span>•</span>
+                        <span>{item.lecturesCount} Lectures</span>
+                        <span>•</span>
+                        <span>{item.level}</span>
+                      </div>
+                      <div className="cart-item__actions">
+                        <button className="cart-item__action cart-item__action--save">Save for later</button>
+                        <button onClick={() => handleRemove(item.id)} className="cart-item__action cart-item__action--remove">Remove</button>
+                      </div>
+                    </div>
                   </div>
-                  <div className="cart-item__actions">
-                    <button className="cart-item__action cart-item__action--save">Save for later</button>
-                    <button onClick={() => handleRemove(item.id)} className="cart-item__action cart-item__action--remove">Remove</button>
+                ))}
+              </div>
+
+              {/* Order Summary */}
+              <div className="cart-summary">
+                <div className="cart-summary__box">
+                  <h2 className="cart-summary__title">Order Details</h2>
+                  <div className="cart-summary__rows">
+                    <div className="cart-summary__row">
+                      <span>Price</span>
+                      <span className="cart-summary__value">${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="cart-summary__row">
+                      <span>Discount</span>
+                      <span className="cart-summary__value">-${discount.toFixed(2)}</span>
+                    </div>
+                    <div className="cart-summary__row">
+                      <span>Tax</span>
+                      <span className="cart-summary__value">${tax.toFixed(2)}</span>
+                    </div>
+                    <div className="cart-summary__row cart-summary__row--total">
+                      <span>Total</span>
+                      <span>${total.toFixed(2)}</span>
+                    </div>
                   </div>
+                  <button onClick={() => navigate('/home/cartpage/checkout')} className="cart-summary__btn">
+                    Proceed to Checkout
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* Order Summary */}
-          <div className="cart-summary">
-            <div className="cart-summary__box">
-              <h2 className="cart-summary__title">Order Details</h2>
-              <div className="cart-summary__rows">
-                <div className="cart-summary__row">
-                  <span>Price</span>
-                  <span className="cart-summary__value">${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="cart-summary__row">
-                  <span>Discount</span>
-                  <span className="cart-summary__value">-${discount.toFixed(2)}</span>
-                </div>
-                <div className="cart-summary__row">
-                  <span>Tax</span>
-                  <span className="cart-summary__value">${tax.toFixed(2)}</span>
-                </div>
-                <div className="cart-summary__row cart-summary__row--total">
-                  <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
-                </div>
-              </div>
-              <button onClick={() => navigate('/home/cartpage/checkout')} to="/checkout" className="cart-summary__btn">
-                Proceed to Checkout
-              </button>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

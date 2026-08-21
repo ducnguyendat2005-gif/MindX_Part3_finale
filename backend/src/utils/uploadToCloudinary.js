@@ -9,7 +9,11 @@ const mimeToExt = {
 
 export const uploadBufferToCloudinary = (buffer, mimetype, folder = 'byway/portfolios') => {
   return new Promise((resolve, reject) => {
-    const resourceType = mimetype === 'application/pdf' ? 'raw' : 'image';
+    const resourceType = mimetype === 'application/pdf'
+    ? 'raw'
+    : mimetype.startsWith('video/')
+      ? 'video'
+      : 'image';
     const ext = mimeToExt[mimetype] || '';
 
     const uploadOptions = {

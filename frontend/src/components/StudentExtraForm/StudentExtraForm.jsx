@@ -14,7 +14,7 @@ const LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
 export default function StudentExtraForm({ onSubmit, onBack }) {
   const [interests, setInterests] = useState([]);
   const [level, setLevel] = useState('');
-  const [goal, setGoal] = useState('');
+  const [learningGoal, setLearningGoal] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -35,7 +35,7 @@ export default function StudentExtraForm({ onSubmit, onBack }) {
     }
     setError('');
     setSubmitting(true);
-    await onSubmit({ interests, level, goal });
+    await onSubmit({ interests, level, learningGoal });
     setSubmitting(false);
   };
 
@@ -87,9 +87,9 @@ export default function StudentExtraForm({ onSubmit, onBack }) {
       <div className="extra-form-field">
         <label>Mục tiêu học tập (không bắt buộc)</label>
         <textarea
-          value={goal}
-          onChange={(e) => setGoal(e.target.value)}
-          placeholder="VD: Mình muốn chuyển ngành sang lập trình web trong 6 tháng tới"
+          value={learningGoal}
+          onChange={(e) => setLearningGoal(e.target.value)}   // ← đổi theo
+          placeholder="Empty"
           rows={3}
         />
       </div>

@@ -3,6 +3,7 @@ import EnrollmentModel from '../model/enrollment.js';
 import ReviewModel from '../model/review.js';
 import AccountModel from '../model/account.js';
 import InstructorModel from '../model/instructor.js';
+import { uploadBufferToCloudinary } from '../src/utils/uploadToCloudinary.js';
 
 const parseJsonField = (value, fallback) => {
     if (!value) return fallback;
@@ -13,9 +14,17 @@ const parseJsonField = (value, fallback) => {
     }
 };
 
-const fileUrl = (req, file) => (
-    file ? `${req.protocol}://${req.get('host')}/uploads/courses/${file.filename}` : ''
-);
+const uploadFileToCloudinary = async (file, folder = 'byway/courses') => {
+    if (!file) return '';
+    console.log('DEBUG upload file:', {
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        bufferLength: file.buffer?.length,
+    });
+    const result = await uploadBufferToCloudinary(file.buffer, file.mimetype, folder);
+    return result.secure_url;
+};
 
 const durationToMinutes = (value) => {
     const minutes = Number.parseInt(String(value || ''), 10);
@@ -24,7 +33,7 @@ const durationToMinutes = (value) => {
 
 const formatDuration = (minutes) => `${minutes} min`;
 const publicCourseFilter = {
-    $or: [{ status: 'published' }, { status: { $exists: false } }],
+    $or: [{ status: 'approved' }, { status: { $exists: false } }],
 };
 
 const courseController = {
@@ -32,8 +41,7 @@ const courseController = {
         try {
             const data = parseJsonField(req.body.data, {});
             const title = String(data.title || '').trim();
-            const status = data.status === 'published' ? 'published' : 'draft';
-            const price = Number(data.price ?? 0);
+            const status = data.status === 'published' ? 'pending' : 'draft';            const price = Number(data.price ?? 0);
             const curriculum = Array.isArray(data.curriculum) ? data.curriculum : [];
 
             if (!title) {
@@ -48,7 +56,7 @@ const courseController = {
                 return res.status(400).json({ message: 'Tài khoản chưa có hồ sơ giáo viên', success: false });
             }
 
-            if (status === 'published') {
+            if (status === 'pending') {
                 if (!String(data.overview || '').trim()) {
                     return res.status(400).json({ message: 'Vui lòng nhập phần giới thiệu khóa học', success: false });
                 }
@@ -67,10 +75,17 @@ const courseController = {
                 ? parsedLessonVideoIndexes
                 : [];
             const lessonFiles = req.files?.lessonVideos || [];
+
+            const [thumbnail, promotionalVideo, lessonVideoUrls] = await Promise.all([
+                uploadFileToCloudinary(req.files?.thumbnail?.[0]),
+                uploadFileToCloudinary(req.files?.promoVideo?.[0]),
+                Promise.all(lessonFiles.map((file) => uploadFileToCloudinary(file))),
+            ]);
+
             const lessonVideoMap = new Map(
                 lessonVideoIndexes.map((item, index) => [
                     `${item.sectionIndex}:${item.lessonIndex}`,
-                    fileUrl(req, lessonFiles[index]),
+                    lessonVideoUrls[index] || '',
                 ])
             );
 
@@ -106,8 +121,6 @@ const courseController = {
                 })
                 .filter(Boolean);
 
-            const thumbnail = fileUrl(req, req.files?.thumbnail?.[0]);
-            const promotionalVideo = fileUrl(req, req.files?.promoVideo?.[0]);
             const created = await CourseModel.create({
                 title,
                 instructorId: instructor._id,
@@ -123,7 +136,6 @@ const courseController = {
                 lectures: totalLessons,
                 hours: Number((totalMinutes / 60).toFixed(2)),
                 status,
-                publishedAt: status === 'published' ? new Date() : undefined,
             });
 
             await InstructorModel.updateOne(
@@ -142,7 +154,7 @@ const courseController = {
         try {
             const data = parseJsonField(req.body.data, {});
             const title = String(data.title || '').trim();
-            const status = data.status === 'published' ? 'published' : 'draft';
+            const status = data.status === 'published' ? 'pending' : 'draft';
             const price = Number(data.price ?? 0);
             const curriculum = Array.isArray(data.curriculum) ? data.curriculum : [];
 
@@ -150,7 +162,7 @@ const courseController = {
             if (!Number.isFinite(price) || price < 0) {
                 return res.status(400).json({ message: 'Giá khóa học không hợp lệ', success: false });
             }
-            if (status === 'published' && (!String(data.overview || '').trim() || !curriculum.length || curriculum.some((section) => (
+            if (status === 'pending' && (!String(data.overview || '').trim() || !curriculum.length || curriculum.some((section) => (
                 !String(section.title || '').trim() ||
                 !Array.isArray(section.lessons) ||
                 !section.lessons.length ||
@@ -171,10 +183,17 @@ const courseController = {
             const parsedIndexes = parseJsonField(req.body.lessonVideoIndexes, []);
             const lessonVideoIndexes = Array.isArray(parsedIndexes) ? parsedIndexes : [];
             const lessonFiles = req.files?.lessonVideos || [];
+
+            const [uploadedThumbnail, uploadedPromoVideo, lessonVideoUrls] = await Promise.all([
+                uploadFileToCloudinary(req.files?.thumbnail?.[0]),
+                uploadFileToCloudinary(req.files?.promoVideo?.[0]),
+                Promise.all(lessonFiles.map((file) => uploadFileToCloudinary(file))),
+            ]);
+
             const lessonVideoMap = new Map(
                 lessonVideoIndexes.map((item, index) => [
                     `${item.sectionIndex}:${item.lessonIndex}`,
-                    fileUrl(req, lessonFiles[index]),
+                    lessonVideoUrls[index] || '',
                 ])
             );
 
@@ -206,8 +225,8 @@ const courseController = {
                 };
             }).filter(Boolean);
 
-            const thumbnail = fileUrl(req, req.files?.thumbnail?.[0]) || data.thumbnailUrl || course.thumbnail || '';
-            const promotionalVideo = fileUrl(req, req.files?.promoVideo?.[0]) || data.promotionalVideoUrl || course.promotionalVideo || '';
+            const thumbnail = uploadedThumbnail || data.thumbnailUrl || course.thumbnail || '';
+            const promotionalVideo = uploadedPromoVideo || data.promotionalVideoUrl || course.promotionalVideo || '';
 
             course.set({
                 title,
@@ -223,7 +242,6 @@ const courseController = {
                 lectures: totalLessons,
                 hours: Number((totalMinutes / 60).toFixed(2)),
                 status,
-                publishedAt: status === 'published' ? (course.publishedAt || new Date()) : undefined,
             });
             await course.save();
 

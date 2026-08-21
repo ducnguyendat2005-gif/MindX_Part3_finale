@@ -71,6 +71,7 @@ function Star({ size = 13, fill = '#f59e0b' }) {
 const NAV = [
   { key: 'overview', label: 'Overview' },
   { key: 'courses', label: 'Courses' },
+  { key: 'approvals', label: 'Course Approvals' },
   { key: 'instructors', label: 'Instructors' },
   { key: 'accounts', label: 'Accounts' },
   { key: 'testimonials', label: 'Testimonials' },
@@ -477,15 +478,31 @@ function CourseDetail({ course, onClose }) {
 
           {tab === 'syllabus' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {(course.syllabus|| []).map((s, i) => (
-                <div key={i} style={{ border: '1px solid #eef1f7', borderRadius: 12, padding: 12 }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#0d1321' }}>{s.title}</p>
-                  <p style={{ margin: '2px 0 8px', fontSize: 11, color: '#8893ab' }}>{s.lessons} bài · {s.duration}</p>
-                  {(s.items || []).map((it, j) => (
-                    <p key={j} style={{ margin: '4px 0', fontSize: 12, color: '#39455e' }}>• {it}</p>
-                  ))}
-                </div>
-              ))}
+              {(course.syllabus || []).map((s, i) => {
+                const lessons = s.lessonDetails?.length ? s.lessonDetails : (s.items || []).map((title) => ({ title, videoUrl: '' }));
+                return (
+                  <div key={i} style={{ border: '1px solid #eef1f7', borderRadius: 12, padding: 12 }}>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#0d1321' }}>{s.title}</p>
+                    <p style={{ margin: '2px 0 8px', fontSize: 11, color: '#8893ab' }}>{s.lessons} bài · {s.duration}</p>
+                    {lessons.map((lesson, j) => (
+                      <div key={j} style={{ margin: '8px 0' }}>
+                        <p style={{ margin: '0 0 4px', fontSize: 12, color: '#39455e' }}>
+                          • {lesson.title}{lesson.duration ? ` (${lesson.duration})` : ''}
+                        </p>
+                        {lesson.videoUrl ? (
+                          <video
+                            src={lesson.videoUrl}
+                            controls
+                            style={{ width: '100%', maxHeight: 200, borderRadius: 8, background: '#000' }}
+                          />
+                        ) : (
+                          <p style={{ margin: 0, fontSize: 11, color: '#c2540a' }}>Chưa có video</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -511,6 +528,175 @@ function CourseDetail({ course, onClose }) {
         </div>
       </div>
     </div>
+  );
+}
+const STATUS_BADGE = {
+  pending: { bg: '#FFF3E6', fg: '#C2540A', label: 'Pending' },
+  approved: { bg: '#EAF8EE', fg: '#19874A', label: 'Approved' },
+  rejected: { bg: '#FEF1F1', fg: '#C0263A', label: 'Rejected' },
+  draft: { bg: '#eef1f7', fg: '#5c6884', label: 'Draft' },
+};
+
+function RejectModal({ course, onCancel, onConfirm, submitting }) {
+  const [reason, setReason] = useState('');
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div onClick={onCancel} style={{ position: 'absolute', inset: 0, background: 'rgba(13,19,33,0.5)' }} />
+      <div style={{ position: 'relative', width: '100%', maxWidth: 420, background: '#fff', borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: '#0d1321' }}>Reject "{course.title}"</p>
+        <p style={{ margin: 0, fontSize: 12, color: '#8893ab' }}>Please provide a reason so the instructor can fix and resubmit.</p>
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          rows={4}
+          placeholder="e.g. Missing lesson videos, unclear course description..."
+          style={{ padding: 10, fontSize: 13, borderRadius: 10, border: '1px solid #dde1ec', resize: 'vertical', fontFamily: 'inherit' }}
+        />
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={onCancel} disabled={submitting} style={{ padding: '8px 14px', fontSize: 13, borderRadius: 10, border: '1px solid #dde1ec', background: '#fff', cursor: 'pointer' }}>Cancel</button>
+          <button
+            onClick={() => reason.trim() && onConfirm(reason.trim())}
+            disabled={submitting || !reason.trim()}
+            style={{ padding: '8px 14px', fontSize: 13, borderRadius: 10, border: 'none', background: '#dc2626', color: '#fff', cursor: reason.trim() ? 'pointer' : 'not-allowed', opacity: reason.trim() ? 1 : 0.5 }}
+          >
+            {submitting ? 'Rejecting...' : 'Confirm Reject'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CourseApprovals() {
+  const [pending, setPending] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [actioningId, setActioningId] = useState(null);
+  const [rejectTarget, setRejectTarget] = useState(null);
+  const [viewingCourse, setViewingCourse] = useState(null); 
+
+  const loadPending = async () => {
+    try {
+      setLoading(true);
+      const res = await fetchWithAuth(API.pendingCourses);
+      if (!res.ok) throw new Error(`Failed to load pending courses: ${res.status}`);
+      const result = await res.json();
+      setPending(result.data || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadPending(); }, []);
+
+  const handleApprove = async (course) => {
+    setActioningId(course._id);
+    try {
+      const res = await fetchWithAuth(API.approveCourse(course._id), { method: 'PUT' });
+      if (!res.ok) throw new Error('Approve failed');
+      setPending((prev) => prev.filter((c) => c._id !== course._id));
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setActioningId(null);
+    }
+  };
+
+  const handleReject = async (reason) => {
+    const course = rejectTarget;
+    setActioningId(course._id);
+    try {
+      const res = await fetchWithAuth(API.rejectCourse(course._id), {
+        method: 'PUT',
+        body: JSON.stringify({ reason }),
+      });
+      if (!res.ok) throw new Error('Reject failed');
+      setPending((prev) => prev.filter((c) => c._id !== course._id));
+      setRejectTarget(null);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setActioningId(null);
+    }
+  };
+
+  if (loading) return <p style={{ color: '#8893ab', fontSize: 13 }}>Loading pending courses...</p>;
+  if (error) return <p style={{ color: '#dc2626', fontSize: 13 }}>Error: {error}</p>;
+
+  if (pending.length === 0) {
+    return (
+      <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', padding: 40, textAlign: 'center' }}>
+        <p style={{ margin: 0, fontSize: 32 }}>✅</p>
+        <p style={{ margin: '10px 0 0', fontWeight: 600, color: '#0d1321' }}>No courses waiting for review</p>
+        <p style={{ margin: '4px 0 0', fontSize: 12, color: '#8893ab' }}>New submissions will show up here.</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {pending.map((c) => (
+          <div
+            key={c._id}
+            onClick={() => setViewingCourse({
+              ...c,
+              author: c.instructorId?.name || 'Unknown instructor',
+              instructor: c.instructorId,
+              courseReviews: [],
+            })}
+            style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', padding: 16, display: 'flex', gap: 14, alignItems: 'flex-start', cursor: 'pointer' }}
+          >
+            <Avatar name={c.title} size={44} rounded="12px" />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <p style={{ margin: 0, fontWeight: 600, color: '#0d1321', fontSize: 14 }}>{c.title}</p>
+                <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: STATUS_BADGE.pending.bg, color: STATUS_BADGE.pending.fg }}>
+                  {STATUS_BADGE.pending.label}
+                </span>
+              </div>
+              <p style={{ margin: '4px 0 0', fontSize: 12, color: '#8893ab' }}>
+                by {c.instructorId?.name || 'Unknown instructor'} · {categoryLabel(c.category)} · {c.level}
+              </p>
+              {c.shortDescription && (
+                <p style={{ margin: '6px 0 0', fontSize: 12, color: '#39455e', lineHeight: 1.5, maxWidth: 560 }}>
+                  {c.shortDescription.slice(0, 160)}{c.shortDescription.length > 160 ? '...' : ''}
+                </p>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setRejectTarget(c)}
+                disabled={actioningId === c._id}
+                style={{ padding: '8px 14px', fontSize: 12, fontWeight: 500, borderRadius: 10, border: '1px solid #fecaca', background: '#fff', color: '#dc2626', cursor: 'pointer' }}
+              >
+                Reject
+              </button>
+              <button
+                onClick={() => handleApprove(c)}
+                disabled={actioningId === c._id}
+                style={{ padding: '8px 14px', fontSize: 12, fontWeight: 500, borderRadius: 10, border: 'none', background: '#19874A', color: '#fff', cursor: 'pointer' }}
+              >
+                {actioningId === c._id ? 'Approving...' : 'Approve'}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      {rejectTarget && (
+        <RejectModal
+          course={rejectTarget}
+          submitting={actioningId === rejectTarget._id}
+          onCancel={() => setRejectTarget(null)}
+          onConfirm={handleReject}
+        />
+      )}
+      {viewingCourse && (
+        <CourseDetail course={viewingCourse} onClose={() => setViewingCourse(null)} />
+      )}
+    </>
   );
 }
 
@@ -573,6 +759,7 @@ export default function AdminPage() {
   const titles = {
     overview: ['Tổng quan', 'Số liệu nền tảng theo thời gian thực'],
     courses: ['Khóa học', 'Quản lý toàn bộ khóa học trên Byway'],
+    approvals: ['Course Approvals', 'Review and moderate pending course submissions'],
     instructors: ['Giảng viên', 'Đội ngũ giảng viên nổi bật'],
     accounts: ['Tài khoản', 'Người dùng đã đăng ký'],
     testimonials: ['Đánh giá nổi bật', 'Phản hồi từ học viên'],
@@ -648,6 +835,7 @@ export default function AdminPage() {
             {active === 'overview' && <Overview courses={courses} accounts={accounts} instructors={instructors} testimonials={testimonials} onSelectCourse={setSelectedCourse} />}
             {active === 'courses' && <Courses courses={courses} query={query} onSelectCourse={setSelectedCourse} />}
             {active === 'instructors' && <Instructors courses={courses} instructors={instructors} />}
+            {active === 'approvals' && <CourseApprovals />}
             {active === 'accounts' && <Accounts accounts={accounts} query={query} />}
             {active === 'testimonials' && <Testimonials testimonials={testimonials} />}
           </div>

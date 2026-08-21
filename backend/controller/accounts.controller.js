@@ -6,6 +6,8 @@ import CourseModel from '../model/courses.js'
 import InstructorModel from '../model/instructor.js'
 import ReviewModel from '../model/review.js'
 import CommentModel from '../model/comment.js';
+import { uploadAvatar } from '../src/middleware/upload.middleware.js';
+import { runMiddleware } from '../src/utils/runMiddleware.js';
 import { uploadBufferToCloudinary } from '../src/utils/uploadToCloudinary.js';
 import dotenv from "dotenv";
 dotenv.config();
@@ -13,14 +15,24 @@ dotenv.config();
 const accountController = {
     registerCustomer: async (req, res, next) => {
         try {
-            const { Fname, Lname, Username, Email, pass } = req.body;
+            const { Fname, Lname, Username, Email, pass,interests,level,learningGoal } = req.body;
 
             const saltRounds = 10;
 
             const salt = bcrypt.genSaltSync(saltRounds);
             const hash = bcrypt.hashSync(pass, salt);
 
-            const createdAccount = await AccountModel.create({ Fname, Lname, Username, Email, pass: hash, role: "user" })
+            const createdAccount = await AccountModel.create({ 
+                Fname, 
+                Lname,
+                Username,
+                Email, 
+                pass: hash, 
+                role: "user",
+                interests,
+                level,
+                learningGoal,
+             })
             res.status(201).send({ data: createdAccount, message: 'Register successful!', success: true });
         }
         catch (error) {
@@ -33,8 +45,9 @@ const accountController = {
 
             const foundAccount = await AccountModel.findOne({ Email: email }).select("Email role _id")
             const userData = foundAccount.toObject();
+            
 
-            const ATtoken = jwt.sign({ ...userData, type: 'AT' }, process.env.JWT_SECRET_ACCESS, { expiresIn: '2d' });// 👈 thêm type AT
+            const ATtoken = jwt.sign({ ...userData, type: 'AT' }, process.env.JWT_SECRET_ACCESS, { expiresIn: '1d' });// 👈 thêm type AT
             const RTtoken = jwt.sign({ ...userData, type: 'RT' }, process.env.JWT_SECRET_REFRESH, { expiresIn: '7d' });  // 👈 thêm type RT // ⚠️ '1w' không hợp lệ, phải dùng '7d');
 
             res.status(200).json({ data: { ATtoken, RTtoken }, message: 'Login successful!', success: true });
@@ -139,6 +152,7 @@ const accountController = {
         }
     },
     teacherRegister:async (req, res,next) =>{
+        let createdAccount
         try{
             const {
                 Fname,
@@ -146,7 +160,6 @@ const accountController = {
                 Username,
                 Email,
                 pass,
-                role,
                 expertise,
                 experienceYears,
                 bio,
@@ -167,12 +180,13 @@ const accountController = {
             const salt = bcrypt.genSaltSync(saltRounds);
             const hash = bcrypt.hashSync(pass, salt);
 
-            const createdAccount = await AccountModel.create({ Fname, Lname, Username, Email, pass: hash, role :"teacher" })
+            createdAccount = await AccountModel.create({ Fname, Lname, Username, Email, pass: hash, role :"teacher" })
             const createInstructor = await InstructorModel.create({
                 name :Username,
                 title:expertise,
                 thumbnail:DEFAULT_THUMBNAIL,
                 bio:bio,
+                yearsOfExperience: Number(experienceYears) || 0, 
                 portfolioUrl: portfolioUrl,  
                 totalStudents : 0,
                 totalCourses : 0,
@@ -182,6 +196,65 @@ const accountController = {
             res.status(201).send({ data: createInstructor, message: 'Register successful!', success: true });
         }
         catch (error){
+        if (createdAccount?._id) {
+            await AccountModel.findByIdAndDelete(createdAccount._id).catch(() => {});
+        }
+            next(error)
+        }
+    },
+    updateProfile:async (req,res,next) =>{
+        try {
+            await runMiddleware(req, res, uploadAvatar);
+
+            const accountId = req.user._id;
+            const { Fname, Lname, description, learningGoal, level, interests } = req.body;
+
+            let avatar;
+            if (req.file) {
+                const result = await uploadBufferToCloudinary(req.file.buffer, req.file.mimetype);
+                avatar = result.secure_url;
+            }
+
+            const updateData = { Fname, Lname, description, learningGoal, level, interests };
+            if (avatar) updateData.avatar = avatar; // chỉ set khi có ảnh mới, tránh đè avatar cũ thành undefined
+
+            const updated = await AccountModel.findByIdAndUpdate(
+                accountId,
+                { $set: updateData },
+                { new: true, runValidators: true }
+            );
+
+            if (!updated) {
+                return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+            }
+            res.status(200).json({ success: true, data: updated, message: 'Cập nhật thành công' });
+        } catch (error) {
+            next(error);
+        }
+    },
+    changePassword:async (req,res,next) =>{
+        try{
+            const user = req.user;
+            const { oldPassword, newPassword } = req.body;
+            const prePass = (await AccountModel.findById(user._id).select('pass -_id').lean())?.pass
+
+            const isOldMatch = await bcrypt.compare(oldPassword, prePass);
+            if (!isOldMatch) throw new Error ("email hoac password cu sai")
+
+            const saltRounds = 10;
+            
+            const salt = bcrypt.genSaltSync(saltRounds);
+            const hash = bcrypt.hashSync(newPassword, salt);
+
+            const updated = await AccountModel.findByIdAndUpdate(
+                user._id,
+                {pass:hash},
+                { new: true, runValidators: true }
+            )
+            console.log(prePass);
+            res.status(200).json({ success: true, data: updated, message: 'Cập nhật thành công' });
+        }
+        catch(error){
             next(error)
         }
     }

@@ -6,14 +6,21 @@ import './Checkout.scss';
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMethod, setPaymentMethod] = useState('momo');
+  const [momoRequestType, setMomoRequestType] = useState('payWithATM');
   const [user, setUser] = useState(null);
   const [cart, setCart] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [checkoutError, setCheckoutError] = useState(null);
 
+  // ─ Coupon state ─
+  const [couponCode, setCouponCode] = useState('');
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponToast, setCouponToast] = useState(null); // { type: 'error' | 'success', message: string }
+
   const subtotal = cart.reduce((acc, item) => acc + item.price, 0);
-  const discount = 10.00;
+  const discount = appliedCoupon ? appliedCoupon.discountAmount : 0;
   const tax = 20.00;
   const total = subtotal - discount + tax;
 
@@ -33,47 +40,127 @@ export default function CheckoutPage() {
     return () => window.removeEventListener('userUpdated', loadUser);
   }, []);
 
+  useEffect(() => {
+    if (appliedCoupon) {
+      setAppliedCoupon(null);
+      setCouponToast(null);
+    }
+  }, [cart.length]);
+  
+  const handleApplyCoupon = async () => {
+    const code = couponCode.trim();
+    if (!code) return;
+
+    const sessionAT = tokenStorage.getAT();
+    if (!user || !sessionAT) return navigate('/signin');
+
+    setApplyingCoupon(true);
+    setCouponToast(null);
+
+    try {
+      const courseIds = cart.map(item => item._id || item.id);
+
+      const res = await fetchWithAuth(API.applyCoupon, {
+        method: 'POST',
+        body: JSON.stringify({ code, courseIds }),
+      });
+
+      const result = await res.json().catch(() => ({}));
+
+      if (!res.ok || !result.success) {
+        throw new Error(result.message || 'Mã giảm giá không hợp lệ');
+      }
+
+      setAppliedCoupon({
+        code,
+        discountAmount: result.data.discountAmount,
+        subtotal: result.data.subtotal,
+        total: result.data.total,
+      });
+      setCouponToast({ type: 'success', message: `Đã áp mã "${code}"` });
+    } catch (err) {
+      setAppliedCoupon(null);
+      setCouponToast({ type: 'error', message: err.message });
+    } finally {
+      setApplyingCoupon(false);
+      setTimeout(() => setCouponToast(null), 3000);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponToast(null);
+  };
+
+
   const handleCheckout = async () => {
-    if (!user || !tokenStorage.getAT()) return navigate('/signin');
+    const sessionAT = tokenStorage.getAT();
+    if (!user || !sessionAT) return navigate('/signin');
 
     setSubmitting(true);
     setCheckoutError(null);
 
     try {
-      const res = await fetchWithAuth(API.checkout, {
+      const endpoint = paymentMethod === 'momo' ? API.createMomoOrder : API.createVnpayOrder;
+
+      const res = await fetchWithAuth(endpoint, {
         method: 'POST',
         body: JSON.stringify({
-          courses: cart.map(item => item._id || item.id),
+          courseIds: cart.map(item => item._id || item.id),
+          couponCode: appliedCoupon ? appliedCoupon.code : null,
+          ...(paymentMethod === 'momo' && { requestType: momoRequestType }),
         }),
       });
 
-      if (!res.ok) {
-        const result = await res.json().catch(() => ({}));
-        throw new Error(result.message || 'Thanh toán thất bại');
+      const result = await res.json().catch(() => ({}));
+
+      if (!res.ok || !result.success) {
+        throw new Error(result.message || 'Tạo giao dịch thất bại');
       }
 
-      // 👇 Refresh lại profile để myCourses có khóa học vừa mua
-      const profileRes = await fetchWithAuth(API.myprofile);
-      const profileResult = await profileRes.json();
-      const mergedUser = {
-        ...profileResult.user,                                   // 👈 bỏ .data
-        myCourses: profileResult.courses.map(e => e.courseId),   // 👈 bỏ .data
-      };
-      localStorage.setItem('loggedInUser', JSON.stringify(mergedUser));
-      window.dispatchEvent(new Event('userUpdated'));
-      
-      localStorage.removeItem('insideCarts');
-      setCart([]);
-      navigate('/mycoursespage');
+      // Lưu lại giỏ hàng hiện tại để sau khi thanh toán xong (redirect quay về) còn biết mà xóa/refresh
+      localStorage.setItem('pendingOrderId', result.data.orderId);
+
+      // Redirect sang trang thanh toán MoMo/VNPay
+      window.location.href = result.data.payUrl;
     } catch (err) {
       setCheckoutError(err.message);
-    } finally {
       setSubmitting(false);
     }
   };
 
 
   return (
+    <>
+    {couponToast && (
+      <div style={{
+        position: 'fixed',
+        top: '24px',
+        right: '24px',
+        zIndex: 9999,
+        backgroundColor: '#1e293b',
+        color: '#fff',
+        padding: '14px 20px',
+        borderRadius: '10px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+      }}>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <circle cx="10" cy="10" r="10" fill={couponToast.type === 'success' ? '#16a34a' : '#f59e0b'} />
+          {couponToast.type === 'success' ? (
+            <path d="M6 10l2.5 2.5L14 7" stroke="#fff" strokeWidth="1.8"
+              strokeLinecap="round" strokeLinejoin="round" />
+          ) : (
+            <path d="M10 6v4M10 13h.01" stroke="#fff" strokeWidth="1.8"
+              strokeLinecap="round" strokeLinejoin="round" />
+          )}
+        </svg>
+        <span>{couponToast.message}</span>
+      </div>
+    )}
     <div className="checkout-page">
       <div className="checkout-container">
         <div className="checkout-breadcrumb">
@@ -103,75 +190,67 @@ export default function CheckoutPage() {
               </div>
 
               {/* Payment */}
+              {/* Payment */}
               <div className="payment-section">
                 <h2 className="payment-section__title">Payment Method</h2>
 
-                {/* Card */}
-                <div
-                  className={`payment-option ${paymentMethod === 'card' ? 'payment-option--active' : ''}`}
-                  onClick={() => setPaymentMethod('card')}
-                >
-                  <div className="payment-option__header">
-                    <div className="payment-option__left">
-                      <div className={`radio ${paymentMethod === 'card' ? 'radio--active' : ''}`}>
-                        {paymentMethod === 'card' && <div className="radio__dot" />}
-                      </div>
-                      <span className="payment-option__label">Credit/Debit Card</span>
+                {/* MoMo */}
+                {/* MoMo */}
+              <div
+                className={`payment-option ${paymentMethod === 'momo' ? 'payment-option--active' : ''}`}
+                onClick={() => setPaymentMethod('momo')}
+              >
+                <div className="payment-option__header">
+                  <div className="payment-option__left">
+                    <div className={`radio ${paymentMethod === 'momo' ? 'radio--active' : ''}`}>
+                      {paymentMethod === 'momo' && <div className="radio__dot" />}
                     </div>
-                    <div className="payment-option__logos">
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/200px-Visa_Inc._logo.svg.png" alt="Visa" referrerPolicy="no-referrer" />
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/200px-Mastercard-logo.svg.png" alt="Mastercard" referrerPolicy="no-referrer" />
-                    </div>
+                    <span className="payment-option__label">Ví MoMo</span>
                   </div>
-
-                  {paymentMethod === 'card' && (
-                    <div className="card-fields">
-                      <div className="checkout-form-group">
-                        <label>Name of Card</label>
-                        <input type="text" placeholder="Name of card" />
-                      </div>
-                      <div className="checkout-form-group">
-                        <label>Card Number</label>
-                        <input type="text" placeholder="Card Number" />
-                      </div>
-                      <div className="card-fields__row">
-                        <div className="checkout-form-group">
-                          <label>Expiry Date</label>
-                          <input type="text" placeholder="MM/YY" />
-                        </div>
-                        <div className="checkout-form-group">
-                          <label>CVC/CVV</label>
-                          <input type="text" placeholder="CVC" />
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
-                {/* PayPal */}
+                {paymentMethod === 'momo' && (
+                  <div className="card-fields" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    {[
+                      { value: 'payWithATM', label: 'Thẻ ATM nội địa' },
+                      { value: 'payWithCC', label: 'Thẻ quốc tế (Visa/Mastercard)' },
+                      { value: 'captureWallet', label: 'Quét QR bằng ví MoMo' },
+                    ].map((opt) => (
+                      <label
+                        key={opt.value}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 6,
+                          padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
+                          border: momoRequestType === opt.value ? '1.5px solid #a50064' : '1px solid #444',
+                        }}
+                        onClick={(e) => e.stopPropagation()} // tránh trigger lại onClick của div cha
+                      >
+                        <input
+                          type="radio"
+                          name="momoRequestType"
+                          checked={momoRequestType === opt.value}
+                          onChange={() => setMomoRequestType(opt.value)}
+                        />
+                        {opt.label}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+                {/* VNPay */}
                 <div
-                  className={`payment-option ${paymentMethod === 'paypal' ? 'payment-option--active' : ''}`}
-                  onClick={() => setPaymentMethod('paypal')}
+                  className={`payment-option ${paymentMethod === 'vnpay' ? 'payment-option--active' : ''}`}
+                  onClick={() => setPaymentMethod('vnpay')}
                 >
                   <div className="payment-option__header">
                     <div className="payment-option__left">
-                      <div className={`radio ${paymentMethod === 'paypal' ? 'radio--active' : ''}`}>
-                        {paymentMethod === 'paypal' && <div className="radio__dot" />}
+                      <div className={`radio ${paymentMethod === 'vnpay' ? 'radio--active' : ''}`}>
+                        {paymentMethod === 'vnpay' && <div className="radio__dot" />}
                       </div>
-                      <span className="payment-option__label">PayPal</span>
+                      <span className="payment-option__label">VNPay</span>
                     </div>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/PayPal.svg/200px-PayPal.svg.png" alt="PayPal" referrerPolicy="no-referrer" />
                   </div>
-
-                  {paymentMethod === 'paypal' && (
-                    <div className="paypal-redirect">
-                      <p>
-                        You are going to be redirected to{' '}
-                        <a href="https://www.paypal.com" target="_blank" rel="noopener noreferrer">Paypal</a>{' '}
-                        for checkout
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -199,7 +278,26 @@ export default function CheckoutPage() {
               ))}
               <div className="checkout-summary__coupon">
                 <Tag className="coupon-icon" />
-                <input type="text" placeholder="APPLY COUPON CODE" />
+                <input
+                  type="text"
+                  placeholder="APPLY COUPON CODE"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  disabled={!!appliedCoupon || applyingCoupon}
+                />
+                {appliedCoupon ? (
+                  <button type="button" onClick={handleRemoveCoupon}>
+                    Remove
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    disabled={applyingCoupon || !couponCode.trim() || cart.length === 0}
+                  >
+                    {applyingCoupon ? 'Applying...' : 'Apply'}
+                  </button>
+                )}
               </div>
 
               <div className="checkout-summary__rows">
@@ -237,5 +335,6 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
