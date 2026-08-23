@@ -7,7 +7,8 @@ import cartIcon from '../../assets/Frame 427318762.png';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { Link } from "react-router-dom";
-import { API, tokenStorage } from '../../config/api.js';
+import { API, tokenStorage, fetchWithAuth } from '../../config/api.js';
+import { jwtDecode } from 'jwt-decode';
 import ThemeToggleButton from './ThemeToggleButton';
 
 function Header() {
@@ -54,14 +55,86 @@ function Header() {
 
   // Lấy user từ localStorage
   useEffect(() => {
-    const loadUser = () => {
+    let cancelled = false;
+
+    const loadUser = async () => {
       const stored = localStorage.getItem('loggedInUser');
-      setUser(stored ? JSON.parse(stored) : null);
+      let cachedUser = null;
+
+      try {
+        cachedUser = stored ? JSON.parse(stored) : null;
+      } catch {
+        localStorage.removeItem('loggedInUser');
+      }
+
+      if (!tokenStorage.getAT()) {
+        if (!cancelled) setUser(cachedUser);
+        return;
+      }
+
+      try {
+        const accessToken = tokenStorage.getAT();
+        let tokenUser = null;
+        try {
+          tokenUser = accessToken ? jwtDecode(accessToken) : null;
+        } catch {
+          tokenUser = null;
+        }
+
+        const tokenProfile = tokenUser ? {
+          _id: tokenUser._id,
+          Email: tokenUser.Email,
+          Username: tokenUser.Username,
+          Fname: tokenUser.Fname,
+          Lname: tokenUser.Lname,
+          avatar: tokenUser.avatar,
+          role: tokenUser.role,
+        } : {};
+
+        const res = await fetchWithAuth(API.myprofile);
+        if (res.ok) {
+          const result = await res.json();
+          const profileUser = result.user
+            || result.data?.user
+            || (result.data?.Username || result.data?.username || result.data?.Email ? result.data : null);
+          const courses = result.courses || result.data?.courses || [];
+          const freshUser = {
+            ...cachedUser,
+            ...tokenProfile,
+            ...(profileUser || {}),
+            ...(tokenUser?.role ? { role: tokenUser.role } : {}),
+            myCourses: courses.map((course) => course.courseId),
+          };
+
+          const hasUserIdentity = freshUser.Username || freshUser.username || freshUser.Email;
+          if (hasUserIdentity) {
+            localStorage.setItem('loggedInUser', JSON.stringify(freshUser));
+            if (!cancelled) setUser(freshUser);
+            return;
+          }
+
+          // Do not replace a valid cached user with an empty API response.
+          const tokenFallbackUser = {
+            ...cachedUser,
+            ...tokenProfile,
+            ...(tokenUser?.role ? { role: tokenUser.role } : {}),
+          };
+          if (!cancelled) setUser(tokenFallbackUser);
+          return;
+        }
+      } catch (error) {
+        console.error('Could not refresh header user:', error);
+      }
+
+      if (!cancelled) setUser(cachedUser);
     };
 
     loadUser();
     window.addEventListener('userUpdated', loadUser);
-    return () => window.removeEventListener('userUpdated', loadUser);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('userUpdated', loadUser);
+    };
   }, []);
 
   useEffect(() => {
@@ -124,6 +197,12 @@ function Header() {
     if (!name) return '?';
     return name.charAt(0).toUpperCase();
   };
+
+  const username = user?.Username || user?.username || user?.Email || 'User';
+  const firstName = user?.Fname || user?.fname || username;
+  const isAdmin = String(user?.role || user?.Role || '').toLowerCase() === 'admin';
+  const isTeacher = String(user?.role || user?.Role || '').toLowerCase() === 'teacher';
+  const profileTab = isTeacher ? 'teacherInfo' : 'profile';
 
   const renderStars = (rating) => {
     return '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
@@ -285,7 +364,7 @@ function Header() {
             {user.avatar ? (
               <img src={user.avatar} alt={user.Username} className={styles.avatarImg} referrerPolicy="no-referrer" />
             ) : (
-              getInitial(user.Fname)
+              getInitial(firstName)
             )}
           </button>
 
@@ -296,18 +375,28 @@ function Header() {
                     {user.avatar ? (
                       <img src={user.avatar} alt={user.Username} className={styles.avatarImg} referrerPolicy="no-referrer" />
                     ) : (
-                      getInitial(user.Fname)
+                      getInitial(firstName)
                     )}</div>
                   <div>
-                    <p className={styles.profileName}>{user.Username}</p>
-                    <p className={styles.profileEmail}>{user.Email}</p>
+                    <p className={styles.profileName}>{username}</p>
+                    <p className={styles.profileEmail}>{user.Email || '—'}</p>
                   </div>
                 </div>
                 <div className={styles.profileDivider} />
-                {user.role === 'admin' && (
+                {isAdmin && (
                   <button className={styles.profileItem} onClick={() => { navigate('/admin'); setProfileOpen(false); }}>
-                    🛡️ Admin
+                    🛡️ My Admin
                   </button>
+                )}
+                {!isAdmin && (
+                  <>
+                    <button className={styles.profileItem} onClick={() => { navigate('/profile', { state: { tab: profileTab } }); setProfileOpen(false); }}>
+                      👤 My Profile
+                    </button>
+                    <button className={styles.profileItem} onClick={() => { navigate('/profile', { state: { tab: 'courses' } }); setProfileOpen(false); }}>
+                      📚 My Courses
+                    </button>
+                  </>
                 )}
                 <button className={styles.profileItem} onClick={() => { navigate('/home/cartpage'); setProfileOpen(false); }}>
                   🛒 My Cart

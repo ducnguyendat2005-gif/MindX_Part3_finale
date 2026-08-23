@@ -7,6 +7,7 @@ const accountSchema = new mongoose.Schema({
     Email: { type: String, required: true, unique: true },
     pass: { type: String, required: true },
     role: { type: String, enum: ['admin', 'user', 'teacher'], default: 'user' },
+    isActive: { type: Boolean, default: true },
     avatar: { 
     type: String, 
     default: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' 

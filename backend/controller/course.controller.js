@@ -33,7 +33,7 @@ const durationToMinutes = (value) => {
 
 const formatDuration = (minutes) => `${minutes} min`;
 const publicCourseFilter = {
-    $or: [{ status: 'approved' }, { status: { $exists: false } }],
+    status: 'approved',
 };
 
 const courseController = {

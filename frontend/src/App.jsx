@@ -19,11 +19,14 @@ import PaymentResult from './pages/PaymentResult/PaymentResult.jsx';
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { Routes, Route } from "react-router-dom";
+import { useIsMobile } from './hooks/use-mobile.jsx';
 
 
 function App() {
+    const isMobile = useIsMobile(768);
+
     return (
-    <>
+    <div className={`app-shell${isMobile ? ' app-shell--mobile' : ''}`} data-mobile={isMobile}>
     <AuthProvider>
       <Header></Header>
       <Routes>
@@ -58,7 +61,7 @@ function App() {
       <Footer></Footer>
       <AIWidget /> 
       </AuthProvider>
-    </>
+    </div>
   );
 }
 
