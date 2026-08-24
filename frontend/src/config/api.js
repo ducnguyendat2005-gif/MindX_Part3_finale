@@ -41,6 +41,8 @@ export const API = {
   deleteReview: (id) => `${BASE_URL}/account/review/${id}`,
   createMomoOrder: `${BASE_URL}/account/momo/create`,
   createVnpayOrder: `${BASE_URL}/account/vnpay/create`,
+  updateProgress: (courseId) => `${BASE_URL}/account/enrollments/${courseId}/progress`,
+getProgress: (courseId) => `${BASE_URL}/account/enrollments/${courseId}/progress`,
 };
 
 // Lưu / đọc / xóa token tập trung 1 chỗ, tránh rải localStorage.getItem khắp nơi

@@ -175,7 +175,7 @@ const CourseDetail = () => {
   const [showToast, setShowToast] = useState(false);
   const navigate = useNavigate();
 
-  const isOwned = user?.myCourses?.some(c => String(c._id) === String(id)) ?? false;
+const isOwned = user?.myCourses?.some(c => c && String(c._id) === String(id)) ?? false;
 
   useEffect(() => {
     const loadUser = () => {

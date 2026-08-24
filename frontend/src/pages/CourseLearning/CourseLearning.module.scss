@@ -841,7 +841,26 @@
 .courseCompletionLessonCurrent .courseCompletionCheckbox {
   border-color: #1d4ed8;
 }
+.courseCompletionLessonCompleted.courseCompletionLessonCurrent {
+  background: #eef4ff;
+  border-left: 3px solid #1d4ed8;
 
+  .courseCompletionLessonInfo,
+  .courseCompletionLessonNumber,
+  .courseCompletionLessonTitle,
+  .courseCompletionLessonDuration {
+    color: #1a1a1a;
+  }
+
+  .courseCompletionCheckbox {
+    border-color: #1d4ed8;
+    background: transparent;
+  }
+
+  .courseCompletionCheckmark {
+    color: #1d4ed8;
+  }
+}
 /* Khi completed: nền đen, chữ trắng */
 .courseCompletionLessonCompleted {
   background: #1a1a2e;
@@ -887,9 +906,12 @@
 }
 
 .courseCompletionCheckmark {
-  color: #ffffff;
+  color: #6b7280;   // ← đổi từ #ffffff sang xám trung tính cho light mode
   font-size: 14px;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .courseCompletionLessonInfo {
@@ -1016,33 +1038,63 @@
 
   .courseCompletionLesson {
     background: #111827;
-    border-bottom: 1px solid #334155;
   }
 
   .courseCompletionLesson:hover {
-    background: #111827;
+    background: orange;
   }
 
-  .courseCompletionLessonCurrent {
-    background: #172134;
+    .courseCompletionLessonCurrent{
+      .courseCompletionLessonTitle{
+        color:black
+      }
+    background: lightblue;
     border-left-color: #2563eb;
+
+    .courseCompletionLessonInfo,
+    .courseCompletionLessonNumber,
+    .courseCompletionLessonTitle,
+    .courseCompletionLessonDuration,
+    .courseCompletionCheckmark {
+      color: #1a1a1a;
+    }
+
+    .courseCompletionCheckbox {
+      border-color: #1d4ed8;
+    }
+  }
+  .courseCompletionLessonCompleted.courseCompletionLessonCurrent {
+    background: lightblue;
+    border-left-color: #2563eb;
+
+    .courseCompletionLessonInfo,
+    .courseCompletionLessonNumber,
+    .courseCompletionLessonTitle,
+    .courseCompletionLessonDuration,
+    .courseCompletionCheckmark {
+      color: #1a1a1a;
+    }
+
+    .courseCompletionCheckbox {
+      border-color: #1d4ed8;
+      background: transparent;
+    }
   }
 
   .courseCompletionLessonCompleted {
-    background: #111827;
+  background: #ffffff;
+
+  .courseCompletionLessonInfo,
+  .courseCompletionLessonNumber,
+  .courseCompletionLessonTitle,
+  .courseCompletionLessonDuration{
+    color: #1a1a1a;
   }
 
-  .courseCompletionCheckbox {
-    border-color: #94a3b8;
+  .courseCompletionCheckbox,.courseCompletionCheckmark  {
+    border-color: white;
   }
-
-  .courseCompletionLessonCompleted .courseCompletionCheckbox {
-    border-color: #f8fafc;
-  }
-
-  .courseCompletionLessonCompleted .courseCompletionCheckmark {
-    color: #f8fafc;
-  }
+}
 
   .courses,
   .reviewsStandalone {

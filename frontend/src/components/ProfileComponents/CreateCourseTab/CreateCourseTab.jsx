@@ -50,6 +50,10 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
   const [category, setCategory] = useState('Design');
   const [level, setLevel] = useState('Beginner');
   const [price, setPrice] = useState('');
+  const [promotionalPrice, setPromotionalPrice] = useState('');
+  const [discount, setDiscount] = useState('');
+  const [certification, setCertification] = useState('');
+  const [languages, setLanguages] = useState('');
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -73,6 +77,10 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
         setCategory(draft.category || 'Design');
         setLevel(draft.level || 'Beginner');
         setPrice(String(draft.price ?? ''));
+        setPromotionalPrice(String(draft.promotionalPrice ?? ''));
+        setDiscount(draft.discount || '');
+        setCertification(draft.certification || '');
+        setLanguages((draft.languages || []).join(', '));
         setThumbPreview(draft.thumbnail || null);
         setExistingPromoVideo(draft.promotionalVideo || '');
         setSections((draft.syllabus || []).map((section) => ({
@@ -83,6 +91,7 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
             : (section.items || []).map((lessonTitle) => ({ title: lessonTitle, duration: section.duration })))
             .map((lesson) => ({
               id: nextId(),
+              _id: lesson._id || null,   // ← thêm dòng này: id thật từ Mongo, cần gửi lại khi update
               title: lesson.title || '',
               duration: lesson.duration || '',
               videoFile: null,
@@ -175,7 +184,7 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
     lessonInputRef.current?.click();
   };
 
-  const onLessonVideoSelected = (e) => {
+  const onLessonVideoSelected = async (e) => {
     const file = e.target.files?.[0];
     const target = lessonTargetRef.current;
     if (!file || !target) return;
@@ -185,6 +194,14 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
     }
     handleLessonFieldChange(target.sectionId, target.lessonId, 'videoFile', file);
     e.target.value = '';
+
+    try {
+      const seconds = await getVideoDurationSeconds(file);
+      const minutes = Math.max(1, Math.round(seconds / 60));
+      handleLessonFieldChange(target.sectionId, target.lessonId, 'duration', String(minutes));
+    } catch {
+      // Không đọc được duration thì để giáo viên tự nhập, không chặn luồng upload.
+    }
   };
 
   const onThumbnailDrop = (e) => {
@@ -222,17 +239,25 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
       .split('\n')
       .map((line) => line.replace(/^-+\s*/, '').trim())
       .filter(Boolean),
-    curriculum: sections.map((s) => ({
-      title: s.title,
-      lessons: s.lessons.map((l) => ({
-        title: l.title,
-        duration: l.duration,
-        videoUrl: l.videoUrl || '',
+      curriculum: sections.map((s) => ({
+        title: s.title,
+        lessons: s.lessons.map((l) => ({
+          _id: l._id || undefined,   // ← thêm dòng này
+          title: l.title,
+          duration: l.duration,
+          videoUrl: l.videoUrl || '',
+        })),
       })),
-    })),
     category,
     level,
     price: Number(price) || 0,
+    promotionalPrice: promotionalPrice ? Number(promotionalPrice) : undefined,
+    discount,
+    certification,
+    languages: languages
+      .split(',')
+      .map((lang) => lang.trim())
+      .filter(Boolean),
     thumbnailUrl: thumbPreview && !thumbPreview.startsWith('blob:') ? thumbPreview : '',
     promotionalVideoUrl: existingPromoVideo,
   });
@@ -296,6 +321,20 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
       setSaving(false);
     }
   };
+  const getVideoDurationSeconds = (file) =>
+  new Promise((resolve, reject) => {
+    const videoEl = document.createElement('video');
+    videoEl.preload = 'metadata';
+    videoEl.onloadedmetadata = () => {
+      URL.revokeObjectURL(videoEl.src);
+      resolve(videoEl.duration);
+    };
+    videoEl.onerror = () => {
+      URL.revokeObjectURL(videoEl.src);
+      reject(new Error('Không đọc được thời lượng video'));
+    };
+    videoEl.src = URL.createObjectURL(file);
+  });
 
   return (
     <div className="cc">
@@ -589,6 +628,51 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
                 step="0.01"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
+              />
+            </div>
+            <div className="cc-form-group">
+              <label className="cc-form-label">Promotional Price (USD)</label>
+              <input
+                type="number"
+                className="cc-form-control"
+                placeholder="Để trống nếu không giảm giá"
+                min="0"
+                step="0.01"
+                value={promotionalPrice}
+                onChange={(e) => setPromotionalPrice(e.target.value)}
+              />
+            </div>
+
+            <div className="cc-form-group">
+              <label className="cc-form-label">Discount</label>
+              <input
+                type="text"
+                className="cc-form-control"
+                placeholder="e.g. 20%"
+                value={discount}
+                onChange={(e) => setDiscount(e.target.value)}
+              />
+            </div>
+
+            <div className="cc-form-group">
+              <label className="cc-form-label">Certification</label>
+              <input
+                type="text"
+                className="cc-form-control"
+                placeholder="e.g. Certificate of Completion"
+                value={certification}
+                onChange={(e) => setCertification(e.target.value)}
+              />
+            </div>
+
+            <div className="cc-form-group">
+              <label className="cc-form-label">Languages (phân cách bởi dấu phẩy)</label>
+              <input
+                type="text"
+                className="cc-form-control"
+                placeholder="e.g. English, Vietnamese"
+                value={languages}
+                onChange={(e) => setLanguages(e.target.value)}
               />
             </div>
           </section>

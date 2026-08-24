@@ -1,17 +1,18 @@
 import mongoose from 'mongoose';
 
+const lessonSchema = new mongoose.Schema({
+    title: { type: String, required: true, trim: true },
+    duration: { type: String, default: '0 min' },
+    videoUrl: { type: String, default: '' },
+});
+
 const syllabusSectionSchema = new mongoose.Schema({
     title: { type: String, required: true, trim: true },
-    // Kept for compatibility with the existing course detail screens.
     lessons: { type: Number, default: 0 },
     duration: { type: String, default: '0 min' },
     items: { type: [String], default: [] },
-    lessonDetails: [{
-        title: { type: String, required: true, trim: true },
-        duration: { type: String, default: '0 min' },
-        videoUrl: { type: String, default: '' },
-    }],
-}, { _id: false });
+    lessonDetails: [lessonSchema],
+},);
 
 const courseSchema = new mongoose.Schema({
     title: { type: String, required: true },
@@ -21,7 +22,7 @@ const courseSchema = new mongoose.Schema({
     lectures: { type: Number, default: 0 },
     level: String,
     price: { type: Number, min: 0, default: 0 },
-    promotionalPrice: Number,
+    promotionalPrice:Number,
     discount: String,
     category: String,
     thumbnail: String,

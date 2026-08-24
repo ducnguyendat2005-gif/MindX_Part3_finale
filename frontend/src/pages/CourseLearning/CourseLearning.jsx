@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import styles from "./CourseLearning.module.scss";
 import { useLocation,useParams } from "react-router-dom";
 import greystar from "../../assets/CourseDetail/Star 3 (1).png";
@@ -14,7 +14,7 @@ import { API, fetchWithAuth } from '../../config/api.js'
 
 // ==================== SUB-COMPONENTS ====================
 
-function CourseSection({ section, activeLesson, onSelect }) {
+function CourseSection({ section, activeLesson, completedLessons, isLessonLocked, onSelect }) {
   const [expanded, setExpanded] = useState(section.defaultExpanded);
 
   return (
@@ -32,6 +32,8 @@ function CourseSection({ section, activeLesson, onSelect }) {
             key={lesson.storageId}
             lesson={lesson}
             isActive={activeLesson === lesson.storageId}
+            isCompleted={completedLessons.has(lesson.storageId)}
+            isLocked={isLessonLocked(lesson.storageId)}
             onSelect={onSelect}
           />
         ))}
@@ -39,6 +41,7 @@ function CourseSection({ section, activeLesson, onSelect }) {
     </div>
   );
 }
+
 const SyllabusSection = ({ course }) => {
   const [openIndexes, setOpenIndexes] = useState(new Set());
 
@@ -147,30 +150,32 @@ const PlayIcon = () => (
     <path d="M5.5 4.8l4 2.2-4 2.2V4.8z" fill="currentColor" />
   </svg>
 );
-function Lesson({ lesson, isActive, onSelect }) {
-  const storageKey = `lesson_completed_${lesson.storageId}`;
-  const [completed, setCompleted] = useState(() => {
-    return localStorage.getItem(storageKey) === 'true';
-  });
 
+function Lesson({ lesson, isActive, isCompleted, isLocked, onSelect }) {
   const handleClick = () => {
-    const next = !completed;
-    setCompleted(next);
-    localStorage.setItem(storageKey, String(next));
+    if (isLocked) return; // không cho chọn lesson chưa mở khóa
     onSelect(lesson);
   };
 
   const lessonClass = [
     styles.courseCompletionLesson,
-    completed ? styles.courseCompletionLessonCompleted : "",
-    isActive && !completed ? styles.courseCompletionLessonCurrent : "",
+    isCompleted ? styles.courseCompletionLessonCompleted : "",
+    isActive ? styles.courseCompletionLessonCurrent : "",   // bỏ "&& !isCompleted"
+    isLocked ? styles.courseCompletionLessonLocked : "",
   ].filter(Boolean).join(" ");
 
   return (
     <div className={lessonClass} onClick={handleClick}>
       <div className={styles.courseCompletionLessonLeft}>
         <div className={styles.courseCompletionCheckbox}>
-          <span className={styles.courseCompletionCheckmark}>{completed ? "✓" : ""}</span>
+          <span className={styles.courseCompletionCheckmark}>
+            {isCompleted ? "✓" : isLocked ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" strokeWidth="2"/>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            ) : ""}
+          </span>
         </div>
         <div className={styles.courseCompletionLessonInfo}>
           <span className={styles.courseCompletionLessonNumber}>{lesson.id}.</span>
@@ -196,7 +201,7 @@ function buildSections(syllabus = [], courseId = '') {
       : (sec.items || []).map((title) => ({ title, duration: sec.duration })))
       .map((item, i) => ({
       id: i + 1,
-      storageId: `${courseId}_sec${secIndex}_les${i}`,
+      storageId: item._id || `${courseId}_sec${secIndex}_les${i}`,  // ← ưu tiên _id thật
       title: item.title,
       duration: item.duration || sec.duration || "1 hour",
       videoUrl: item.videoUrl || '',
@@ -205,10 +210,29 @@ function buildSections(syllabus = [], courseId = '') {
   }));
 }
 
-function CourseCompletion({ syllabus, courseId, onSelectLesson }) {
+function CourseCompletion({ syllabus, courseId, completedLessons, activeLessonId, onSelectLesson }) {
   const sections = useMemo(() => buildSections(syllabus, courseId), [syllabus, courseId]);
   const firstLesson = sections[0]?.lessons[0]?.storageId ?? null;
   const [activeLesson, setActiveLesson] = useState(firstLesson);
+
+  // Đồng bộ khi cha tự đổi lesson (ví dụ auto-advance sau khi xem xong)
+  useEffect(() => {
+    if (activeLessonId && activeLessonId !== activeLesson) {
+      setActiveLesson(activeLessonId);
+    }
+  }, [activeLessonId]);
+
+  const flatLessons = useMemo(
+    () => sections.flatMap(sec => sec.lessons),
+    [sections]
+  );
+
+  const isLessonLocked = (storageId) => {
+    const idx = flatLessons.findIndex(l => l.storageId === storageId);
+    if (idx <= 0) return false;
+    const prevLesson = flatLessons[idx - 1];
+    return !completedLessons.has(prevLesson.storageId);
+  };
 
   return (
     <div className={styles.courseCompletion}>
@@ -220,7 +244,10 @@ function CourseCompletion({ syllabus, courseId, onSelectLesson }) {
           key={section.id}
           section={section}
           activeLesson={activeLesson}
+          completedLessons={completedLessons}
+          isLessonLocked={isLessonLocked}
           onSelect={(lesson) => {
+            if (isLessonLocked(lesson.storageId)) return;
             setActiveLesson(lesson.storageId);
             onSelectLesson?.(lesson);
           }}
@@ -479,6 +506,8 @@ export default function CourseLearning() {
   const [allCourse, setAllCourse] = useState([]);
   const [activeNav, setActiveNav] = useState("Details");
   const [activeTab, setActiveTab] = useState('description');
+  const videoRef = useRef(null);
+  const furthestTime = useRef(0); 
   const location = useLocation();
 
   useEffect(() => {
@@ -492,6 +521,14 @@ export default function CourseLearning() {
   const { id } = useParams();
   const [course, setCourse] = useState(null);
   const [activeLesson, setActiveLesson] = useState(null);
+  const [completedLessons, setCompletedLessons] = useState(new Set());
+
+  useEffect(() => {
+    furthestTime.current = 0;
+    if (videoRef.current) {
+      videoRef.current.load(); // ép trình duyệt load lại <source> mới
+    }
+  }, [activeLesson?.storageId]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -515,13 +552,70 @@ export default function CourseLearning() {
     fetchCourse();
   }, [id]);
 
+  useEffect(() => {
+    if (!course?._id) return;
+    const loadProgress = async () => {
+      try {
+        const res = await fetchWithAuth(API.getProgress(course._id));
+        if (!res.ok) return; // vd 404 khi giáo viên preview, chưa mua khóa học → bỏ qua
+        const result = await res.json();
+        setCompletedLessons(new Set(result.data.completedLessons.map(String)));
+      } catch (err) {
+        console.error('Không tải được tiến trình:', err);
+      }
+    };
+    loadProgress();
+  }, [course?._id]);
+
   const handleReviewPosted = (newReview) => {
   setCourse(prev => ({
     ...prev,
     reviews: [newReview, ...(prev.reviews ?? [])],
   }));
 };
+  const handleTimeUpdate = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.currentTime > furthestTime.current) {
+      furthestTime.current = video.currentTime;
+    }
+  };
 
+  const handleSeeking = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.currentTime > furthestTime.current + 1) {
+      video.currentTime = furthestTime.current;
+    }
+  };
+
+  const handleEnded = async () => {
+    if (!activeLesson?.storageId || !course?._id) return;
+    try {
+      const res = await fetchWithAuth(API.updateProgress(course._id), {
+        method: 'PUT',
+        body: JSON.stringify({ lessonId: activeLesson.storageId }),
+      });
+      if (res.ok) {
+        setCompletedLessons(prev => new Set(prev).add(activeLesson.storageId));
+
+        // Tự động chuyển sang lesson kế tiếp nếu còn
+        const currentIndex = flatLessonsForAutoAdvance.findIndex(
+          l => l.storageId === activeLesson.storageId
+        );
+        const nextLesson = flatLessonsForAutoAdvance[currentIndex + 1];
+        if (nextLesson) {
+          setActiveLesson(nextLesson);
+        }
+      }
+    } catch (err) {
+      console.error('Cập nhật tiến trình thất bại:', err);
+    }
+  };
+  const flatLessonsForAutoAdvance = useMemo(() => {
+    if (!course?.syllabus) return [];
+    return buildSections(course.syllabus, String(course._id)).flatMap(sec => sec.lessons);
+  }, [course]);
   if (loading) return <p style={{ padding: "2rem", color: "#94a3b8" }}>Đang tải...</p>;
   if (!course) return <p style={{ padding: "2rem", color: "#94a3b8" }}>Không tìm thấy dữ liệu khoá học.</p>;
 
@@ -548,13 +642,25 @@ export default function CourseLearning() {
             <CourseCompletion
               syllabus={syllabus}
               courseId={String(course._id)}
+              completedLessons={completedLessons}
+              activeLessonId={activeLesson?.storageId}
               onSelectLesson={setActiveLesson}
             />
           </div>
 
           {/* Video */}
           <div className={styles.cVid}>
-            <video width="95%" height="95%" controls poster={course.thumbnail || 'thumbnail.jpg'}>
+            <video
+              ref={videoRef}
+              width="95%"
+              height="95%"
+              controls
+              controlsList="nodownload"
+              poster={course.thumbnail || 'thumbnail.jpg'}
+              onTimeUpdate={handleTimeUpdate}
+              onSeeking={handleSeeking}
+              onEnded={handleEnded}
+            >
               <source
                 src={activeLesson?.videoUrl || course.promotionalVideo || vid}
                 type={activeLesson?.videoUrl?.endsWith('.webm') ? 'video/webm' : 'video/mp4'}

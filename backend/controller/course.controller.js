@@ -69,6 +69,12 @@ const courseController = {
                     return res.status(400).json({ message: 'Mỗi phần phải có tên và ít nhất một bài học có tên', success: false });
                 }
             }
+            if (data.promotionalPrice !== undefined && data.promotionalPrice !== null) {
+                const promoPrice = Number(data.promotionalPrice);
+                if (!Number.isFinite(promoPrice) || promoPrice < 0 || promoPrice >= price) {
+                    return res.status(400).json({ message: 'Giá khuyến mãi không hợp lệ', success: false });
+                }
+            }
 
             const parsedLessonVideoIndexes = parseJsonField(req.body.lessonVideoIndexes, []);
             const lessonVideoIndexes = Array.isArray(parsedLessonVideoIndexes)
@@ -131,6 +137,12 @@ const courseController = {
                 category: String(data.category || '').trim(),
                 level: String(data.level || '').trim(),
                 price,
+                promotionalPrice: data.promotionalPrice !== undefined && data.promotionalPrice !== null
+                    ? Number(data.promotionalPrice)
+                    : undefined,
+                discount: String(data.discount || '').trim(),
+                certification: String(data.certification || '').trim(),
+                languages: Array.isArray(data.languages) ? data.languages : [],
                 thumbnail,
                 promotionalVideo,
                 lectures: totalLessons,
@@ -207,11 +219,15 @@ const courseController = {
                         const minutes = durationToMinutes(lesson.duration);
                         totalMinutes += minutes;
                         totalLessons += 1;
-                        return {
+                        const lessonDoc = {
                             title: lessonTitle,
                             duration: formatDuration(minutes),
                             videoUrl: lessonVideoMap.get(`${sectionIndex}:${lessonIndex}`) || lesson.videoUrl || '',
                         };
+                        // Giữ nguyên _id cũ nếu frontend gửi lên — lesson đã tồn tại từ trước.
+                        // Không set _id → Mongoose tự sinh mới, coi như lesson mới thêm.
+                        if (lesson._id) lessonDoc._id = lesson._id;
+                        return lessonDoc;
                     })
                     .filter(Boolean);
                 const sectionTitle = String(section.title || '').trim();
@@ -237,12 +253,22 @@ const courseController = {
                 category: String(data.category || '').trim(),
                 level: String(data.level || '').trim(),
                 price,
+                discount: String(data.discount || '').trim(),
+                certification: String(data.certification || '').trim(),
+                languages: Array.isArray(data.languages) ? data.languages : [],
                 thumbnail,
                 promotionalVideo,
                 lectures: totalLessons,
                 hours: Number((totalMinutes / 60).toFixed(2)),
                 status,
             });
+
+            if (data.promotionalPrice !== undefined && data.promotionalPrice !== null) {
+                course.promotionalPrice = Number(data.promotionalPrice);
+            } else {
+                course.promotionalPrice = undefined;
+            }
+
             await course.save();
 
             const result = await CourseModel.findById(course._id)
@@ -393,6 +419,63 @@ const courseController = {
         }
         catch(error){
             next(error)
+        }
+    },// GET /account/enrollments/:courseId/progress
+    getProgress: async (req, res, next) => {
+        try {
+            const { courseId } = req.params;
+            const accountId = req.user._id;
+
+            const enrollment = await EnrollmentModel.findOne({ accountId, courseId }).lean();
+            if (!enrollment) {
+                return res.status(404).json({ message: 'Chưa mua khóa học này', success: false });
+            }
+
+            const course = await CourseModel.findById(courseId).select('syllabus').lean();
+            const totalLessons = course.syllabus.reduce((sum, s) => sum + s.lessonDetails.length, 0);
+            const completedCount = enrollment.completedLessons?.length ?? 0;
+            const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+
+            res.status(200).json({
+                data: {
+                    completedLessons: enrollment.completedLessons ?? [],
+                    lastAccessedLessonId: enrollment.lastAccessedLessonId,
+                    progressPercent, // luôn tính server-side, không lưu vào DB
+                },
+                success: true,
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // PUT /account/enrollments/:courseId/progress
+    updateProgress: async (req, res, next) => {
+        try {
+            const { courseId } = req.params;
+            const { lessonId } = req.body; // chỉ nhận lessonId vừa hoàn thành
+            const accountId = req.user._id;
+
+            if (!lessonId) {
+                return res.status(400).json({ message: 'Thiếu lessonId', success: false });
+            }
+
+            const enrollment = await EnrollmentModel.findOneAndUpdate(
+                { accountId, courseId },
+                {
+                    $addToSet: { completedLessons: lessonId }, // tránh trùng lặp
+                    $set: { lastAccessedLessonId: lessonId },
+                },
+                { new: true, runValidators: true }
+            );
+
+            if (!enrollment) {
+                return res.status(404).json({ message: 'Chưa mua khóa học này', success: false });
+            }
+
+            res.status(200).json({ data: enrollment, message: 'Cập nhật tiến trình thành công', success: true });
+        } catch (error) {
+            next(error);
         }
     }
     

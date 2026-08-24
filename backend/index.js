@@ -121,6 +121,8 @@ app.post('/account/vnpay/create', verifyToken, orderController.createVnpayOrder)
 app.get('/account/vnpay/return', orderController.vnpayReturn); // không verifyToken — user redirect từ VNPay về
 app.get('/account/vnpay/ipn', orderController.vnpayIPN); // không verifyToken — VNPay gọi trực tiếp, xác thực bằng chữ ký
 // app.get('/admin/coupons', verifyToken, isAdmin, couponController.getAllCoupons);
+app.get('/account/enrollments/:courseId/progress', verifyToken, courseController.getProgress);
+app.put('/account/enrollments/:courseId/progress', verifyToken, courseController.updateProgress);
 
 app.post('/account/refresh-token',retakeToken)
 
