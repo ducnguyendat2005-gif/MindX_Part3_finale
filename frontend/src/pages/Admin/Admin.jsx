@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { API, fetchWithAuth } from '../../config/api.js'; // chỉnh lại đường dẫn cho đúng vị trí file api.js trong project của bạn
 import { useTheme } from '../../context/ThemeContext.jsx';
+import { useIsMobile } from '../../hooks/use-mobile.jsx';
 import './Admin.scss';
 
 
@@ -141,7 +142,7 @@ function Overview({ courses, accounts, testimonials,instructors, onSelectCourse 
           <p style={{ fontWeight: 600, margin: '20px 20px 4px', color: '#0d1321' }}>Giảng viên nổi bật</p>
           <div>
             {instructors.slice(0, 5).map((t) => (
-              <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 20px', borderTop: '1px solid #f1f3f9' }}>
+              <div key={t._id || t.id || t.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 20px', borderTop: '1px solid #f1f3f9' }}>
                 <Avatar name={t.name} size={34} />
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <p style={{ fontSize: 13, fontWeight: 500, margin: 0, color: '#0d1321', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</p>
@@ -311,15 +312,41 @@ function Instructors({ courses, instructors }) {
   );
 }
 
-function Accounts({ accounts, query }) {
+function isHoadoAccount(account) {
+  return String(account?.Username || '').replace(/^@/, '').toLowerCase() === 'hoado';
+}
+
+function Accounts({ accounts, query, onToggleStatus }) {
   const [revealed, setRevealed] = useState({});
+  const [updatingId, setUpdatingId] = useState(null);
+  const [statusError, setStatusError] = useState('');
   const filtered = accounts.filter((a) => {
+    if (isHoadoAccount(a)) return false;
     if (!query) return true;
     const q = query.toLowerCase();
     return a.Fname?.toLowerCase().includes(q) || a.Lname?.toLowerCase().includes(q) || a.Username?.toLowerCase().includes(q) || a.Email?.toLowerCase().includes(q);
   });
+
+  const handleToggleStatus = async (account) => {
+    const nextStatus = account.isActive === false;
+    const actionLabel = nextStatus ? 'mở khóa' : 'tạm khóa';
+    const confirmed = window.confirm(`Bạn có chắc muốn ${actionLabel} tài khoản @${account.Username} không?`);
+    if (!confirmed) return;
+
+    setUpdatingId(account.id);
+    setStatusError('');
+    try {
+      await onToggleStatus(account.id, nextStatus);
+    } catch (error) {
+      setStatusError(error.message || 'Không thể cập nhật trạng thái tài khoản');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   return (
     <div className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', overflow: 'hidden' }}>
+      {statusError && <p role="alert" style={{ margin: 0, padding: '10px 16px', color: '#b42318', background: '#fff1f0', fontSize: 12 }}>{statusError}</p>}
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
@@ -328,6 +355,7 @@ function Accounts({ accounts, query }) {
               <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Username</th>
               <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Email</th>
               <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Mật khẩu</th>
+              <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Trạng thái</th>
               <th style={{ textAlign: 'right', padding: '10px 16px', fontWeight: 600 }}>ID</th>
             </tr>
           </thead>
@@ -335,6 +363,7 @@ function Accounts({ accounts, query }) {
             {filtered.map((a) => {
               const fullName = (a.Fname + ' ' + a.Lname).trim() || 'Người dùng';
               const isR = revealed[a.id];
+              const isActive = a.isActive !== false;
               return (
                 <tr key={a.id} style={{ borderTop: '1px solid #f1f3f9' }}>
                   <td style={{ padding: '10px 16px' }}>
@@ -348,6 +377,17 @@ function Accounts({ accounts, query }) {
                   <td style={{ padding: '10px' }}>
                     <button onClick={() => setRevealed((r) => ({ ...r, [a.id]: !r[a.id] }))} style={{ fontFamily: 'monospace', fontSize: 12, color: '#5c6884', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                       {isR ? a.pass : '••••••••'}
+                    </button>
+                  </td>
+                  <td style={{ padding: '10px' }}>
+                    <button
+                      type="button"
+                      className={`admin-account-status ${isActive ? 'admin-account-status--active' : 'admin-account-status--suspended'}`}
+                      disabled={updatingId === a.id}
+                      onClick={() => handleToggleStatus(a)}
+                      title={isActive ? 'Tạm khóa tài khoản' : 'Mở khóa tài khoản'}
+                    >
+                      {updatingId === a.id ? 'Đang lưu...' : (isActive ? 'Hoạt động' : 'Tạm khóa')}
                     </button>
                   </td>
                   <td style={{ padding: '10px 16px', textAlign: 'right', color: '#8893ab', fontSize: 12 }}>#{a.id}</td>
@@ -627,7 +667,7 @@ function CourseApprovals() {
 
   if (pending.length === 0) {
     return (
-      <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', padding: 40, textAlign: 'center' }}>
+      <div className="admin-approval-empty" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', padding: 40, textAlign: 'center' }}>
         <p style={{ margin: 0, fontSize: 32 }}>✅</p>
         <p style={{ margin: '10px 0 0', fontWeight: 600, color: '#0d1321' }}>No courses waiting for review</p>
         <p style={{ margin: '4px 0 0', fontSize: 12, color: '#8893ab' }}>New submissions will show up here.</p>
@@ -702,6 +742,7 @@ function CourseApprovals() {
 
 export default function AdminPage() {
   const { theme } = useTheme();
+  const isMobile = useIsMobile(900);
   const [active, setActive] = useState('overview');
   const [query, setQuery] = useState('');
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -713,6 +754,10 @@ export default function AdminPage() {
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!isMobile) setSidebarOpen(false);
+  }, [isMobile]);
 
   useEffect(() => {
   const fetchData = async () => {
@@ -754,6 +799,19 @@ export default function AdminPage() {
   fetchData();
 }, []);
 
+  const handleToggleAccountStatus = async (accountId, isActive) => {
+    const res = await fetchWithAuth(API.updateAccountStatus(accountId), {
+      method: 'PUT',
+      body: JSON.stringify({ isActive }),
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.message || `Lỗi cập nhật trạng thái: ${res.status}`);
+
+    setAccounts((current) => current.map((account) => (
+      account.id === accountId ? { ...account, isActive } : account
+    )));
+  };
+
   const showSearch = active === 'courses' || active === 'accounts';
 
   const titles = {
@@ -786,9 +844,9 @@ export default function AdminPage() {
     <div className={`admin-page admin-page--${theme}`} style={{ display: 'flex', height: '100vh', background: '#f6f8fb', fontFamily: 'Inter, system-ui, sans-serif', color: '#0d1321' }}>
       {sidebarOpen && <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(13,19,33,0.4)', zIndex: 30 }} />}
       <aside style={{
-        position: window.innerWidth < 900 ? 'fixed' : 'static', zIndex: 40, insetBlock: 0, left: 0, width: 224,
+        position: isMobile ? 'fixed' : 'static', zIndex: 40, insetBlock: 0, left: 0, width: 224,
         background: '#0d1321', color: '#fff', display: 'flex', flexDirection: 'column', flexShrink: 0,
-        transform: window.innerWidth < 900 && !sidebarOpen ? 'translateX(-100%)' : 'none', transition: 'transform .2s', height: '100%',
+        transform: isMobile && !sidebarOpen ? 'translateX(-100%)' : 'none', transition: 'transform .2s', height: '100%',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 20px', height: 60, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
           <div style={{ width: 28, height: 28, borderRadius: 8, background: '#2563f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13 }}>B</div>
@@ -806,9 +864,9 @@ export default function AdminPage() {
         </nav>
         <div style={{ padding: 14, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 12, padding: 8 }}>
-            <div style={{ width: 30, height: 30, borderRadius: 999, background: '#4f8fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>ĐN</div>
+            <div style={{ width: 30, height: 30, borderRadius: 999, background: '#4f8fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>HĐ</div>
             <div style={{ minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: 12, fontWeight: 500 }}>Đạt Nguyễn</p>
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 500 }}>Hoa Đỗ</p>
               <p style={{ margin: 0, fontSize: 10, color: '#8893ab' }}>Quản trị viên</p>
             </div>
           </div>
@@ -817,7 +875,7 @@ export default function AdminPage() {
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <header style={{ height: 60, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 14, padding: '0 20px', borderBottom: '1px solid #eef1f7', background: 'rgba(255,255,255,0.9)' }}>
-          <button onClick={() => setSidebarOpen(true)} style={{ display: window.innerWidth < 900 ? 'block' : 'none', background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#39455e' }}>☰</button>
+          <button aria-label="Open navigation" onClick={() => setSidebarOpen(true)} style={{ display: isMobile ? 'block' : 'none', background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#39455e' }}>☰</button>
           <div style={{ minWidth: 0 }}>
             <p style={{ margin: 0, fontWeight: 600, fontSize: 15 }}>{title}</p>
             <p style={{ margin: 0, fontSize: 11, color: '#8893ab' }}>{subtitle}</p>
@@ -836,7 +894,7 @@ export default function AdminPage() {
             {active === 'courses' && <Courses courses={courses} query={query} onSelectCourse={setSelectedCourse} />}
             {active === 'instructors' && <Instructors courses={courses} instructors={instructors} />}
             {active === 'approvals' && <CourseApprovals />}
-            {active === 'accounts' && <Accounts accounts={accounts} query={query} />}
+            {active === 'accounts' && <Accounts accounts={accounts} query={query} onToggleStatus={handleToggleAccountStatus} />}
             {active === 'testimonials' && <Testimonials testimonials={testimonials} />}
           </div>
         </main>

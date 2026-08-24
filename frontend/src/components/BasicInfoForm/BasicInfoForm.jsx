@@ -47,7 +47,13 @@ export default function BasicInfoForm({ onNext }) {
       return;
     }
 
-    onNext({ Fname, Lname, Username, Email, pass });
+    onNext({
+      Fname: Fname.trim(),
+      Lname: Lname.trim(),
+      Username: Username.trim(),
+      Email: Email.trim(),
+      pass,
+    });
   } catch {
     setErrors({ Email: 'Không thể kiểm tra email lúc này' });
   } finally {
@@ -74,7 +80,11 @@ export default function BasicInfoForm({ onNext }) {
         <h1>Create Your Account</h1>
       </div>
 
-      <form className="signup-form" onSubmit={(e) => { e.preventDefault(); handleContinue(); }}>
+      <form
+        className="signup-form"
+        onSubmit={(e) => { e.preventDefault(); handleContinue(); }}
+        autoComplete="off"
+      >
         <div className="form-row">
           <div className="signup-field">
             <label>Full Name</label>
@@ -83,6 +93,8 @@ export default function BasicInfoForm({ onNext }) {
               value={Fname}
               onChange={(e) => { setFname(e.target.value); if (e.target.value) clearError('Fname'); }}
               type="text"
+              name="firstName"
+              autoComplete="given-name"
               placeholder="First Name"
             />
             {errors.Fname && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Fname}</p>}
@@ -94,6 +106,8 @@ export default function BasicInfoForm({ onNext }) {
               value={Lname}
               onChange={(e) => { setLname(e.target.value); if (e.target.value) clearError('Lname'); }}
               type="text"
+              name="lastName"
+              autoComplete="family-name"
               placeholder="Last Name"
             />
             {errors.Lname && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Lname}</p>}
@@ -107,6 +121,8 @@ export default function BasicInfoForm({ onNext }) {
             value={Username}
             onChange={(e) => { setUsername(e.target.value); if (e.target.value) clearError('Username'); }}
             type="text"
+            name="signup-username"
+            autoComplete="off"
             placeholder="Username"
           />
           {errors.Username && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Username}</p>}
@@ -119,6 +135,8 @@ export default function BasicInfoForm({ onNext }) {
             value={Email}
             onChange={(e) => { setEmail(e.target.value); if (e.target.value) clearError('Email'); }}
             type="email"
+            name="signup-email"
+            autoComplete="email"
             placeholder="Email ID"
           />
           {errors.Email && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Email}</p>}
@@ -132,6 +150,8 @@ export default function BasicInfoForm({ onNext }) {
               value={pass}
               onChange={(e) => { setpass(e.target.value); if (e.target.value) clearError('pass'); }}
               type="password"
+              name="new-password"
+              autoComplete="new-password"
               placeholder="Enter Password"
             />
             {errors.pass && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.pass}</p>}
@@ -144,6 +164,8 @@ export default function BasicInfoForm({ onNext }) {
               value={Repass}
               onChange={(e) => { setRepass(e.target.value); if (e.target.value) clearError('Repass'); }}
               type="password"
+              name="confirm-password"
+              autoComplete="new-password"
               placeholder="Confirm Password"
             />
             {errors.Repass && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Repass}</p>}

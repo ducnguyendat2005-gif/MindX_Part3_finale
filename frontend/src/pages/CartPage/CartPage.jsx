@@ -4,6 +4,7 @@ import { Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import img from '../../assets/photo-1542744094-3a31f272c490.avif'
 import './CartPage.scss';
+import { getCoursePricing, normalizeCartItem } from '../../utils/pricing.js';
 
 
 const MOCK_CART_ITEMS = [
@@ -45,19 +46,27 @@ const MOCK_CART_ITEMS = [
   }
 ];
 
-export default function CartPage() {
-  const [cart, setCart] = useState(
-    JSON.parse(localStorage.getItem('insideCarts') || '[]')
-  );
+const readCart = () => {
+  try {
+    const stored = JSON.parse(localStorage.getItem('insideCarts') || '[]');
+    return Array.isArray(stored) ? stored.map(normalizeCartItem) : [];
+  } catch {
+    return [];
+  }
+};
 
-  const subtotal = cart.reduce((acc, item) => acc + item.price, 0);
-  const discount = 10.00;
+export default function CartPage() {
+  const [cart, setCart] = useState(readCart);
+
+  const cartPricing = cart.map(getCoursePricing);
+  const subtotal = cartPricing.reduce((acc, item) => acc + item.originalPrice, 0);
+  const discount = cartPricing.reduce((acc, item) => acc + item.discountAmount, 0);
   const tax = 20.00;
-  const total = subtotal - discount + tax;
+  const total = Math.max(subtotal - discount + tax, 0);
   const navigate = useNavigate();
   
   const handleRemove = (id) => {
-    const updated = cart.filter(item => item.id !== id);
+    const updated = cart.filter(item => String(item._id || item.id) !== String(id));
     setCart(updated);
     localStorage.setItem('insideCarts', JSON.stringify(updated));
     window.dispatchEvent(new Event('cartUpdated'));
@@ -93,15 +102,24 @@ export default function CartPage() {
             <div className="cart-layout">
               {/* Items */}
               <div className="cart-items">
-                {cart.map((item) => (
-                  <div key={item.id} className="cart-item">
+                {cart.map((item) => {
+                  const { originalPrice, salePrice } = getCoursePricing(item);
+                  const itemId = item._id || item.id;
+
+                  return (
+                  <div key={itemId} className="cart-item">
                     <div className="cart-item__image">
                       <img src={img} alt={item.title} referrerPolicy="no-referrer" />
                     </div>
                     <div className="cart-item__info">
                       <div className="cart-item__top">
                         <h3 className="cart-item__title">{item.title}</h3>
-                        <span className="cart-item__price">${item.price.toFixed(2)}</span>
+                        <span className="cart-item__price">
+                          {salePrice < originalPrice && (
+                            <del style={{ marginRight: '8px', color: '#94a3b8' }}>${originalPrice.toFixed(2)}</del>
+                          )}
+                          ${salePrice.toFixed(2)}
+                        </span>
                       </div>
                       <p className="cart-item__instructor">By {item.instructor}</p>
 
@@ -126,11 +144,12 @@ export default function CartPage() {
                       </div>
                       <div className="cart-item__actions">
                         <button className="cart-item__action cart-item__action--save">Save for later</button>
-                        <button onClick={() => handleRemove(item.id)} className="cart-item__action cart-item__action--remove">Remove</button>
+                        <button onClick={() => handleRemove(itemId)} className="cart-item__action cart-item__action--remove">Remove</button>
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Order Summary */}
