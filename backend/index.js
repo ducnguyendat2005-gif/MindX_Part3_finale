@@ -15,6 +15,8 @@ import cors from 'cors'
 import { retakeToken } from './middleware/retakeToken.middleware.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dns from 'dns';
+dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 import dotenv from "dotenv";
 import { verifyToken } from './middleware/verifyToken.middleware.js';
