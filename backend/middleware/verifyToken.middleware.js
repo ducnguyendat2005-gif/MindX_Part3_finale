@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
+import AccountModel from '../model/account.js';
 
-export const verifyToken = (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader) {
@@ -20,7 +21,15 @@ export const verifyToken = (req, res, next) => {
             });
         }
 
-        req.user = jwt.verify(token, process.env.JWT_SECRET_ACCESS);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_ACCESS);
+        const account = await AccountModel.findById(decoded._id).select('isActive');
+        if (!account) {
+            return res.status(401).json({ message: 'Tài khoản không tồn tại!', code: 'ACCOUNT_NOT_FOUND' });
+        }
+        if (account.isActive === false) {
+            return res.status(403).json({ message: 'Tài khoản đang tạm khóa', code: 'ACCOUNT_SUSPENDED' });
+        }
+        req.user = decoded;
         next();
     } catch (error) {
         if (error.name === 'JsonWebTokenError') {

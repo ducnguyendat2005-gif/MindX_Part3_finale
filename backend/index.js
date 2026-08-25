@@ -89,6 +89,7 @@ app.get('/account/myprofile',verifyToken,accountController.getAllUserInfo)
 app.get('/account/myprofile/teacher',verifyToken,teacherController.getAllTeacherInfo)
 
 app.get('/admin',verifyToken,isAdmin,accountController.getAllAdminInfo)
+app.put('/admin/accounts/:id/status', verifyToken, isAdmin, accountController.updateAccountStatus)
 
 app.post('/account/checkout',verifyToken,courseController.postCheckout)
 

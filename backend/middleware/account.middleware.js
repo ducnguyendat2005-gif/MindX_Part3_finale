@@ -29,13 +29,35 @@ export const validateReg = async (req,res,next) =>{
 
 export const validateLogin = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
-        if (!email || !password) throw new Error("khong co email hay mk");
+        // `identifier` is the value entered at login. It can be either the
+        // account username or email; keep `email` as a fallback for old clients.
+        const { identifier, email, password } = req.body;
+        const loginIdentifier = (identifier ?? email)?.trim();
+        if (!loginIdentifier || !password) throw new Error("khong co username/email hay mk");
 
-        const customer = await AccountModel.findOne({ Email:email }).select("pass");
+        const customer = await AccountModel.findOne({
+            $or: [{ Email: loginIdentifier }, { Username: loginIdentifier }],
+        }).select("pass isActive");
+        if (!customer) {
+            const error = new Error("email or username or password is incorrect");
+            error.status = 401;
+            throw error;
+        }
         if (!customer) throw new Error ("email hoac password sai,from middleware with ❤️")
 
+        if (customer.isActive === false) {
+            const error = new Error("Tài khoản đang tạm khóa");
+            error.status = 403;
+            error.code = 'ACCOUNT_SUSPENDED';
+            throw error;
+        }
+
         const isMatch = await bcrypt.compare(password, customer.pass);
+        if (!isMatch) {
+            const error = new Error("email or username or password is incorrect");
+            error.status = 401;
+            throw error;
+        }
         if (!isMatch) throw new Error ("email hoac password sai,from middleware with ❤️")
 
         next();

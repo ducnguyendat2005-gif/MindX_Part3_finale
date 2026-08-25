@@ -4,16 +4,18 @@ import { Tag } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 import './BuyNPage.scss';
+import { getCoursePricing } from '../../utils/pricing.js';
 
 export default function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState('card');
     const location = useLocation();
 console.log(location.state); // xem có data không
 const course = location.state?.course ?? [];
-    const subtotal = course.reduce((acc, item) => acc + item.price, 0);
-    const discount = 10.00;
+    const coursePricing = course.map(getCoursePricing);
+    const subtotal = coursePricing.reduce((acc, item) => acc + item.originalPrice, 0);
+    const discount = coursePricing.reduce((acc, item) => acc + item.discountAmount, 0);
     const tax = 20.00;
-    const total = subtotal - discount + tax;
+    const total = Math.max(subtotal - discount + tax, 0);
 
   
   return (
@@ -125,8 +127,10 @@ const course = location.state?.course ?? [];
             <div className="checkout-summary__box">
               <h2 className="checkout-summary__title">Order Details</h2>
 
-              {course.map((data)=>(
-              <div className="checkout-summary__course">
+              {course.map((data) => {
+                const { salePrice } = getCoursePricing(data);
+                return (
+              <div className="checkout-summary__course" key={data._id || data.id}>
                 <img
                   src="https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&q=80&w=400"
                   alt="Course"
@@ -136,10 +140,11 @@ const course = location.state?.course ?? [];
                   <span className="checkout-summary__tag">{data.category}</span>
                   <h3>{data.title}</h3>
                   <p>{data.lectures} Lectures . {data.hours} Total Hours</p>
-                  <span className="checkout-summary__course-price">$ {data.price}</span>
+                  <span className="checkout-summary__course-price">$ {salePrice}</span>
                 </div>
               </div>
-              ))} 
+                );
+              })} 
               <div className="checkout-summary__coupon">
                 <Tag className="coupon-icon" />
                 <input type="text" placeholder="APPLY COUPON CODE" />

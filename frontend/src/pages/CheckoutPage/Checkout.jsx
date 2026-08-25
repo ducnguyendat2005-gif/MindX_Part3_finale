@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Tag } from 'lucide-react';
 import { API, fetchWithAuth, tokenStorage } from '../../config/api.js';
 import './Checkout.scss';
+import { getCoursePricing, normalizeCartItem } from '../../utils/pricing.js';
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -19,14 +20,23 @@ export default function CheckoutPage() {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponToast, setCouponToast] = useState(null); // { type: 'error' | 'success', message: string }
 
-  const subtotal = cart.reduce((acc, item) => acc + item.price, 0);
-  const discount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const cartPricing = cart.map(getCoursePricing);
+  const subtotal = cartPricing.reduce((acc, item) => acc + item.originalPrice, 0);
+  const saleDiscount = cartPricing.reduce((acc, item) => acc + item.discountAmount, 0);
+  const couponDiscount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const discount = saleDiscount + couponDiscount;
   const tax = 20.00;
-  const total = subtotal - discount + tax;
+  const total = Math.max(subtotal - discount + tax, 0);
 
   useEffect(() => {
-    const stored = localStorage.getItem('insideCarts');
-    setCart(stored ? JSON.parse(stored) : []);
+    try {
+      const stored = JSON.parse(localStorage.getItem('insideCarts') || '[]');
+      const normalized = Array.isArray(stored) ? stored.map(normalizeCartItem) : [];
+      setCart(normalized);
+      localStorage.setItem('insideCarts', JSON.stringify(normalized));
+    } catch {
+      setCart([]);
+    }
   }, []);
 
   useEffect(() => {
@@ -261,7 +271,9 @@ export default function CheckoutPage() {
             <div className="checkout-summary__box">
               <h2 className="checkout-summary__title">Order Details</h2>
 
-              {cart.map((data) => (
+              {cart.map((data) => {
+                const { salePrice } = getCoursePricing(data);
+                return (
                 <div className="checkout-summary__course" key={data._id || data.id}>
                   <img
                     src="https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&q=80&w=400"
@@ -272,10 +284,11 @@ export default function CheckoutPage() {
                     <span className="checkout-summary__tag">{data.category}</span>
                     <h3>{data.title}</h3>
                     <p>{data.lectures} Lectures . {data.hours} Total Hours</p>
-                    <span className="checkout-summary__course-price">$ {data.price}</span>
+                    <span className="checkout-summary__course-price">$ {salePrice}</span>
                   </div>
                 </div>
-              ))}
+                );
+              })}
               <div className="checkout-summary__coupon">
                 <Tag className="coupon-icon" />
                 <input

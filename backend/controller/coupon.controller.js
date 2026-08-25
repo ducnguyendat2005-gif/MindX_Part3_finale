@@ -52,8 +52,15 @@ const couponController = {
                 throw err;
             }
 
-            const courses = await CourseModel.find({ _id: { $in: courseIds } }).select('price')
-            const subtotal = courses.reduce((sum, c) => sum + c.price, 0);
+            const courses = await CourseModel.find({ _id: { $in: courseIds } }).select('price promotionalPrice')
+            const subtotal = courses.reduce((sum, c) => {
+                const originalPrice = Number(c.price) || 0;
+                const promotionalPrice = Number(c.promotionalPrice);
+                const salePrice = promotionalPrice > 0 && promotionalPrice < originalPrice
+                    ? promotionalPrice
+                    : originalPrice;
+                return sum + salePrice;
+            }, 0);
 
             let discountAmount;
             if (coup.discountType === 'number') {

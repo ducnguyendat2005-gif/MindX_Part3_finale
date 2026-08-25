@@ -1,5 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { API, fetchWithAuth } from '../../config/api.js'; // chỉnh lại đường dẫn cho đúng vị trí file api.js trong project của bạn
+import { useTheme } from '../../context/ThemeContext.jsx';
+import { useIsMobile } from '../../hooks/use-mobile.jsx';
+import './Admin.scss';
 
 
 const INSTRUCTORS = [
@@ -20,14 +23,30 @@ function colorFor(seed) {
   return PALETTE[h % PALETTE.length];
 }
 function initials(name) {
-  return (name || '').trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? '').join('');
 }
 function fmtMoney(n) {
   if (n == null) return '$0';
-  return '$' + Number(n).toFixed(2).replace(/\.00$/, '');
 }
 function categoryLabel(cat) {
   return (cat || '').split('-').map((w) => w[0]?.toUpperCase() + w.slice(1)).join(' ');
+}
+function levelLabel(level) {
+  const normalized = (level || '').trim().toLowerCase();
+  const labels = {
+    'người mới bắt đầu': 'Beginner',
+    'nguoi moi bat dau': 'Beginner',
+    beginner: 'Beginner',
+    'trung cấp': 'Intermediate',
+    'trung cap': 'Intermediate',
+    intermediate: 'Intermediate',
+    'nâng cao': 'Advanced',
+    'nang cao': 'Advanced',
+    advanced: 'Advanced',
+    'chuyên gia': 'Expert',
+    'chuyen gia': 'Expert',
+    expert: 'Expert',
+  };
+  return labels[normalized] || level || 'Unknown';
 }
 
 function Avatar({ name, size = 40, rounded = '9999px' }) {
@@ -68,7 +87,7 @@ const LEVEL_FG = {
 
 function StatCard({ label, value, accentBg, accentFg, icon }) {
   return (
-    <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', boxShadow: '0 1px 2px rgba(13,19,33,0.04), 0 8px 24px -12px rgba(13,19,33,0.1)', padding: 20 }}>
+    <div className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', boxShadow: '0 1px 2px rgba(13,19,33,0.04), 0 8px 24px -12px rgba(13,19,33,0.1)', padding: 20 }}>
       <div style={{ width: 40, height: 40, borderRadius: 12, background: accentBg, color: accentFg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, marginBottom: 14 }}>
         {icon}
       </div>
@@ -103,7 +122,7 @@ function Overview({ courses, accounts, testimonials,instructors, onSelectCourse 
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,3fr) minmax(0,2fr)', gap: 16 }}>
-        <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', boxShadow: '0 1px 2px rgba(13,19,33,0.04), 0 8px 24px -12px rgba(13,19,33,0.1)', padding: 20 }}>
+        <div className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', boxShadow: '0 1px 2px rgba(13,19,33,0.04), 0 8px 24px -12px rgba(13,19,33,0.1)', padding: 20 }}>
           <p style={{ fontWeight: 600, margin: '0 0 4px', color: '#0d1321' }}>Khóa học theo danh mục</p>
           <p style={{ fontSize: 12, color: '#8893ab', margin: '0 0 16px' }}>Phân bố {stats.totalCourses} khóa học</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -119,11 +138,11 @@ function Overview({ courses, accounts, testimonials,instructors, onSelectCourse 
           </div>
         </div>
 
-        <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', boxShadow: '0 1px 2px rgba(13,19,33,0.04), 0 8px 24px -12px rgba(13,19,33,0.1)', overflow: 'hidden' }}>
+        <div className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', boxShadow: '0 1px 2px rgba(13,19,33,0.04), 0 8px 24px -12px rgba(13,19,33,0.1)', overflow: 'hidden' }}>
           <p style={{ fontWeight: 600, margin: '20px 20px 4px', color: '#0d1321' }}>Giảng viên nổi bật</p>
           <div>
             {instructors.slice(0, 5).map((t) => (
-              <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 20px', borderTop: '1px solid #f1f3f9' }}>
+              <div key={t._id || t.id || t.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 20px', borderTop: '1px solid #f1f3f9' }}>
                 <Avatar name={t.name} size={34} />
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <p style={{ fontSize: 13, fontWeight: 500, margin: 0, color: '#0d1321', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</p>
@@ -138,7 +157,7 @@ function Overview({ courses, accounts, testimonials,instructors, onSelectCourse 
         </div>
       </div>
 
-      <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', boxShadow: '0 1px 2px rgba(13,19,33,0.04), 0 8px 24px -12px rgba(13,19,33,0.1)', overflow: 'hidden' }}>
+      <div className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', boxShadow: '0 1px 2px rgba(13,19,33,0.04), 0 8px 24px -12px rgba(13,19,33,0.1)', overflow: 'hidden' }}>
         <p style={{ fontWeight: 600, margin: '20px 20px 4px', color: '#0d1321' }}>Khóa học đánh giá cao nhất</p>
         <div>
           {topCourses.map((c) => (
@@ -158,11 +177,11 @@ function Overview({ courses, accounts, testimonials,instructors, onSelectCourse 
       </div>
 
       {testimonials?.length > 0 && (
-        <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', boxShadow: '0 1px 2px rgba(13,19,33,0.04), 0 8px 24px -12px rgba(13,19,33,0.1)', padding: 20 }}>
+        <div className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', boxShadow: '0 1px 2px rgba(13,19,33,0.04), 0 8px 24px -12px rgba(13,19,33,0.1)', padding: 20 }}>
           <p style={{ fontWeight: 600, margin: '0 0 14px', color: '#0d1321' }}>Phản hồi gần đây</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
             {testimonials.slice(0, 3).map((t) => (
-              <div key={t.id} style={{ background: '#f8f9fc', borderRadius: 12, padding: 14, border: '1px solid #eef1f7' }}>
+              <div key={t.id} className="admin-testimonial-card" style={{ background: '#f8f9fc', borderRadius: 12, padding: 14, border: '1px solid #eef1f7' }}>
                 <p style={{ fontSize: 13, color: '#39455e', lineHeight: 1.6, margin: '0 0 10px' }}>"{t.content.slice(0, 130)}{t.content.length > 130 ? '...' : ''}"</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Avatar name={t.name} size={26} />
@@ -189,18 +208,18 @@ function Courses({ courses, query, onSelectCourse }) {
     return courses.filter((c) => {
       const q = !query || c.title.toLowerCase().includes(query.toLowerCase()) || c.author.toLowerCase().includes(query.toLowerCase());
       const cat = category === 'all' || c.category === category;
-      const lv = level === 'all' || c.level === level;
+      const lv = level === 'all' || levelLabel(c.level) === level;
       return q && cat && lv;
     }).sort((a, b) => b.rating - a.rating);
   }, [courses, query, category, level]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', background: '#fff', border: '1px solid #eef1f7', borderRadius: 16, padding: 12 }}>
-        <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ padding: '8px 10px', fontSize: 13, borderRadius: 10, border: '1px solid #dde1ec', background: '#fff' }}>
+      <div className="admin-course-filters" style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', background: '#fff', border: '1px solid #eef1f7', borderRadius: 16, padding: 12 }}>
+        <select className="admin-course-filter" value={category} onChange={(e) => setCategory(e.target.value)} style={{ padding: '8px 10px', fontSize: 13, borderRadius: 10, border: '1px solid #dde1ec', background: '#fff' }}>
           {categories.map((c) => <option key={c} value={c}>{c === 'all' ? 'Tất cả danh mục' : categoryLabel(c)}</option>)}
         </select>
-        <select value={level} onChange={(e) => setLevel(e.target.value)} style={{ padding: '8px 10px', fontSize: 13, borderRadius: 10, border: '1px solid #dde1ec', background: '#fff' }}>
+        <select className="admin-course-filter" value={level} onChange={(e) => setLevel(e.target.value)} style={{ padding: '8px 10px', fontSize: 13, borderRadius: 10, border: '1px solid #dde1ec', background: '#fff' }}>
           <option value="all">Tất cả cấp độ</option>
           {['Beginner', 'Intermediate', 'Advanced', 'Expert'].map((l) => <option key={l} value={l}>{l}</option>)}
         </select>
@@ -208,9 +227,9 @@ function Courses({ courses, query, onSelectCourse }) {
         <span style={{ fontSize: 12, color: '#8893ab', fontWeight: 500 }}>{filtered.length} kết quả</span>
       </div>
 
-      <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', overflow: 'hidden' }}>
+      <div className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', overflow: 'hidden' }}>
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <table className="admin-course-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ background: '#f6f8fb', color: '#8893ab', fontSize: 11, textTransform: 'uppercase' }}>
                 <th style={{ textAlign: 'left', padding: '10px 16px', fontWeight: 600 }}>Khóa học</th>
@@ -233,10 +252,10 @@ function Courses({ courses, query, onSelectCourse }) {
                     </div>
                   </td>
                   <td style={{ padding: '10px' }}>
-                    <span style={{ fontSize: 11, fontWeight: 500, padding: '3px 8px', borderRadius: 999, background: '#EEF5FF', color: '#1947D6' }}>{categoryLabel(c.category)}</span>
+                    <span className="admin-course-badge" style={{ fontSize: 11, fontWeight: 500, padding: '3px 8px', borderRadius: 999, background: '#EEF5FF', color: '#1947D6' }}>{categoryLabel(c.category)}</span>
                   </td>
                   <td style={{ padding: '10px' }}>
-                    <span style={{ fontSize: 11, fontWeight: 500, padding: '3px 8px', borderRadius: 999, background: LEVEL_BG[c.level] || '#eef1f7', color: LEVEL_FG[c.level] || '#5c6884' }}>{c.level}</span>
+                    <span className="admin-course-badge" style={{ fontSize: 11, fontWeight: 500, padding: '3px 8px', borderRadius: 999, background: LEVEL_BG[levelLabel(c.level)] || '#eef1f7', color: LEVEL_FG[levelLabel(c.level)] || '#5c6884' }}>{levelLabel(c.level)}</span>
                   </td>
                   <td style={{ padding: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 3, color: '#f59e0b', fontWeight: 600, fontSize: 12 }}>
@@ -260,7 +279,7 @@ function Instructors({ courses, instructors }) {
       {instructors.map((t) => {
         const taught = courses.filter((c) => c.instructorId === t._id);
         return (
-          <div key={t._id} style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div key={t._id} className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Avatar name={t.name} size={48} />
               <div style={{ minWidth: 0 }}>
@@ -269,11 +288,11 @@ function Instructors({ courses, instructors }) {
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div style={{ background: '#f6f8fb', borderRadius: 10, padding: '10px 0', textAlign: 'center' }}>
+              <div className="admin-instructor-stat" style={{ background: '#f6f8fb', borderRadius: 10, padding: '10px 0', textAlign: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, color: '#f59e0b', fontWeight: 700 }}><Star size={13} />{t.rating}</div>
                 <p style={{ margin: '2px 0 0', fontSize: 11, color: '#8893ab' }}>đánh giá</p>
               </div>
-              <div style={{ background: '#f6f8fb', borderRadius: 10, padding: '10px 0', textAlign: 'center' }}>
+              <div className="admin-instructor-stat" style={{ background: '#f6f8fb', borderRadius: 10, padding: '10px 0', textAlign: 'center' }}>
                 <p style={{ margin: 0, fontWeight: 700, color: '#1947D6' }}>{t.totalStudents.toLocaleString()}</p>
                 <p style={{ margin: '2px 0 0', fontSize: 11, color: '#8893ab' }}>học viên</p>
               </div>
@@ -293,15 +312,41 @@ function Instructors({ courses, instructors }) {
   );
 }
 
-function Accounts({ accounts, query }) {
+function isHoadoAccount(account) {
+  return String(account?.Username || '').replace(/^@/, '').toLowerCase() === 'hoado';
+}
+
+function Accounts({ accounts, query, onToggleStatus }) {
   const [revealed, setRevealed] = useState({});
+  const [updatingId, setUpdatingId] = useState(null);
+  const [statusError, setStatusError] = useState('');
   const filtered = accounts.filter((a) => {
+    if (isHoadoAccount(a)) return false;
     if (!query) return true;
     const q = query.toLowerCase();
     return a.Fname?.toLowerCase().includes(q) || a.Lname?.toLowerCase().includes(q) || a.Username?.toLowerCase().includes(q) || a.Email?.toLowerCase().includes(q);
   });
+
+  const handleToggleStatus = async (account) => {
+    const nextStatus = account.isActive === false;
+    const actionLabel = nextStatus ? 'mở khóa' : 'tạm khóa';
+    const confirmed = window.confirm(`Bạn có chắc muốn ${actionLabel} tài khoản @${account.Username} không?`);
+    if (!confirmed) return;
+
+    setUpdatingId(account.id);
+    setStatusError('');
+    try {
+      await onToggleStatus(account.id, nextStatus);
+    } catch (error) {
+      setStatusError(error.message || 'Không thể cập nhật trạng thái tài khoản');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   return (
-    <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', overflow: 'hidden' }}>
+    <div className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', overflow: 'hidden' }}>
+      {statusError && <p role="alert" style={{ margin: 0, padding: '10px 16px', color: '#b42318', background: '#fff1f0', fontSize: 12 }}>{statusError}</p>}
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
@@ -310,6 +355,7 @@ function Accounts({ accounts, query }) {
               <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Username</th>
               <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Email</th>
               <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Mật khẩu</th>
+              <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Trạng thái</th>
               <th style={{ textAlign: 'right', padding: '10px 16px', fontWeight: 600 }}>ID</th>
             </tr>
           </thead>
@@ -317,6 +363,7 @@ function Accounts({ accounts, query }) {
             {filtered.map((a) => {
               const fullName = (a.Fname + ' ' + a.Lname).trim() || 'Người dùng';
               const isR = revealed[a.id];
+              const isActive = a.isActive !== false;
               return (
                 <tr key={a.id} style={{ borderTop: '1px solid #f1f3f9' }}>
                   <td style={{ padding: '10px 16px' }}>
@@ -330,6 +377,17 @@ function Accounts({ accounts, query }) {
                   <td style={{ padding: '10px' }}>
                     <button onClick={() => setRevealed((r) => ({ ...r, [a.id]: !r[a.id] }))} style={{ fontFamily: 'monospace', fontSize: 12, color: '#5c6884', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                       {isR ? a.pass : '••••••••'}
+                    </button>
+                  </td>
+                  <td style={{ padding: '10px' }}>
+                    <button
+                      type="button"
+                      className={`admin-account-status ${isActive ? 'admin-account-status--active' : 'admin-account-status--suspended'}`}
+                      disabled={updatingId === a.id}
+                      onClick={() => handleToggleStatus(a)}
+                      title={isActive ? 'Tạm khóa tài khoản' : 'Mở khóa tài khoản'}
+                    >
+                      {updatingId === a.id ? 'Đang lưu...' : (isActive ? 'Hoạt động' : 'Tạm khóa')}
                     </button>
                   </td>
                   <td style={{ padding: '10px 16px', textAlign: 'right', color: '#8893ab', fontSize: 12 }}>#{a.id}</td>
@@ -347,7 +405,7 @@ function Testimonials({ testimonials }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
       {testimonials.map((t) => (
-        <div key={t.id} style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div key={t.id} className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <p style={{ fontSize: 24, color: '#b6d4ff', margin: 0, fontWeight: 700 }}>"</p>
           <p style={{ fontSize: 13, color: '#39455e', lineHeight: 1.6, margin: 0, flex: 1 }}>{t.content}</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 10, borderTop: '1px solid #f1f3f9' }}>
@@ -609,7 +667,7 @@ function CourseApprovals() {
 
   if (pending.length === 0) {
     return (
-      <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', padding: 40, textAlign: 'center' }}>
+      <div className="admin-approval-empty" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', padding: 40, textAlign: 'center' }}>
         <p style={{ margin: 0, fontSize: 32 }}>✅</p>
         <p style={{ margin: '10px 0 0', fontWeight: 600, color: '#0d1321' }}>No courses waiting for review</p>
         <p style={{ margin: '4px 0 0', fontSize: 12, color: '#8893ab' }}>New submissions will show up here.</p>
@@ -683,6 +741,8 @@ function CourseApprovals() {
 }
 
 export default function AdminPage() {
+  const { theme } = useTheme();
+  const isMobile = useIsMobile(900);
   const [active, setActive] = useState('overview');
   const [query, setQuery] = useState('');
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -694,6 +754,10 @@ export default function AdminPage() {
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!isMobile) setSidebarOpen(false);
+  }, [isMobile]);
 
   useEffect(() => {
   const fetchData = async () => {
@@ -735,6 +799,19 @@ export default function AdminPage() {
   fetchData();
 }, []);
 
+  const handleToggleAccountStatus = async (accountId, isActive) => {
+    const res = await fetchWithAuth(API.updateAccountStatus(accountId), {
+      method: 'PUT',
+      body: JSON.stringify({ isActive }),
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.message || `Lỗi cập nhật trạng thái: ${res.status}`);
+
+    setAccounts((current) => current.map((account) => (
+      account.id === accountId ? { ...account, isActive } : account
+    )));
+  };
+
   const showSearch = active === 'courses' || active === 'accounts';
 
   const titles = {
@@ -764,12 +841,12 @@ export default function AdminPage() {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#f6f8fb', fontFamily: 'Inter, system-ui, sans-serif', color: '#0d1321' }}>
+    <div className={`admin-page admin-page--${theme}`} style={{ display: 'flex', height: '100vh', background: '#f6f8fb', fontFamily: 'Inter, system-ui, sans-serif', color: '#0d1321' }}>
       {sidebarOpen && <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(13,19,33,0.4)', zIndex: 30 }} />}
       <aside style={{
-        position: window.innerWidth < 900 ? 'fixed' : 'static', zIndex: 40, insetBlock: 0, left: 0, width: 224,
+        position: isMobile ? 'fixed' : 'static', zIndex: 40, insetBlock: 0, left: 0, width: 224,
         background: '#0d1321', color: '#fff', display: 'flex', flexDirection: 'column', flexShrink: 0,
-        transform: window.innerWidth < 900 && !sidebarOpen ? 'translateX(-100%)' : 'none', transition: 'transform .2s', height: '100%',
+        transform: isMobile && !sidebarOpen ? 'translateX(-100%)' : 'none', transition: 'transform .2s', height: '100%',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 20px', height: 60, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
           <div style={{ width: 28, height: 28, borderRadius: 8, background: '#2563f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13 }}>B</div>
@@ -778,7 +855,7 @@ export default function AdminPage() {
         <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
           <p style={{ padding: '0 12px', margin: '0 0 6px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8893ab' }}>Quản lý</p>
           {NAV.map((n) => (
-            <button key={n.key} onClick={() => { setActive(n.key); setSidebarOpen(false); }} style={{
+            <button key={n.key} className={active === n.key ? 'admin-nav-item admin-nav-item--active' : 'admin-nav-item'} onClick={() => { setActive(n.key); setSidebarOpen(false); }} style={{
               display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, fontSize: 13, fontWeight: 500,
               border: 'none', cursor: 'pointer', textAlign: 'left',
               background: active === n.key ? '#2563f5' : 'transparent', color: active === n.key ? '#fff' : '#b7bfd2',
@@ -787,9 +864,9 @@ export default function AdminPage() {
         </nav>
         <div style={{ padding: 14, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 12, padding: 8 }}>
-            <div style={{ width: 30, height: 30, borderRadius: 999, background: '#4f8fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>ĐN</div>
+            <div style={{ width: 30, height: 30, borderRadius: 999, background: '#4f8fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>HĐ</div>
             <div style={{ minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: 12, fontWeight: 500 }}>Đạt Nguyễn</p>
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 500 }}>Hoa Đỗ</p>
               <p style={{ margin: 0, fontSize: 10, color: '#8893ab' }}>Quản trị viên</p>
             </div>
           </div>
@@ -798,7 +875,7 @@ export default function AdminPage() {
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <header style={{ height: 60, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 14, padding: '0 20px', borderBottom: '1px solid #eef1f7', background: 'rgba(255,255,255,0.9)' }}>
-          <button onClick={() => setSidebarOpen(true)} style={{ display: window.innerWidth < 900 ? 'block' : 'none', background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#39455e' }}>☰</button>
+          <button aria-label="Open navigation" onClick={() => setSidebarOpen(true)} style={{ display: isMobile ? 'block' : 'none', background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#39455e' }}>☰</button>
           <div style={{ minWidth: 0 }}>
             <p style={{ margin: 0, fontWeight: 600, fontSize: 15 }}>{title}</p>
             <p style={{ margin: 0, fontSize: 11, color: '#8893ab' }}>{subtitle}</p>
@@ -809,7 +886,6 @@ export default function AdminPage() {
               padding: '8px 12px', fontSize: 13, borderRadius: 10, border: '1px solid #dde1ec', background: '#f6f8fb', width: 200, outline: 'none',
             }} />
           )}
-          <Avatar name="Đạt Nguyễn" size={32} />
         </header>
 
         <main style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
@@ -818,7 +894,7 @@ export default function AdminPage() {
             {active === 'courses' && <Courses courses={courses} query={query} onSelectCourse={setSelectedCourse} />}
             {active === 'instructors' && <Instructors courses={courses} instructors={instructors} />}
             {active === 'approvals' && <CourseApprovals />}
-            {active === 'accounts' && <Accounts accounts={accounts} query={query} />}
+            {active === 'accounts' && <Accounts accounts={accounts} query={query} onToggleStatus={handleToggleAccountStatus} />}
             {active === 'testimonials' && <Testimonials testimonials={testimonials} />}
           </div>
         </main>

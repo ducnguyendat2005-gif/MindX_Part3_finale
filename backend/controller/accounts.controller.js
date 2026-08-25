@@ -41,9 +41,19 @@ const accountController = {
     },
     accLogin: async (req, res, next) => {
         try {
-            const { email, password } = req.body;
+            // Login accepts either the account username or email.
+            // `email` remains a fallback for clients using the old request shape.
+            const { identifier, email, password } = req.body;
+            const loginIdentifier = (identifier ?? email)?.trim();
 
-            const foundAccount = await AccountModel.findOne({ Email: email }).select("Email role _id")
+            const foundAccount = await AccountModel.findOne({
+                $or: [{ Email: loginIdentifier }, { Username: loginIdentifier }],
+            }).select("Email role _id Username Fname Lname avatar")
+            if (!foundAccount) {
+                const error = new Error("Account not found");
+                error.status = 401;
+                throw error;
+            }
             const userData = foundAccount.toObject();
             
 
@@ -131,7 +141,9 @@ const accountController = {
     },
     getAllAdminInfo: async (req, res, next) => {
         try {
-            const AccountInf = await AccountModel.find()
+            const AccountInf = (await AccountModel.find()).filter((account) =>
+                String(account.Username || '').replace(/^@/, '').toLowerCase() !== 'hoado'
+            )
             const CommentInf = await CommentModel.find()
             const CourseInf = await CourseModel.find()
             const EnrollmentInf = await EnrollmentModel.find()
@@ -149,6 +161,30 @@ const accountController = {
         }
         catch (error) {
             next(error)
+        }
+    },
+    updateAccountStatus: async (req, res, next) => {
+        try {
+            const { isActive } = req.body;
+            if (typeof isActive !== 'boolean') {
+                return res.status(400).json({ success: false, message: 'Trạng thái tài khoản không hợp lệ' });
+            }
+
+            const account = await AccountModel.findById(req.params.id);
+            if (!account) {
+                return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+            }
+
+            const normalizedUsername = String(account.Username || '').replace(/^@/, '').toLowerCase();
+            if (normalizedUsername === 'hoado') {
+                return res.status(403).json({ success: false, message: 'Không thể thay đổi trạng thái tài khoản quản trị' });
+            }
+
+            account.isActive = isActive;
+            await account.save();
+            res.status(200).json({ success: true, data: account, message: 'Cập nhật trạng thái thành công' });
+        } catch (error) {
+            next(error);
         }
     },
     teacherRegister:async (req, res,next) =>{

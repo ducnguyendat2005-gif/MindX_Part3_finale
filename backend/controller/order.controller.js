@@ -8,6 +8,14 @@ import { createVnpayUrl, verifyVnpaySignature } from '../src/utils/vnpay.js';
 // Tỷ giá tạm để demo — DB đang lưu giá USD, MoMo/VNPay chỉ nhận VND
 const USD_TO_VND = 25000;
 
+const getSalePrice = (course) => {
+  const originalPrice = Number(course.price) || 0;
+  const promotionalPrice = Number(course.promotionalPrice);
+  return promotionalPrice > 0 && promotionalPrice < originalPrice
+    ? promotionalPrice
+    : originalPrice;
+};
+
 // Tính subtotal/discount/total dùng chung cho cả MoMo & VNPay (tránh lặp code)
 const buildOrderData = async (courseIds, couponCode) => {
   if (!Array.isArray(courseIds) || courseIds.length === 0) {
@@ -25,7 +33,7 @@ const buildOrderData = async (courseIds, couponCode) => {
 
   const items = courses.map(c => ({
     courseId: c._id,
-    price: c.promotionalPrice ?? c.price,
+    price: getSalePrice(c),
     title: c.title,  
   }));
   const subtotal = items.reduce((sum, i) => sum + i.price, 0);

@@ -35,6 +35,7 @@ export const API = {
   checkout: `${BASE_URL}/account/checkout`,
   applyCoupon: `${BASE_URL}/account/apply-coupon`, 
   admin: `${BASE_URL}/admin`,
+  updateAccountStatus: (id) => `${BASE_URL}/admin/accounts/${id}/status`,
   postReview: (courseId) => `${BASE_URL}/courses/${courseId}/reviews`,
   myReviews: `${BASE_URL}/account/reviews`,
   updateReview: (reviewId) => `${BASE_URL}/account/review/${reviewId}`,

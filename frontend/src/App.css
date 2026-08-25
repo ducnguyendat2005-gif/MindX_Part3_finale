@@ -4,3 +4,13 @@
     box-sizing: border-box;
     font-family: inter;
 }
+
+.app-shell {
+    width: 100%;
+    min-width: 0;
+    min-height: 100vh;
+}
+
+.app-shell--mobile {
+    overflow-x: clip;
+}

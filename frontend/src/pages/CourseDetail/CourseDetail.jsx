@@ -20,6 +20,7 @@ import github from "../../assets/github.png";
 import google from "../../assets/google.jpg";
 import microsoft from "../../assets/microsoft.png";
 import twitter from "../../assets/twitter.png";
+import { normalizeCartItem } from "../../utils/pricing.js";
 
 const WISHLIST_KEY = 'wishlistedCourses';
 
@@ -194,13 +195,13 @@ const isOwned = user?.myCourses?.some(c => c && String(c._id) === String(id)) ??
 
   const handleAddtoCart = () => {
     const existing = JSON.parse(localStorage.getItem('insideCarts') || '[]');
-    const alreadyInCart = existing.some(item => item._id === course._id);
+    const alreadyInCart = existing.some(item => String(item._id || item.id) === String(course._id));
     if (alreadyInCart) {
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       return;
     }
-    const updated = [...existing, course];
+    const updated = [...existing, normalizeCartItem(course)];
     localStorage.setItem('insideCarts', JSON.stringify(updated));
     window.dispatchEvent(new Event('cartUpdated'));
     setAdded(true);
@@ -354,7 +355,7 @@ useEffect(() => {
 
               {isOwned ? (
                 <button
-                  onClick={() => navigate('/mycoursespage')}
+                  onClick={() => navigate(`/mycoursespage/${id}`)}
                   className={styles.learnNowButton}
                 >
                   🎓 Learn Now
