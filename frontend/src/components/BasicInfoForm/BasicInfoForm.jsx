@@ -1,15 +1,14 @@
-// src/components/SignUp/BasicInfoForm.jsx
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
-import { API } from '../../config/api.js';   // ← thêm dòng này
-import './BasicInfoForm.module.scss'
+import { API } from '../../config/api.js';
+import './BasicInfoForm.module.scss';
 
 export default function BasicInfoForm({ onNext }) {
   const [Fname, setFname] = useState('');
   const [Lname, setLname] = useState('');
   const [Username, setUsername] = useState('');
-  const [checkingEmail, setCheckingEmail] = useState(false); 
+  const [checkingEmail, setCheckingEmail] = useState(false);
   const [Email, setEmail] = useState('');
   const [pass, setpass] = useState('');
   const [Repass, setRepass] = useState('');
@@ -33,34 +32,47 @@ export default function BasicInfoForm({ onNext }) {
       setErrors(newErrors);
       return;
     }
+
     setCheckingEmail(true);
     try {
       const res = await fetch(API.checkDuplicateEmail, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: Email }), // chú ý key "email" viết thường, khớp với req.body ở backend
-    });
+        body: JSON.stringify({
+          username: Username.trim(),
+          email: Email.trim(),
+        }),
+      });
 
-    if (!res.ok) {
-      const result = await res.json();
-      setErrors({ Email: result.message || 'Email existed please try others' });
-      return;
+      if (!res.ok) {
+        const result = await res.json();
+        const duplicateErrors = {};
+        if (result.duplicateUsername || result.errors?.Username) {
+          duplicateErrors.Username = 'User đã nhập trùng';
+        }
+        if (result.duplicateEmail || result.errors?.Email) {
+          duplicateErrors.Email = 'Email đã nhập trùng';
+        }
+        setErrors(
+          Object.keys(duplicateErrors).length > 0
+            ? duplicateErrors
+            : { Email: result.message || 'Không thể kiểm tra thông tin đăng ký' },
+        );
+        return;
+      }
+
+      onNext({
+        Fname: Fname.trim(),
+        Lname: Lname.trim(),
+        Username: Username.trim(),
+        Email: Email.trim(),
+        pass,
+      });
+    } catch {
+      setErrors({ Email: 'Không thể kiểm tra thông tin đăng ký' });
+    } finally {
+      setCheckingEmail(false);
     }
-
-    onNext({
-      Fname: Fname.trim(),
-      Lname: Lname.trim(),
-      Username: Username.trim(),
-      Email: Email.trim(),
-      pass,
-    });
-  } catch {
-    setErrors({ Email: 'Không thể kiểm tra email lúc này' });
-  } finally {
-    setCheckingEmail(false);
-  }
-
-    // Không gọi API register ở đây nữa — chỉ đẩy data lên component cha
   };
 
   const inputStyle = (field) => ({
@@ -172,9 +184,9 @@ export default function BasicInfoForm({ onNext }) {
           </div>
         </div>
 
-        <button type="submit" className="signup-btn">
-          Continue
-          <ArrowRight className="btn-icon" />
+        <button type="submit" className="signup-btn" disabled={checkingEmail}>
+          {checkingEmail ? 'Checking...' : 'Continue'}
+          {!checkingEmail && <ArrowRight className="btn-icon" />}
         </button>
       </form>
 

@@ -13,6 +13,49 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const accountController = {
+    getAllStudents: async (req, res, next) => {
+        try {
+            const accounts = await AccountModel.find({
+                _id: { $ne: req.user._id },
+                role: 'user',
+                isActive: { $ne: false },
+            })
+                .select('Fname Lname Username avatar interests level learningGoal createdAt')
+                .sort({ createdAt: -1 })
+                .lean();
+
+            const data = accounts.map((account) => {
+                const name = [account.Fname, account.Lname]
+                    .filter(Boolean)
+                    .join(' ')
+                    .trim();
+                const interest = account.interests?.[0]
+                    ?.replace(/-/g, ' ')
+                    .replace(/\b\w/g, (character) => character.toUpperCase());
+
+                return {
+                    id: account._id,
+                    accountId: account._id,
+                    name: name || account.Username,
+                    username: account.Username,
+                    title: interest ? `${interest} Student` : 'Student',
+                    avatar: account.avatar,
+                    interests: account.interests || [],
+                    level: account.level || '',
+                    learningGoal: account.learningGoal || '',
+                };
+            });
+
+            res.status(200).json({
+                data,
+                count: data.length,
+                message: 'Students retrieved successfully!',
+                success: true,
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
     registerCustomer: async (req, res, next) => {
         try {
             const { Fname, Lname, Username, Email, pass,interests,level,learningGoal } = req.body;
@@ -29,6 +72,7 @@ const accountController = {
                 Email, 
                 pass: hash, 
                 role: "user",
+                welcomeNotificationRead: false,
                 interests,
                 level,
                 learningGoal,
@@ -216,7 +260,15 @@ const accountController = {
             const salt = bcrypt.genSaltSync(saltRounds);
             const hash = bcrypt.hashSync(pass, salt);
 
-            createdAccount = await AccountModel.create({ Fname, Lname, Username, Email, pass: hash, role :"teacher" })
+            createdAccount = await AccountModel.create({
+                Fname,
+                Lname,
+                Username,
+                Email,
+                pass: hash,
+                role: "teacher",
+                welcomeNotificationRead: false,
+            })
             const createInstructor = await InstructorModel.create({
                 name :Username,
                 title:expertise,

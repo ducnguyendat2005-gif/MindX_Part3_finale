@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const accountSchema = new mongoose.Schema({
     Fname: String,
     Lname: String,
-    Username: { type: String, required: true },
+    Username: { type: String, required: true, unique: true, trim: true },
     Email: { type: String, required: true, unique: true },
     pass: { type: String, required: true },
     role: { type: String, enum: ['admin', 'user', 'teacher'], default: 'user' },
@@ -20,6 +20,7 @@ const accountSchema = new mongoose.Schema({
         default: '',
     },
     interests: [String],
+    welcomeNotificationRead: { type: Boolean, default: true },
 }, { timestamps: true });
 
 const AccountModel = mongoose.model('account', accountSchema);
