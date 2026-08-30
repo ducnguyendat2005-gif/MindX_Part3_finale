@@ -1,0 +1,121 @@
+.eventsList {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.state {
+  text-align: center;
+  padding: 120px 24px;
+  color: #64748b;
+}
+
+.stateError {
+  color: #dc2626;
+}
+
+.header {
+  margin-bottom: 40px;
+
+  h1 {
+    font-size: 2rem;
+    margin: 8px 0 8px;
+  }
+
+  p {
+    color: #64748b;
+  }
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.empty {
+  padding: 60px 24px;
+  text-align: center;
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+  color: #64748b;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  padding: 0;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(180, 83, 9, 0.12);
+  }
+}
+
+.cardCover {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+.cardBody {
+  padding: 16px 18px 20px;
+
+  h3 {
+    margin: 0 0 6px;
+    font-size: 1.05rem;
+  }
+
+  p {
+    margin: 0 0 10px;
+    color: #64748b;
+    font-size: 0.9rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+.cardMeta {
+  font-size: 0.78rem;
+  color: #b45309;
+  font-weight: 600;
+}
+
+:global([data-theme="dark"]) {
+  .empty {
+    border-color: #334155;
+    color: #94a3b8;
+  }
+
+  .card {
+    background: #0f172a;
+    border-color: #334155;
+
+    .cardBody h3 {
+      color: #f8fafc;
+    }
+
+    .cardBody p {
+      color: #94a3b8;
+    }
+  }
+}

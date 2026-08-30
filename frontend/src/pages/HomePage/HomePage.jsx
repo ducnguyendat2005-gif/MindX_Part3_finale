@@ -3,6 +3,7 @@ import styles from './HomePage.module.scss'
 import { API } from '../../config/api.js'
 import Header from '../../components/Header/Header.jsx'
 import Footer from '../../components/Footer/Footer.jsx'
+import EventPromoBanner from '../../components/EventPromoBanner/EventPromoBanner.jsx';
 import frame1 from '../../assets/Frame 427318990 (1).png'
 import frame2 from '../../assets/Frame 427318991 (1).png'
 import frame3 from '../../assets/Group (1).png'
@@ -26,6 +27,7 @@ import bgUiux from '../../assets/UXUI.jpg'
 import bgDevops from '../../assets/devops.jpg'
 import bgCloud from '../../assets/cloudcom.jpg'
 import bgDataScience from '../../assets/datasci.jpg'
+import bgDesign from '../../assets/design.jpg'
 
 import CourseCard from '../../components/CourseCard/CourseCard.jsx'
 import star from '../../assets/icon-1star.png'
@@ -160,6 +162,7 @@ const categoryIconMap = {
   devops: Container,
   'cloud computing': Cloud,
   'data science': BarChart3,
+  'design': Palette
 }
 
 const getCategoryIcon = (category) => {
@@ -176,6 +179,7 @@ const categoryBgMap = {
   devops: bgDevops,
   'cloud computing': bgCloud,
   'data science': bgDataScience,
+  'design':bgDesign,
 }
 
 const getCategoryBg = (category) => {
@@ -259,6 +263,8 @@ const [topCourses, setTopCourses] = useState([]);
           <CircularProgress></CircularProgress>
         </div>
       </div>
+
+      <EventPromoBanner />
  
       <div className={styles.massCounter}>
         <div className={styles.insideText}>

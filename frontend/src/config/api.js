@@ -43,7 +43,16 @@ export const API = {
   createMomoOrder: `${BASE_URL}/account/momo/create`,
   createVnpayOrder: `${BASE_URL}/account/vnpay/create`,
   updateProgress: (courseId) => `${BASE_URL}/account/enrollments/${courseId}/progress`,
-getProgress: (courseId) => `${BASE_URL}/account/enrollments/${courseId}/progress`,
+  getProgress: (courseId) => `${BASE_URL}/account/enrollments/${courseId}/progress`,
+  submitQuizAttempt: (courseId) => `${BASE_URL}/account/enrollments/${courseId}/quiz-attempt`, 
+  activeEvents: `${BASE_URL}/events`,
+  eventById: (id) => `${BASE_URL}/events/${id}`,
+  submitEventAnswer: (eventId) => `${BASE_URL}/events/${eventId}/submit-answer`,
+  setEventDisplayMode: (eventId) => `${BASE_URL}/events/${eventId}/display-mode`,
+  eventLeaderboard: (eventId) => `${BASE_URL}/events/${eventId}/leaderboard`,
+
+  adminEvents: `${BASE_URL}/admin/events`,
+  adminEventById: (id) => `${BASE_URL}/admin/events/${id}`,
 };
 
 // Lưu / đọc / xóa token tập trung 1 chỗ, tránh rải localStorage.getItem khắp nơi

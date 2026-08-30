@@ -10,6 +10,9 @@ import teacherController from './controller/teacher.controller.js'
 import couponController from './controller/coupon.controller.js';
 import orderController from './controller/order.controller.js';
 import adminController from './controller/admin.controller.js'
+import eventController from './controller/event.controller.js';
+import eventAdminController from './controller/eventAdmin.controller.js';
+import { isStudent, hasAnyEnrollment } from './middleware/event.middleware.js';
 import { uploadPortfolio, uploadCourseMedia } from './src/middleware/upload.middleware.js';
 import cors from 'cors'
 import { retakeToken } from './middleware/retakeToken.middleware.js';
@@ -126,6 +129,20 @@ app.get('/account/vnpay/ipn', orderController.vnpayIPN); // không verifyToken �
 // app.get('/admin/coupons', verifyToken, isAdmin, couponController.getAllCoupons);
 app.get('/account/enrollments/:courseId/progress', verifyToken, courseController.getProgress);
 app.put('/account/enrollments/:courseId/progress', verifyToken, courseController.updateProgress);
+
+app.post('/account/enrollments/:courseId/quiz-attempt', verifyToken, courseController.submitQuizAttempt); // THÊM MỚI
+
+app.get('/events', verifyToken, isStudent, eventController.getActiveEvents);
+app.get('/events/:eventId', verifyToken, isStudent, eventController.getEventById);
+app.post('/events/:eventId/submit-answer', verifyToken, isStudent, hasAnyEnrollment, eventController.submitAnswer);
+app.post('/events/:eventId/display-mode', verifyToken, isStudent, hasAnyEnrollment, eventController.setDisplayMode);
+app.get('/events/:eventId/leaderboard', verifyToken, isStudent, eventController.getLeaderboard);
+
+app.post('/admin/events', verifyToken, isAdmin, eventAdminController.createEvent);
+app.get('/admin/events', verifyToken, isAdmin, eventAdminController.getAllEventsAdmin);
+app.get('/admin/events/:id', verifyToken, isAdmin, eventAdminController.getEventByIdAdmin);
+app.put('/admin/events/:id', verifyToken, isAdmin, eventAdminController.updateEvent);
+app.delete('/admin/events/:id', verifyToken, isAdmin, eventAdminController.deleteEvent);
 
 app.post('/account/refresh-token',retakeToken)
 
