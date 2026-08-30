@@ -19,13 +19,8 @@ const instructorSchema = new mongoose.Schema({
     totalCourses: { type: Number, default: 0 },
     totalReviews: { type: Number, default: 0 },
     rating: { type: Number, default: 0 },
-    portfolioUrl: { 
-        type: [String], 
-        validate: {
-            validator: (arr) => arr.length > 0,
-            message: 'Phải upload ít nhất 1 file portfolio'
-        }
-    },
+    // Portfolio không bắt buộc khi đăng ký; giáo viên có thể bổ sung sau.
+    portfolioUrl: { type: [String], default: [] },
 });
 
 const InstructorModel = mongoose.model('Instructors', instructorSchema);

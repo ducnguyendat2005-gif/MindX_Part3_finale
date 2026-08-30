@@ -1,19 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, Filter, ChevronDown, Mail, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ChevronDown, ChevronLeft, ChevronRight, Filter, Mail, UserPlus, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API, fetchWithAuth } from '../../../config/api.js';
 import useFriendStatuses, { FRIEND_STATUS_EVENT } from '../../../hooks/useFriendStatuses.js';
-import './TeachersTab.scss';
+import '../TeacherTab/TeachersTab.scss';
 
 const PAGE_SIZE = 6;
 
-export default function TeachersTab() {
+export default function StudentsTab() {
   const navigate = useNavigate();
-
-  const [teachers, setTeachers] = useState([]);
+  const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
-
   const [searchText, setSearchText] = useState('');
   const [sortBy, setSortBy] = useState('relevance');
   const [showSortMenu, setShowSortMenu] = useState(false);
@@ -21,29 +19,8 @@ export default function TeachersTab() {
   const [page, setPage] = useState(1);
   const [friendActionId, setFriendActionId] = useState(null);
   const { friendStatuses, setFriendStatuses, loadingFriendStatuses } = useFriendStatuses();
-
   const sortRef = useRef(null);
   const filterRef = useRef(null);
-
-  useEffect(() => {
-    let isCurrent = true;
-
-    const loadTeachers = async () => {
-      try {
-        const res = await fetchWithAuth(API.teachers);
-        const result = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(result.message || 'Unable to load teachers');
-        if (isCurrent) setTeachers(result.data || []);
-      } catch (error) {
-        if (isCurrent) setLoadError(error.message || 'Unable to load teachers');
-      } finally {
-        if (isCurrent) setLoading(false);
-      }
-    };
-
-    loadTeachers();
-    return () => { isCurrent = false; };
-  }, []);
 
   const sortLabels = {
     relevance: 'Relevance',
@@ -52,36 +29,57 @@ export default function TeachersTab() {
   };
 
   useEffect(() => {
-    const handler = (e) => {
-      if (sortRef.current && !sortRef.current.contains(e.target)) setShowSortMenu(false);
-      if (filterRef.current && !filterRef.current.contains(e.target)) setShowFilterMenu(false);
+    let isCurrent = true;
+
+    const loadStudents = async () => {
+      try {
+        const res = await fetchWithAuth(API.students);
+        const result = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(result.message || 'Unable to load students');
+        if (isCurrent) setStudents(result.data || []);
+      } catch (error) {
+        if (isCurrent) setLoadError(error.message || 'Unable to load students');
+      } finally {
+        if (isCurrent) setLoading(false);
+      }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+
+    loadStudents();
+    return () => { isCurrent = false; };
   }, []);
 
-  const filteredTeachers = teachers.filter(
-    (t) => !searchText || t.name.toLowerCase().includes(searchText.toLowerCase())
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (sortRef.current && !sortRef.current.contains(event.target)) setShowSortMenu(false);
+      if (filterRef.current && !filterRef.current.contains(event.target)) setShowFilterMenu(false);
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  const filteredStudents = students.filter(
+    (student) => !searchText || student.name.toLowerCase().includes(searchText.toLowerCase())
   );
-  const sortedTeachers = [...filteredTeachers].sort((a, b) => {
+  const sortedStudents = [...filteredStudents].sort((first, second) => {
     if (sortBy === 'relevance') {
-      const aIsFriend = friendStatuses[String(a.accountId || a.id)]?.status === 'accepted';
-      const bIsFriend = friendStatuses[String(b.accountId || b.id)]?.status === 'accepted';
-      if (aIsFriend !== bIsFriend) return aIsFriend ? -1 : 1;
+      const firstIsFriend = friendStatuses[String(first.accountId || first.id)]?.status === 'accepted';
+      const secondIsFriend = friendStatuses[String(second.accountId || second.id)]?.status === 'accepted';
+      if (firstIsFriend !== secondIsFriend) return firstIsFriend ? -1 : 1;
     }
-    if (sortBy === 'name_asc') return a.name.localeCompare(b.name);
-    if (sortBy === 'name_desc') return b.name.localeCompare(a.name);
+    if (sortBy === 'name_asc') return first.name.localeCompare(second.name);
+    if (sortBy === 'name_desc') return second.name.localeCompare(first.name);
     return 0;
   });
-  const totalPages = Math.max(1, Math.ceil(sortedTeachers.length / PAGE_SIZE));
-  const displayedTeachers = sortedTeachers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(sortedStudents.length / PAGE_SIZE));
+  const displayedStudents = sortedStudents.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   useEffect(() => {
     setPage(1);
   }, [searchText, sortBy]);
 
-  const handleAddFriend = async (teacher) => {
-    const recipientId = String(teacher.accountId || teacher.id);
+  const handleAddFriend = async (student) => {
+    const recipientId = String(student.accountId || student.id);
     if (!window.confirm('Có chấp nhận add friend không?')) return;
 
     setFriendActionId(recipientId);
@@ -109,7 +107,7 @@ export default function TeachersTab() {
     <div className="teachers-tab">
       <div className="teachers-header">
         <h1 className="teachers-header__title">
-          Teachers <span className="teachers-header__count">({filteredTeachers.length})</span>
+          Students <span className="teachers-header__count">({filteredStudents.length})</span>
         </h1>
 
         <div className="teachers-header__controls">
@@ -119,20 +117,21 @@ export default function TeachersTab() {
               placeholder="Search User"
               className="search-box__input"
               value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              onChange={(event) => setSearchText(event.target.value)}
             />
             <Search className="search-box__icon" />
           </div>
 
           <div className="sort-control" ref={sortRef} style={{ position: 'relative' }}>
             <span className="sort-control__label">Sort By</span>
-            <button className="sort-control__btn" onClick={() => setShowSortMenu((v) => !v)}>
+            <button type="button" className="sort-control__btn" onClick={() => setShowSortMenu((value) => !value)}>
               {sortLabels[sortBy]} <ChevronDown className="sort-control__icon" />
             </button>
             {showSortMenu && (
               <div className="dropdown-menu">
                 {Object.entries(sortLabels).map(([key, label]) => (
                   <button
+                    type="button"
                     key={key}
                     className={`dropdown-menu__item ${sortBy === key ? 'dropdown-menu__item--active' : ''}`}
                     onClick={() => { setSortBy(key); setShowSortMenu(false); }}
@@ -145,47 +144,45 @@ export default function TeachersTab() {
           </div>
 
           <div ref={filterRef} style={{ position: 'relative' }}>
-            <button className="filter-btn" onClick={() => setShowFilterMenu((v) => !v)}>
+            <button type="button" className="filter-btn" onClick={() => setShowFilterMenu((value) => !value)}>
               <Filter className="filter-btn__icon" />
               Filter
             </button>
             {showFilterMenu && (
               <div className="dropdown-menu dropdown-menu--filter">
-                <div className="dropdown-menu__section">
-                  <p className="dropdown-menu__section-title">Coming soon</p>
-                </div>
+                <p className="dropdown-menu__section-title">Coming soon</p>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Teacher Grid */}
       <div className="teacher-grid">
         {loading ? (
-          <p style={{ color: '#94a3b8', gridColumn: '1/-1' }}>Loading teachers...</p>
+          <p style={{ color: '#94a3b8', gridColumn: '1/-1' }}>Loading students...</p>
         ) : loadError ? (
           <p style={{ color: '#f87171', gridColumn: '1/-1' }}>{loadError}</p>
-        ) : filteredTeachers.length === 0 ? (
-          <p style={{ color: '#94a3b8', gridColumn: '1/-1' }}>No teachers found.</p>
+        ) : filteredStudents.length === 0 ? (
+          <p style={{ color: '#94a3b8', gridColumn: '1/-1' }}>No students found.</p>
         ) : (
-          displayedTeachers.map((t) => (
-            <div className="teacher-card" key={t.id}>
+          displayedStudents.map((student) => (
+            <div className="teacher-card" key={student.id}>
               <div className="teacher-card__thumbnail">
-                <img src={t.avatar} alt={t.name} className="teacher-card__image" referrerPolicy="no-referrer" />
+                <img src={student.avatar} alt={student.name} className="teacher-card__image" referrerPolicy="no-referrer" />
               </div>
               <div className="teacher-card__body">
-                <h3 className="teacher-card__name">{t.name}</h3>
-                <p className="teacher-card__title">{t.title}</p>
+                <h3 className="teacher-card__name">{student.name}</h3>
+                <p className="teacher-card__title">{student.title}</p>
                 {(() => {
-                  const targetId = String(t.accountId || t.id);
+                  const targetId = String(student.accountId || student.id);
                   const status = friendStatuses[targetId]?.status;
 
                   if (status === 'accepted') {
                     return (
                       <button
+                        type="button"
                         className="teacher-card__btn"
-                        onClick={() => navigate('/profile', { state: { tab: 'message', teacher: { name: t.name, avatar: t.avatar, accountId: t.accountId } } })}
+                        onClick={() => navigate('/profile', { state: { tab: 'message', teacher: { name: student.name, avatar: student.avatar, accountId: student.accountId } } })}
                       >
                         Send Message <Mail size={14} />
                       </button>
@@ -194,9 +191,10 @@ export default function TeachersTab() {
 
                   return (
                     <button
+                      type="button"
                       className="teacher-card__btn"
                       disabled={loadingFriendStatuses || friendActionId === targetId || status === 'pending' || status === 'incoming'}
-                      onClick={() => handleAddFriend(t)}
+                      onClick={() => handleAddFriend(student)}
                     >
                       {loadingFriendStatuses ? 'Đang tải...' : friendActionId === targetId ? 'Đang gửi...' : status === 'incoming' ? 'Chờ bạn phản hồi' : status === 'pending' ? 'Chờ phản hồi' : 'Add Friend'}
                       {status !== 'pending' && status !== 'incoming' && <UserPlus size={14} />}
@@ -209,35 +207,29 @@ export default function TeachersTab() {
         )}
       </div>
 
-      {/* Pagination */}
-      {!loading && !loadError && totalPages > 1 && <div className="pagination">
-        <button
-          className="pagination__arrow"
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page === 1}
-        >
-          <ChevronLeft className="pagination__arrow-icon" />
-        </button>
-        {[...Array(totalPages)].map((_, i) => {
-          const n = i + 1;
-          return (
-            <button
-              key={n}
-              className={`pagination__page ${page === n ? 'pagination__page--active' : ''}`}
-              onClick={() => setPage(n)}
-            >
-              {n}
-            </button>
-          );
-        })}
-        <button
-          className="pagination__arrow"
-          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          disabled={page === totalPages}
-        >
-          <ChevronRight className="pagination__arrow-icon" />
-        </button>
-      </div>}
+      {!loading && !loadError && totalPages > 1 && (
+        <div className="pagination">
+          <button type="button" className="pagination__arrow" onClick={() => setPage((value) => Math.max(1, value - 1))} disabled={page === 1}>
+            <ChevronLeft className="pagination__arrow-icon" />
+          </button>
+          {[...Array(totalPages)].map((_, index) => {
+            const number = index + 1;
+            return (
+              <button
+                type="button"
+                key={number}
+                className={`pagination__page ${page === number ? 'pagination__page--active' : ''}`}
+                onClick={() => setPage(number)}
+              >
+                {number}
+              </button>
+            );
+          })}
+          <button type="button" className="pagination__arrow" onClick={() => setPage((value) => Math.min(totalPages, value + 1))} disabled={page === totalPages}>
+            <ChevronRight className="pagination__arrow-icon" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

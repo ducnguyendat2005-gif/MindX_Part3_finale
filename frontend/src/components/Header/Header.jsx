@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { API, tokenStorage, fetchWithAuth } from '../../config/api.js';
 import { jwtDecode } from 'jwt-decode';
 import ThemeToggleButton from './ThemeToggleButton';
+import NotificationPanel from './NotificationPanel';
 
 function Header() {
   const navigate = useNavigate();
@@ -34,6 +35,9 @@ function Header() {
   const [wishlistCount, setWishlistCount] = useState(0);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const notificationRef = useRef(null);
 
   // Fetch courses
     useEffect(() => {
@@ -164,6 +168,9 @@ function Header() {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
         setProfileOpen(false);
       }
+      if (notificationRef.current && !notificationRef.current.contains(e.target)) {
+        setNotificationOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -188,6 +195,7 @@ function Header() {
     tokenStorage.clear();
     setUser(null);
     setProfileOpen(false);
+    setNotificationOpen(false);
     window.dispatchEvent(new Event('userUpdated'));
     navigate('/home');
   };
@@ -343,12 +351,47 @@ function Header() {
             </div>
 
             {/* Notification */}
-            <button className={styles.iconBtn}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
-            </button>
+            <div className={styles.notificationWrapper} ref={notificationRef}>
+              <button
+                type="button"
+                className={`${styles.iconBtn} ${notificationOpen ? styles.iconBtnActive : ''}`}
+                onClick={() => {
+                  setNotificationOpen((value) => !value);
+                  setProfileOpen(false);
+                }}
+                aria-label="Mở thông báo"
+                aria-expanded={notificationOpen}
+                aria-haspopup="dialog"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                {notificationCount > 0 && (
+                  <span className={styles.notificationBadge} aria-label={`${notificationCount} unread notifications`}>
+                    {notificationCount > 9 ? '9+' : notificationCount}
+                  </span>
+                )}
+              </button>
+              <NotificationPanel
+                user={user}
+                isOpen={notificationOpen}
+                onUnreadCountChange={setNotificationCount}
+                onOpenMessage={(notification) => {
+                  setNotificationOpen(false);
+                  navigate('/profile', {
+                    state: {
+                      tab: 'message',
+                      teacher: {
+                        name: notification.actorName,
+                        avatar: notification.actorAvatar,
+                        accountId: notification.accountId,
+                      },
+                    },
+                  });
+                }}
+              />
+            </div>
           </>
         )}
 

@@ -6,6 +6,7 @@ const BASE_NAV_ITEMS = [
   { key: 'profile', label: 'Profile' },
   { key: 'courses', label: 'My Courses' },
   { key: 'teachers', label: 'Teachers' },
+  { key: 'students', label: 'Students' },
   { key: 'message', label: 'Message' },
   { key: 'reviews', label: 'My Reviews' },
 ];

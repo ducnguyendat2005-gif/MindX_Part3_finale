@@ -17,6 +17,7 @@ export default function SignUpPage() {
   const updateData = (data) => setFormData((prev) => ({ ...prev, ...data }));
 
   const handleFinalSubmit = async (extraData) => {
+    setSubmitError('');
     const fullData = { ...formData, ...extraData };
     const isTeacher = fullData.role === 'teacher';
     const endpoint = isTeacher ? API.registerTeacher : API.register;
@@ -56,11 +57,12 @@ export default function SignUpPage() {
         });
       }
 
-      const result = await res.json();
+      const result = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         setSubmitError(result.message || 'Đăng ký thất bại');
-        setStep(1);
+        // Giữ nguyên form Instructor Profile để người dùng chỉ cần sửa lỗi.
+        setStep(3);
         return;
       }
 
@@ -92,13 +94,14 @@ export default function SignUpPage() {
             {step === 1 && (
               <BasicInfoForm
                 key="basic"
-                onNext={(data) => { updateData(data); setStep(2); }}
+                onNext={(data) => { setSubmitError(''); updateData(data); setStep(2); }}
               />
             )}
             {step === 2 && (
               <RoleSelect
                 key="role"
                 onSelect={(role) => {
+                  setSubmitError('');
                   updateData({ role });
                   setStep(3);
                 }}

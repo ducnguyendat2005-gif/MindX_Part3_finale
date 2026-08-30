@@ -249,6 +249,11 @@ $transition-default: 200ms ease;
     &:hover {
       background-color: $color-blue-700;
     }
+
+    &:disabled {
+      opacity: 0.65;
+      cursor: default;
+    }
   }
 }
 

@@ -16,6 +16,16 @@ export const API = {
   login: `${BASE_URL}/login`,
   refreshToken: `${BASE_URL}/account/refresh-token`,
   topTeacher: `${BASE_URL}/top-teacher`,
+  teachers: `${BASE_URL}/account/teachers`,
+  students: `${BASE_URL}/account/students`,
+  friendStatuses: `${BASE_URL}/account/friends/statuses`,
+  friendRequests: `${BASE_URL}/account/friend-requests`,
+  sendFriendRequest: `${BASE_URL}/account/friend-requests`,
+  respondFriendRequest: (id) => `${BASE_URL}/account/friend-requests/${id}`,
+  conversations: `${BASE_URL}/account/conversations`,
+  messageNotifications: `${BASE_URL}/account/messages/notifications`,
+  markWelcomeNotificationRead: `${BASE_URL}/account/messages/notifications/welcome/read`,
+  messages: (userId) => `${BASE_URL}/account/messages/${userId}`,
   checkDuplicateEmail: `${BASE_URL}/account/check-duplicate`,
 
   // ── Protected — cần đăng nhập (gửi kèm AT) ──

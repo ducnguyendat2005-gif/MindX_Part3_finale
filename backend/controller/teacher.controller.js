@@ -7,6 +7,56 @@ import { runMiddleware } from '../src/utils/runMiddleware.js';
 import { uploadBufferToCloudinary } from '../src/utils/uploadToCloudinary.js';
 
 const teacherController = {
+    getAllTeachers: async (req, res, next) => {
+        try {
+            // Accounts are the source of truth for who is a teacher. The
+            // instructor profile only contains the public teaching details.
+            const accounts = await AccountModel.find({
+                _id: { $ne: req.user._id },
+                role: 'teacher',
+                isActive: { $ne: false },
+            })
+                .select('Fname Lname Username Email avatar createdAt')
+                .sort({ createdAt: -1 })
+                .lean();
+
+            const accountIds = accounts.map((account) => account._id);
+            const instructors = await InstructorModel.find({ accountId: { $in: accountIds } })
+                .select('accountId name title bio thumbnail yearsOfExperience totalStudents totalCourses totalReviews rating')
+                .lean();
+            const instructorByAccountId = new Map(
+                instructors.map((instructor) => [String(instructor.accountId), instructor])
+            );
+
+            const data = accounts.map((account) => {
+                const instructor = instructorByAccountId.get(String(account._id));
+                const accountName = [account.Fname, account.Lname]
+                    .filter(Boolean)
+                    .join(' ')
+                    .trim();
+
+                return {
+                    id: account._id,
+                    accountId: account._id,
+                    name: accountName || instructor?.name || account.Username,
+                    username: account.Username,
+                    title: instructor?.title || 'Teacher',
+                    bio: instructor?.bio || '',
+                    avatar: account.avatar || instructor?.thumbnail,
+                    instructor,
+                };
+            });
+
+            res.status(200).json({
+                data,
+                count: data.length,
+                message: 'Teachers retrieved successfully!',
+                success: true,
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
     getTopTeacher: async(req ,res ,next) =>{
         try{
             const data = await InstructorModel.find()

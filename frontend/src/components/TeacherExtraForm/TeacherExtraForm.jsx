@@ -39,9 +39,13 @@ export default function TeacherExtraForm({ onSubmit, onBack }) {
 
   const handleSubmit = async () => {
     const newErrors = {};
-    if (!expertise) newErrors.expertise = 'Vui lòng nhập chuyên môn của bạn';
-    if (!experienceYears) newErrors.experienceYears = 'Vui lòng nhập số năm kinh nghiệm';
-    if (!bio) newErrors.bio = 'Vui lòng giới thiệu ngắn về bản thân';
+    if (!expertise.trim()) newErrors.expertise = 'Vui lòng nhập chuyên môn của bạn';
+    if (experienceYears === '') {
+      newErrors.experienceYears = 'Vui lòng nhập số năm kinh nghiệm';
+    } else if (Number.isNaN(Number(experienceYears)) || Number(experienceYears) < 0) {
+      newErrors.experienceYears = 'Số năm kinh nghiệm phải từ 0 trở lên';
+    }
+    if (!bio.trim()) newErrors.bio = 'Vui lòng giới thiệu ngắn về bản thân';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -49,7 +53,7 @@ export default function TeacherExtraForm({ onSubmit, onBack }) {
     }
 
     setSubmitting(true);
-    await onSubmit({ expertise, experienceYears: Number(experienceYears), bio, portfolioFiles });
+    await onSubmit({ expertise: expertise.trim(), experienceYears: Number(experienceYears), bio: bio.trim(), portfolioFiles });
     setSubmitting(false);
   };
 

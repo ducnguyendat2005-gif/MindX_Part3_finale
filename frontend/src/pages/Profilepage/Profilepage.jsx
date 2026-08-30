@@ -6,6 +6,7 @@ import ProfileInfoTab from '../../components/ProfileComponents/ProfileInfoTab/Pr
 import EditProfileTab from '../../components/ProfileComponents/EditProfileTab/EditProfileTab.jsx';
 import MyCoursesTab from '../../components/ProfileComponents/MyCoursesTab/MyCoursesTab.jsx';
 import TeachersTab from '../../components/ProfileComponents/TeacherTab/TeacherTab.jsx';
+import StudentsTab from '../../components/ProfileComponents/StudentsTab/StudentsTab.jsx';
 import TeacherEditTab from '../../components/ProfileComponents/TeacherEditTab/TeacherEditTab.jsx';
 import TeacherInfoTab from '../../components/ProfileComponents/TeacherInfoTab/TeacherInfoTab.jsx';
 import MessageTab from '../../components/ProfileComponents/MessageTab/MessageTab.jsx';
@@ -20,6 +21,10 @@ export default function ProfilePage() {
   const [instructorInfo, setInstructorInfo] = useState(null); 
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(location.state?.tab || 'profile');
+
+  useEffect(() => {
+    if (location.state?.tab) setActiveTab(location.state.tab);
+  }, [location.state]);
 
   const [form, setForm] = useState({
     firstName: '',
@@ -337,6 +342,8 @@ export default function ProfilePage() {
         return <MyCoursesTab myCourses={myCourses} />;
       case 'teachers':
         return <TeachersTab />;
+      case 'students':
+        return <StudentsTab />;
       case 'message':
         return <MessageTab />;
       case 'reviews':

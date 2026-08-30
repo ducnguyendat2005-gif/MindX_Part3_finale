@@ -7,6 +7,8 @@ import courseController from './controller/course.controller.js';
 import commentController from './controller/comment.controller.js';
 import accountController from './controller/accounts.controller.js'
 import teacherController from './controller/teacher.controller.js'
+import friendController from './controller/friend.controller.js'
+import messageController from './controller/message.controller.js'
 import couponController from './controller/coupon.controller.js';
 import orderController from './controller/order.controller.js';
 import adminController from './controller/admin.controller.js'
@@ -48,6 +50,18 @@ app.get('/courses/:id',courseController.getCoursebyId)
 app.get('/mainComment',commentController.getTopComments)
 
 app.get('/top-teacher',teacherController.getTopTeacher)
+
+app.get('/account/teachers', verifyToken, teacherController.getAllTeachers)
+app.get('/account/students', verifyToken, accountController.getAllStudents)
+app.get('/account/friends/statuses', verifyToken, friendController.getStatuses)
+app.get('/account/friend-requests', verifyToken, friendController.getIncomingRequests)
+app.post('/account/friend-requests', verifyToken, friendController.sendRequest)
+app.put('/account/friend-requests/:id', verifyToken, friendController.respondToRequest)
+app.get('/account/conversations', verifyToken, messageController.getConversations)
+app.get('/account/messages/notifications', verifyToken, messageController.getUnreadNotifications)
+app.put('/account/messages/notifications/welcome/read', verifyToken, messageController.markWelcomeNotificationRead)
+app.get('/account/messages/:userId', verifyToken, messageController.getConversation)
+app.post('/account/messages/:userId', verifyToken, messageController.sendMessage)
 
 app.post(
   '/register/teacher',
