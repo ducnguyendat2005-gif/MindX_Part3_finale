@@ -20,10 +20,23 @@ const makeLesson = (title = '', duration = '') => ({
   videoFile: null,
 });
 
+const makeQuestion = () => ({
+  id: nextId(),
+  _id: null,
+  question: '',
+  options: ['', '', '', ''],
+  correctIndex: 0,
+  explanation: '',
+});
+
 const makeSection = (title = '') => ({
   id: nextId(),
   title,
   lessons: [makeLesson()],
+  hasQuiz: false,          // toggle hiện/ẩn form quiz cho section này
+  quizTitle: 'Kiểm tra nhanh',
+  passingScore: 70,
+  questions: [],
 });
 
 export default function CreateCourseTab({ onCancel, onCreated }) {
@@ -85,18 +98,30 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
         setExistingPromoVideo(draft.promotionalVideo || '');
         setSections((draft.syllabus || []).map((section) => ({
           id: nextId(),
+          _id: section._id || null,   // ← cần để updateCourse tìm existingSection.quiz
           title: section.title || '',
           lessons: (section.lessonDetails?.length
             ? section.lessonDetails
             : (section.items || []).map((lessonTitle) => ({ title: lessonTitle, duration: section.duration })))
             .map((lesson) => ({
               id: nextId(),
-              _id: lesson._id || null,   // ← thêm dòng này: id thật từ Mongo, cần gửi lại khi update
+              _id: lesson._id || null,
               title: lesson.title || '',
               duration: lesson.duration || '',
               videoFile: null,
               videoUrl: lesson.videoUrl || '',
             })),
+          hasQuiz: !!section.quiz,
+          quizTitle: section.quiz?.title || 'Kiểm tra nhanh',
+          passingScore: section.quiz?.passingScore ?? 70,
+          questions: (section.quiz?.questions || []).map((q) => ({
+            id: nextId(),
+            _id: q._id || null,
+            question: q.question || '',
+            options: q.options?.length === 4 ? [...q.options] : ['', '', '', ''],
+            correctIndex: q.correctIndex ?? 0,
+            explanation: q.explanation || '',
+          })),
         })));
       } catch {
         // A missing draft should leave the blank create form usable.
@@ -134,6 +159,79 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
       prev.map((s) =>
         s.id === sectionId
           ? { ...s, lessons: s.lessons.filter((l) => l.id !== lessonId) }
+          : s
+      )
+    );
+  };
+    // ----- Quiz handlers -----
+  const handleToggleQuiz = (sectionId) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId
+          ? {
+              ...s,
+              hasQuiz: !s.hasQuiz,
+              questions: !s.hasQuiz && !s.questions.length ? [makeQuestion()] : s.questions,
+            }
+          : s
+      )
+    );
+  };
+
+  const handleQuizFieldChange = (sectionId, field, value) => {
+    setSections((prev) =>
+      prev.map((s) => (s.id === sectionId ? { ...s, [field]: value } : s))
+    );
+  };
+
+  const handleAddQuestion = (sectionId) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId ? { ...s, questions: [...s.questions, makeQuestion()] } : s
+      )
+    );
+  };
+
+  const handleRemoveQuestion = (sectionId, questionId) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId
+          ? { ...s, questions: s.questions.filter((q) => q.id !== questionId) }
+          : s
+      )
+    );
+  };
+
+  const handleQuestionFieldChange = (sectionId, questionId, field, value) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId
+          ? {
+              ...s,
+              questions: s.questions.map((q) =>
+                q.id === questionId ? { ...q, [field]: value } : q
+              ),
+            }
+          : s
+      )
+    );
+  };
+
+  const handleOptionChange = (sectionId, questionId, optionIndex, value) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId
+          ? {
+              ...s,
+              questions: s.questions.map((q) =>
+                q.id === questionId
+                  ? {
+                      ...q,
+                      options: q.options.map((opt, i) => (i === optionIndex ? value : opt)),
+                    }
+                  : q
+              ),
+            }
           : s
       )
     );
@@ -227,6 +325,15 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
       if (sections.some((section) => section.lessons.some((lesson) => !lesson.title.trim()))) {
         return 'Vui lòng nhập tên cho tất cả bài học.';
       }
+    
+      const invalidQuizSection = sections.find((s) => s.hasQuiz && s.questions.some((q) => (
+        !q.question.trim() ||
+        q.options.some((opt) => !opt.trim()) ||
+        q.correctIndex === null || q.correctIndex === undefined
+      )));
+      if (invalidQuizSection) {
+        return `Section "${invalidQuizSection.title || '(chưa đặt tên)'}" có câu hỏi quiz chưa đầy đủ.`;
+      }
     }
     return null;
   };
@@ -240,13 +347,27 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
       .map((line) => line.replace(/^-+\s*/, '').trim())
       .filter(Boolean),
       curriculum: sections.map((s) => ({
+        _id: s._id || undefined,   // ← cần để backend tìm existingSection.quiz
         title: s.title,
         lessons: s.lessons.map((l) => ({
-          _id: l._id || undefined,   // ← thêm dòng này
+          _id: l._id || undefined,
           title: l.title,
           duration: l.duration,
           videoUrl: l.videoUrl || '',
         })),
+        quiz: s.hasQuiz && s.questions.length
+          ? {
+              title: s.quizTitle,
+              passingScore: Number(s.passingScore) || 70,
+              questions: s.questions.map((q) => ({
+                _id: q._id || undefined,
+                question: q.question,
+                options: q.options,
+                correctIndex: Number(q.correctIndex),
+                explanation: q.explanation,
+              })),
+            }
+          : null,
       })),
     category,
     level,
@@ -513,6 +634,98 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
                       <Plus size={16} />
                       Add Lesson
                     </button>
+                  </div>
+                  <div className="cc-quiz-block">
+                    <label className="cc-quiz-toggle">
+                      <input
+                        type="checkbox"
+                        checked={section.hasQuiz}
+                        onChange={() => handleToggleQuiz(section.id)}
+                      />
+                      Thêm quiz cho phần này
+                    </label>
+
+                    {section.hasQuiz && (
+                      <div className="cc-quiz-body">
+                        <div className="cc-form-group">
+                          <label className="cc-form-label">Tên bài kiểm tra</label>
+                          <input
+                            type="text"
+                            className="cc-form-control"
+                            value={section.quizTitle}
+                            onChange={(e) => handleQuizFieldChange(section.id, 'quizTitle', e.target.value)}
+                          />
+                        </div>
+                        <div className="cc-form-group">
+                          <label className="cc-form-label">Điểm đạt (%)</label>
+                          <input
+                            type="number"
+                            className="cc-form-control cc-form-control--sm"
+                            min="0"
+                            max="100"
+                            value={section.passingScore}
+                            onChange={(e) => handleQuizFieldChange(section.id, 'passingScore', e.target.value)}
+                          />
+                        </div>
+
+                        {section.questions.map((q, qIndex) => (
+                          <div key={q.id} className="cc-quiz-question">
+                            <div className="cc-quiz-question__head">
+                              <input
+                                type="text"
+                                className="cc-form-control"
+                                placeholder={`Câu hỏi ${qIndex + 1}`}
+                                value={q.question}
+                                onChange={(e) => handleQuestionFieldChange(section.id, q.id, 'question', e.target.value)}
+                              />
+                              <button
+                                type="button"
+                                className="cc-remove-btn"
+                                onClick={() => handleRemoveQuestion(section.id, q.id)}
+                                aria-label="Remove question"
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+
+                            {q.options.map((opt, optIndex) => (
+                              <div key={optIndex} className="cc-quiz-option">
+                                <input
+                                  type="radio"
+                                  name={`correct-${q.id}`}
+                                  checked={q.correctIndex === optIndex}
+                                  onChange={() => handleQuestionFieldChange(section.id, q.id, 'correctIndex', optIndex)}
+                                />
+                                <input
+                                  type="text"
+                                  className="cc-form-control"
+                                  placeholder={`Lựa chọn ${optIndex + 1}`}
+                                  value={opt}
+                                  onChange={(e) => handleOptionChange(section.id, q.id, optIndex, e.target.value)}
+                                />
+                              </div>
+                            ))}
+
+                            <input
+                              type="text"
+                              className="cc-form-control cc-quiz-question__explanation"
+                              placeholder="Giải thích đáp án (hiện sau khi học viên nộp bài)"
+                              value={q.explanation}
+                              onChange={(e) => handleQuestionFieldChange(section.id, q.id, 'explanation', e.target.value)}
+                            />
+                          </div>
+                        ))}
+
+                        <button
+                          type="button"
+                          className="cc-btn-add cc-quiz-add-question"
+                          onClick={() => handleAddQuestion(section.id)}
+                        >
+                          <Plus size={16} />
+                          Thêm câu hỏi
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

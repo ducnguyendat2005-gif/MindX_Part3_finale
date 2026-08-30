@@ -5,6 +5,26 @@ const lessonSchema = new mongoose.Schema({
     duration: { type: String, default: '0 min' },
     videoUrl: { type: String, default: '' },
 });
+// THÊM MỚI — đặt trước syllabusSectionSchema
+const quizQuestionSchema = new mongoose.Schema({
+    question: { type: String, required: true, trim: true },
+    options: {
+        type: [String],
+        required: true,
+        validate: {
+            validator: (arr) => arr.length === 4,
+            message: 'Each quetion must have 4 options',
+        },
+    },
+    correctIndex: { type: Number, required: true, min: 0, max: 3 },
+    explanation: { type: String, default: '' },
+});
+
+const quizSchema = new mongoose.Schema({
+    title: { type: String, default: 'Kiểm tra nhanh' },
+    passingScore: { type: Number, default: 70, min: 0, max: 100 },
+    questions: { type: [quizQuestionSchema], default: [] },
+});
 
 const syllabusSectionSchema = new mongoose.Schema({
     title: { type: String, required: true, trim: true },
@@ -12,6 +32,7 @@ const syllabusSectionSchema = new mongoose.Schema({
     duration: { type: String, default: '0 min' },
     items: { type: [String], default: [] },
     lessonDetails: [lessonSchema],
+    quiz: { type: quizSchema, default: null }
 },);
 
 const courseSchema = new mongoose.Schema({

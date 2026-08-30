@@ -17,6 +17,9 @@ import ProfilePage from './pages/Profilepage/Profilepage.jsx';
 import AdminPage from './pages/Admin/Admin.jsx'
 import PaymentResult from './pages/PaymentResult/PaymentResult.jsx';
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import EventsList from './pages/Events/EventList.jsx';
+import EventPlay from './pages/EventPlay/EventPlay.jsx';
+import AdminEvents from './pages/Admin/AdminEvent.jsx';
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { Routes, Route } from "react-router-dom";
 import { useIsMobile } from './hooks/use-mobile.jsx';
@@ -56,6 +59,18 @@ function App() {
         <Route
           path='/admin'
           element={<ProtectedRoute requiredRole="admin"><AdminPage /></ProtectedRoute>}
+        />
+        <Route
+          path='/events'
+          element={<ProtectedRoute><EventsList /></ProtectedRoute>}
+        />
+        <Route
+          path='/events/:id'
+          element={<ProtectedRoute><EventPlay /></ProtectedRoute>}
+        />
+        <Route
+          path='/admin/events'
+          element={<ProtectedRoute requiredRole="admin"><AdminEvents /></ProtectedRoute>}
         />
       </Routes>
       <Footer></Footer>

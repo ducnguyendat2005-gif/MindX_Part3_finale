@@ -4,6 +4,7 @@ import ReviewModel from '../model/review.js';
 import AccountModel from '../model/account.js';
 import InstructorModel from '../model/instructor.js';
 import { uploadBufferToCloudinary } from '../src/utils/uploadToCloudinary.js';
+import { badRequest, notFound } from '../middleware/appError.middleware.js';
 
 const parseJsonField = (value, fallback) => {
     if (!value) return fallback;
@@ -34,6 +35,42 @@ const durationToMinutes = (value) => {
 const formatDuration = (minutes) => `${minutes} min`;
 const publicCourseFilter = {
     status: 'approved',
+};
+
+const buildQuizFromInput = (quizInput, existingQuiz = null) => {
+    if (!quizInput || !Array.isArray(quizInput.questions)) return null;
+
+    const questions = quizInput.questions
+        .map((q) => {
+            const question = String(q.question || '').trim();
+            const options = Array.isArray(q.options) ? q.options.map((o) => String(o || '').trim()) : [];
+            const correctIndex = Number(q.correctIndex);
+
+            if (!question) return null;
+            if (options.length !== 4 || options.some((o) => !o)) return null;
+            if (!Number.isInteger(correctIndex) || correctIndex < 0 || correctIndex > 3) return null;
+
+            const questionDoc = {
+                question,
+                options,
+                correctIndex,
+                explanation: String(q.explanation || '').trim(),
+            };
+            if (q._id) questionDoc._id = q._id;
+            return questionDoc;
+        })
+        .filter(Boolean);
+
+    if (!questions.length) return null;
+
+    const passingScore = Number(quizInput.passingScore);
+    const quizDoc = {
+        title: String(quizInput.title || '').trim() || 'Kiểm tra nhanh',
+        passingScore: Number.isFinite(passingScore) && passingScore >= 0 && passingScore <= 100 ? passingScore : 70,
+        questions,
+    };
+    if (existingQuiz?._id) quizDoc._id = existingQuiz._id;
+    return quizDoc;
 };
 
 const courseController = {
@@ -117,12 +154,16 @@ const courseController = {
 
                     const sectionTitle = String(section.title || '').trim();
                     if (!sectionTitle || !lessonDetails.length) return null;
+
+                    const quiz = buildQuizFromInput(section.quiz);
+
                     return {
                         title: sectionTitle,
                         lessons: lessonDetails.length,
                         duration: formatDuration(lessonDetails.reduce((sum, lesson) => sum + durationToMinutes(lesson.duration), 0)),
                         items: lessonDetails.map((lesson) => lesson.title),
                         lessonDetails,
+                        quiz,
                     };
                 })
                 .filter(Boolean);
@@ -232,12 +273,17 @@ const courseController = {
                     .filter(Boolean);
                 const sectionTitle = String(section.title || '').trim();
                 if (!sectionTitle || !lessonDetails.length) return null;
+
+                const existingSection = section._id ? course.syllabus.id(section._id) : null;
+                const quiz = buildQuizFromInput(section.quiz, existingSection?.quiz);
+
                 return {
                     title: sectionTitle,
                     lessons: lessonDetails.length,
                     duration: formatDuration(lessonDetails.reduce((sum, lesson) => sum + durationToMinutes(lesson.duration), 0)),
                     items: lessonDetails.map((lesson) => lesson.title),
                     lessonDetails,
+                    quiz,
                 };
             }).filter(Boolean);
 
@@ -441,6 +487,7 @@ const courseController = {
                     completedLessons: enrollment.completedLessons ?? [],
                     lastAccessedLessonId: enrollment.lastAccessedLessonId,
                     progressPercent, // luôn tính server-side, không lưu vào DB
+                    quizAttempts: enrollment.quizAttempts ?? [],
                 },
                 success: true,
             });
@@ -477,7 +524,62 @@ const courseController = {
         } catch (error) {
             next(error);
         }
-    }
-    
+    },
+    submitQuizAttempt: async (req, res, next) => {
+        try {
+            const { courseId } = req.params;
+            const { sectionId, answers } = req.body;
+            const accountId = req.user._id;
+
+            if (!sectionId || !Array.isArray(answers)) {
+                throw badRequest('Thiếu sectionId hoặc answers');
+            }
+
+            const enrollment = await EnrollmentModel.findOne({ accountId, courseId });
+            if (!enrollment) throw notFound('Chưa mua khóa học này');
+
+            const course = await CourseModel.findById(courseId).select('syllabus').lean();
+            const section = course?.syllabus.find((s) => String(s._id) === String(sectionId));
+            const quiz = section?.quiz;
+
+            if (!quiz || !quiz.questions.length) throw notFound('Section này không có quiz');
+
+            let correctCount = 0;
+            quiz.questions.forEach((q, i) => {
+                if (Number(answers[i]) === q.correctIndex) correctCount += 1;
+            });
+            const score = Math.round((correctCount / quiz.questions.length) * 100);
+            const passed = score >= quiz.passingScore;
+
+            enrollment.quizAttempts.push({
+                sectionId,
+                score,
+                passed,
+                answers: answers.map(Number),
+            });
+            await enrollment.save();
+
+            res.status(200).json({
+                data: {
+                    score,
+                    passed,
+                    passingScore: quiz.passingScore,
+                    correctCount,
+                    totalQuestions: quiz.questions.length,
+                    review: quiz.questions.map((q, i) => ({
+                        question: q.question,
+                        options: q.options,
+                        correctIndex: q.correctIndex,
+                        selectedIndex: Number(answers[i]),
+                        explanation: q.explanation,
+                    })),
+                },
+                message: passed ? 'Congratz , you passed the exam!' : 'Not pass but you can try again',
+                success: true,
+            });
+        } catch (error) {
+            next(error);
+        }
+    } 
 }
 export default courseController

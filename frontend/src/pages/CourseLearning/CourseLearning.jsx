@@ -14,7 +14,7 @@ import { API, fetchWithAuth } from '../../config/api.js'
 
 // ==================== SUB-COMPONENTS ====================
 
-function CourseSection({ section, activeLesson, completedLessons, isLessonLocked, onSelect }) {
+function CourseSection({ section, activeLesson, completedLessons, isLessonLocked, onSelect, quizStatus, onSelectQuiz }) {
   const [expanded, setExpanded] = useState(section.defaultExpanded);
 
   return (
@@ -37,6 +37,14 @@ function CourseSection({ section, activeLesson, completedLessons, isLessonLocked
             onSelect={onSelect}
           />
         ))}
+
+        {section.quiz && (
+          <QuizNavItem
+            quiz={section.quiz}
+            status={quizStatus}
+            onSelect={() => onSelectQuiz(section)}
+          />
+        )}
       </div>
     </div>
   );
@@ -151,6 +159,16 @@ const PlayIcon = () => (
   </svg>
 );
 
+const QuizIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+    <rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" strokeWidth="1.8"/>
+    <path d="M9 3h6a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" 
+      fill="currentColor" stroke="currentColor" strokeWidth="1.8"/>
+    <path d="M8.5 13l2 2 4-4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <line x1="8" y1="17" x2="16" y2="17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
+
 function Lesson({ lesson, isActive, isCompleted, isLocked, onSelect }) {
   const handleClick = () => {
     if (isLocked) return; // không cho chọn lesson chưa mở khóa
@@ -190,10 +208,56 @@ function Lesson({ lesson, isActive, isCompleted, isLocked, onSelect }) {
   );
 }
 
+function QuizNavItem({ quiz, status, onSelect }) {
+  const isLocked = status === 'locked';
+
+  const handleClick = () => {
+    if (isLocked) return;
+    onSelect();
+  };
+
+  const itemClass = [
+    styles.courseCompletionLesson,
+    status === 'passed' ? styles.courseCompletionLessonCompleted : "",
+    isLocked ? styles.courseCompletionLessonLocked : "",
+  ].filter(Boolean).join(" ");
+
+  return (
+    <div className={itemClass} onClick={handleClick}>
+      <div className={styles.courseCompletionLessonLeft}>
+        <div className={styles.courseCompletionCheckbox}>
+          <span className={styles.courseCompletionCheckmark}>
+            {status === 'passed' ? "✓" : isLocked ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" strokeWidth="2"/>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            ) : "?"}
+          </span>
+        </div>
+        <div className={styles.courseCompletionLessonInfo}>
+          <span className={styles.courseCompletionLessonTitle}>
+            <span className={styles.quizIcon}><QuizIcon /></span>
+            {quiz.title}
+            {status === 'failed' && (
+              <span className={styles.quizFailedTag}>Chưa đạt</span>
+            )}
+          </span>
+        </div>
+      </div>
+      <div className={styles.courseCompletionLessonDuration}>
+        <span>{quiz.questions.length} câu</span>
+      </div>
+    </div>
+  );
+}
+
 // Chuyển syllabus từ data.json sang format sections
 function buildSections(syllabus = [], courseId = '') {
   return syllabus.map((sec, secIndex) => ({
     id: secIndex + 1,
+    sectionId: sec._id || null,   // THÊM MỚI — cần để gọi submitQuizAttempt & khóa section
+    quiz: sec.quiz || null,       // THÊM MỚI
     title: sec.title,
     defaultExpanded: secIndex === 0,
     lessons: (sec.lessonDetails?.length
@@ -201,7 +265,7 @@ function buildSections(syllabus = [], courseId = '') {
       : (sec.items || []).map((title) => ({ title, duration: sec.duration })))
       .map((item, i) => ({
       id: i + 1,
-      storageId: item._id || `${courseId}_sec${secIndex}_les${i}`,  // ← ưu tiên _id thật
+      storageId: item._id || `${courseId}_sec${secIndex}_les${i}`,
       title: item.title,
       duration: item.duration || sec.duration || "1 hour",
       videoUrl: item.videoUrl || '',
@@ -210,12 +274,11 @@ function buildSections(syllabus = [], courseId = '') {
   }));
 }
 
-function CourseCompletion({ syllabus, courseId, completedLessons, activeLessonId, onSelectLesson }) {
+function CourseCompletion({ syllabus, courseId, completedLessons, activeLessonId, onSelectLesson, quizAttempts = [], onSelectQuiz }) {
   const sections = useMemo(() => buildSections(syllabus, courseId), [syllabus, courseId]);
   const firstLesson = sections[0]?.lessons[0]?.storageId ?? null;
   const [activeLesson, setActiveLesson] = useState(firstLesson);
 
-  // Đồng bộ khi cha tự đổi lesson (ví dụ auto-advance sau khi xem xong)
   useEffect(() => {
     if (activeLessonId && activeLessonId !== activeLesson) {
       setActiveLesson(activeLessonId);
@@ -227,11 +290,40 @@ function CourseCompletion({ syllabus, courseId, completedLessons, activeLessonId
     [sections]
   );
 
+  const passedSectionIds = useMemo(
+    () => new Set(quizAttempts.filter(a => a.passed).map(a => String(a.sectionId))),
+    [quizAttempts]
+  );
+
+  // THÊM MỚI — section nào đã có attempt (dù pass hay fail), để phân biệt "chưa làm" và "làm rồi nhưng fail"
+  const attemptedSectionIds = useMemo(
+    () => new Set(quizAttempts.map(a => String(a.sectionId))),
+    [quizAttempts]
+  );
+
   const isLessonLocked = (storageId) => {
     const idx = flatLessons.findIndex(l => l.storageId === storageId);
     if (idx <= 0) return false;
     const prevLesson = flatLessons[idx - 1];
-    return !completedLessons.has(prevLesson.storageId);
+    if (!completedLessons.has(prevLesson.storageId)) return true;
+
+    const currentSectionIndex = sections.findIndex(s => s.lessons[0]?.storageId === storageId);
+    if (currentSectionIndex > 0) {
+      const prevSection = sections[currentSectionIndex - 1];
+      if (prevSection?.quiz && !passedSectionIds.has(String(prevSection.sectionId))) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // THÊM MỚI — tính trạng thái hiển thị cho quiz row: locked / available / passed / failed
+  const getQuizStatus = (section) => {
+    const allLessonsDone = section.lessons.every(l => completedLessons.has(l.storageId));
+    if (!allLessonsDone) return 'locked';
+    if (passedSectionIds.has(String(section.sectionId))) return 'passed';
+    if (attemptedSectionIds.has(String(section.sectionId))) return 'failed';
+    return 'available';
   };
 
   return (
@@ -251,8 +343,134 @@ function CourseCompletion({ syllabus, courseId, completedLessons, activeLessonId
             setActiveLesson(lesson.storageId);
             onSelectLesson?.(lesson);
           }}
+          quizStatus={section.quiz ? getQuizStatus(section) : null}
+          onSelectQuiz={onSelectQuiz}
         />
       ))}
+    </div>
+  );
+}
+
+function QuizModal({ section, courseId, onClose, onPassed }) {
+  const quiz = section.quiz;
+  const [answers, setAnswers] = useState(Array(quiz.questions.length).fill(null));
+  const [result, setResult] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSelect = (qIndex, optIndex) => {
+    setAnswers((prev) => prev.map((a, i) => (i === qIndex ? optIndex : a)));
+  };
+
+  const handleSubmit = async () => {
+    if (answers.some((a) => a === null)) {
+      setError('Vui lòng trả lời tất cả câu hỏi.');
+      return;
+    }
+    setSubmitting(true);
+    setError('');
+    try {
+      const res = await fetchWithAuth(API.submitQuizAttempt(courseId), {
+        method: 'POST',
+        body: JSON.stringify({ sectionId: section.sectionId, answers }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.message || 'Nộp bài thất bại');
+        return;
+      }
+      setResult(body.data);
+      if (body.data.passed) onPassed?.();
+    } catch (err) {
+      setError('Không kết nối được server');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRetry = () => {
+    setResult(null);
+    setAnswers(Array(quiz.questions.length).fill(null));
+    setError('');
+  };
+
+  return (
+    <div className={styles.quizOverlay}>
+      <div className={styles.quizModal}>
+        <div className={styles.quizHeader}>
+          <h2>{quiz.title}</h2>
+          <button
+            onClick={onClose}
+            aria-label="Đóng"
+            className={styles.quizCloseBtn}
+          >
+            ×
+          </button>
+        </div>
+
+        {!result ? (
+          <>
+            {quiz.questions.map((q, qIndex) => (
+              <div key={qIndex} className={styles.quizQuestion}>
+                <p>{qIndex + 1}. {q.question}</p>
+                {q.options.map((opt, optIndex) => (
+                  <label key={optIndex} className={styles.quizOption}>
+                    <input
+                      type="radio"
+                      name={`q-${qIndex}`}
+                      checked={answers[qIndex] === optIndex}
+                      onChange={() => handleSelect(qIndex, optIndex)}
+                    />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            ))}
+            {error && <p className={styles.quizError}>{error}</p>}
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className={styles.quizSubmitBtn}
+            >
+              {submitting ? 'Đang nộp...' : 'Nộp bài'}
+            </button>
+          </>
+        ) : (
+          <div>
+            <p className={styles.quizResultScore}>
+              Điểm: {result.score}% ({result.correctCount}/{result.totalQuestions} đúng)
+            </p>
+            <p className={result.passed ? styles.quizResultPass : styles.quizResultFail}>
+              {result.passed ? '✅ Bạn đã đạt!' : `❌ Chưa đạt (cần ${result.passingScore}%)`}
+            </p>
+
+            {result.review.map((r, i) => (
+              <div key={i} className={styles.quizReviewItem}>
+                <p className={styles.quizReviewQuestion}>{i + 1}. {r.question}</p>
+                <p className={r.selectedIndex === r.correctIndex ? styles.quizAnswerCorrect : styles.quizAnswerWrong}>
+                  Bạn chọn: {r.options[r.selectedIndex]}
+                </p>
+                {r.selectedIndex !== r.correctIndex && (
+                  <p className={styles.quizAnswerCorrect}>Đáp án đúng: {r.options[r.correctIndex]}</p>
+                )}
+                {r.explanation && <p className={styles.quizExplanation}>{r.explanation}</p>}
+              </div>
+            ))}
+
+            <div className={styles.quizActions}>
+              {result.passed ? (
+                <button onClick={onClose} className={styles.quizContinueBtn}>
+                  Tiếp tục học
+                </button>
+              ) : (
+                <button onClick={handleRetry} className={styles.quizRetryBtn}>
+                  Làm lại
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -522,6 +740,8 @@ export default function CourseLearning() {
   const [course, setCourse] = useState(null);
   const [activeLesson, setActiveLesson] = useState(null);
   const [completedLessons, setCompletedLessons] = useState(new Set());
+    const [quizAttempts, setQuizAttempts] = useState([]); // THÊM MỚI
+  const [activeQuiz, setActiveQuiz] = useState(null); 
 
   useEffect(() => {
     furthestTime.current = 0;
@@ -560,6 +780,7 @@ export default function CourseLearning() {
         if (!res.ok) return; // vd 404 khi giáo viên preview, chưa mua khóa học → bỏ qua
         const result = await res.json();
         setCompletedLessons(new Set(result.data.completedLessons.map(String)));
+        setQuizAttempts(result.data.quizAttempts ?? []);
       } catch (err) {
         console.error('Không tải được tiến trình:', err);
       }
@@ -589,6 +810,16 @@ export default function CourseLearning() {
     }
   };
 
+    const learningSections = useMemo(() => { // THÊM MỚI — dùng chung cho cả auto-advance lẫn tìm section chứa lesson
+    if (!course?.syllabus) return [];
+    return buildSections(course.syllabus, String(course._id));
+  }, [course]);
+
+  const flatLessonsForAutoAdvance = useMemo(
+    () => learningSections.flatMap(sec => sec.lessons),
+    [learningSections]
+  );
+
   const handleEnded = async () => {
     if (!activeLesson?.storageId || !course?._id) return;
     try {
@@ -596,26 +827,36 @@ export default function CourseLearning() {
         method: 'PUT',
         body: JSON.stringify({ lessonId: activeLesson.storageId }),
       });
-      if (res.ok) {
-        setCompletedLessons(prev => new Set(prev).add(activeLesson.storageId));
+      if (!res.ok) return;
 
-        // Tự động chuyển sang lesson kế tiếp nếu còn
-        const currentIndex = flatLessonsForAutoAdvance.findIndex(
-          l => l.storageId === activeLesson.storageId
-        );
-        const nextLesson = flatLessonsForAutoAdvance[currentIndex + 1];
-        if (nextLesson) {
-          setActiveLesson(nextLesson);
-        }
+      setCompletedLessons(prev => new Set(prev).add(activeLesson.storageId));
+
+      const currentIndex = flatLessonsForAutoAdvance.findIndex(
+        l => l.storageId === activeLesson.storageId
+      );
+      const nextLesson = flatLessonsForAutoAdvance[currentIndex + 1];
+      if (nextLesson) {
+        setActiveLesson(nextLesson);
       }
     } catch (err) {
       console.error('Cập nhật tiến trình thất bại:', err);
     }
   };
-  const flatLessonsForAutoAdvance = useMemo(() => {
-    if (!course?.syllabus) return [];
-    return buildSections(course.syllabus, String(course._id)).flatMap(sec => sec.lessons);
-  }, [course]);
+
+  // THÊM MỚI — đóng modal quiz sau khi pass, tự chuyển sang lesson kế tiếp
+  const handleQuizClosed = () => {
+    setActiveQuiz(null);
+  };
+
+  // THÊM MỚI — được gọi khi học viên bấm vào quiz row trong sidebar
+  const handleSelectQuiz = (section) => {
+    setActiveQuiz({ section });
+  };
+
+  // THÊM MỚI — cập nhật quizAttempts ngay khi pass (optimistic), để sidebar mở khóa mà không cần load lại trang
+  const handleQuizPassed = (sectionId) => {
+    setQuizAttempts(prev => [...prev, { sectionId, passed: true, score: 100 }]);
+  };
   if (loading) return <p style={{ padding: "2rem", color: "#94a3b8" }}>Đang tải...</p>;
   if (!course) return <p style={{ padding: "2rem", color: "#94a3b8" }}>Không tìm thấy dữ liệu khoá học.</p>;
 
@@ -645,6 +886,8 @@ export default function CourseLearning() {
               completedLessons={completedLessons}
               activeLessonId={activeLesson?.storageId}
               onSelectLesson={setActiveLesson}
+              quizAttempts={quizAttempts}
+              onSelectQuiz={handleSelectQuiz}
             />
           </div>
 
@@ -761,7 +1004,14 @@ export default function CourseLearning() {
 
       </div>
 
-      
+            {activeQuiz && (
+        <QuizModal
+          section={activeQuiz.section}
+          courseId={course._id}
+          onClose={handleQuizClosed}
+          onPassed={() => handleQuizPassed(activeQuiz.section.sectionId)}
+        />
+      )}
     </>
   );
 }
