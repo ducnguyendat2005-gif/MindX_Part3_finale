@@ -2,6 +2,30 @@ import { useEffect, useState } from 'react';
 import { API, fetchWithAuth } from '../../config/api.js';
 import styles from './AdminEvent.module.scss';
 
+const VN_OFFSET_MINUTES = 7 * 60;
+
+// "2026-01-15T10:00" (giờ VN, không có timezone) -> ISO UTC string thật sự,
+// tính trực tiếp bằng tay, KHÔNG qua `new Date(string)` để tránh phụ thuộc
+// timezone của runtime đang thực thi đoạn code này.
+function vnLocalToISOString(localValue) {
+  const [datePart, timePart] = localValue.split('T');
+  const [year, month, day] = datePart.split('-').map(Number);
+  const [hour, minute] = timePart.split(':').map(Number);
+  const utcMs = Date.UTC(year, month - 1, day, hour, minute) - VN_OFFSET_MINUTES * 60000;
+  return new Date(utcMs).toISOString();
+}
+
+// Chiều ngược lại: ISO UTC string (từ DB) -> "YYYY-MM-DDTHH:mm" theo giờ VN,
+// để đổ vào <input type="datetime-local">. Dùng getUTC*() + cộng offset tay,
+// KHÔNG dùng getHours()/getDate() (các hàm này đọc theo timezone runtime).
+function isoToVnLocalInputValue(isoString) {
+  const d = new Date(isoString);
+  const vnMs = d.getTime() + VN_OFFSET_MINUTES * 60000;
+  const vn = new Date(vnMs);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${vn.getUTCFullYear()}-${pad(vn.getUTCMonth() + 1)}-${pad(vn.getUTCDate())}T${pad(vn.getUTCHours())}:${pad(vn.getUTCMinutes())}`;
+}
+
 const GAME_TYPE_OPTIONS = [
   { value: 'quiz', label: 'Multiple-choice quiz' },
   { value: 'unscramble', label: 'Unscramble' },
@@ -86,11 +110,6 @@ function AdminEvents() {
     setFormError('');
     setMode('create');
   };
-  const toLocalInputValue = (isoString) => {
-    const d = new Date(isoString);
-    const pad = (n) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  };
 
   const openEdit = (ev) => {
     const gameType = ev.gameType || 'quiz';
@@ -98,8 +117,8 @@ function AdminEvents() {
       title: ev.title,
       description: ev.description || '',
       coverImage: ev.coverImage || '',
-      startDate: toLocalInputValue(ev.startDate),
-      endDate: toLocalInputValue(ev.endDate),
+      startDate: isoToVnLocalInputValue(ev.startDate),
+      endDate: isoToVnLocalInputValue(ev.endDate),
       gameType,
       questions: ev.questions.length ? ev.questions.map((q) => ({ ...q })) : [emptyQuestion(gameType)],
     });
@@ -248,8 +267,8 @@ function AdminEvents() {
         title: form.title.trim(),
         description: form.description.trim(),
         coverImage: form.coverImage.trim(),
-        startDate: new Date(form.startDate).toISOString(),
-        endDate: new Date(form.endDate).toISOString(),
+        startDate: vnLocalToISOString(form.startDate),
+        endDate: vnLocalToISOString(form.endDate),
         gameType: form.gameType, // backend chỉ dùng field này khi TẠO MỚI, bỏ qua khi update
         questions: form.questions,
       };
@@ -523,8 +542,8 @@ function AdminEvents() {
                         <span className={styles.gameTypeTag}>{gameTypeLabel(ev.gameType)}</span>
                         {' · '}
                         {ev.questions.length} câu hỏi ·{' '}
-                        {new Date(ev.startDate).toLocaleDateString('vi-VN')} –{' '}
-                        {new Date(ev.endDate).toLocaleDateString('vi-VN')}
+                        {new Date(ev.startDate).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} –{' '}
+                        {new Date(ev.endDate).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}
                       </p>
                     </div>
                   </div>
