@@ -60,7 +60,7 @@ export default function SignUpPage() {
       const result = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setSubmitError(result.message || 'Đăng ký thất bại');
+        setSubmitError(result.message || 'Registration failed');
         // Giữ nguyên form Instructor Profile để người dùng chỉ cần sửa lỗi.
         setStep(3);
         return;
@@ -68,7 +68,7 @@ export default function SignUpPage() {
 
       navigate('/signin');
     } catch {
-      setSubmitError('Không thể kết nối tới máy chủ');
+      setSubmitError('Could not connect to the server');
     }
   };
 

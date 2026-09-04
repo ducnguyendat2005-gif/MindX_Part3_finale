@@ -5,7 +5,7 @@ export const retakeToken = (req,res,next) =>{
         const RTtoken = authHeader?.split(' ')[1];
 
         if (!RTtoken) {
-            return res.status(401).json({ message: 'Thiếu refresh token!', code: 'TOKEN_MISSING' });
+            return res.status(401).json({ message: 'Refresh token is required', code: 'TOKEN_MISSING' });
         }
 
         const decoded = jwt.verify(RTtoken, process.env.JWT_SECRET_REFRESH);
@@ -13,11 +13,11 @@ export const retakeToken = (req,res,next) =>{
         req.user = decoded;
         const ATtoken = jwt.sign({ ...userData, type: 'AT' }, process.env.JWT_SECRET_ACCESS,{ expiresIn: '2h' });
         
-        res.status(200).json({ newATtoken: ATtoken,data: decoded, message: 'Lấy token mới thành công!', success: true });
+        res.status(200).json({ newATtoken: ATtoken,data: decoded, message: 'Token refreshed successfully', success: true });
     }
     catch(error){
         if (error.name === 'JsonWebTokenError') {
-            return res.status(401).json({ message: 'Token không hợp lệ!', code: 'TOKEN_INVALID' });
+            return res.status(401).json({ message: 'Invalid token', code: 'TOKEN_INVALID' });
         }
         next(error)
     }

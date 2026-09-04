@@ -2,14 +2,15 @@ import mongoose from 'mongoose';
 import AccountModel from '../model/account.js';
 import FriendRequestModel from '../model/friendRequest.js';
 import MessageModel from '../model/message.js';
+import NotificationModel from '../model/notification.js';
 
 const publicAccountFields = 'Fname Lname Username role avatar';
 
 const getDisplayName = (account) => {
-    if (!account) return 'Người dùng';
+    if (!account) return 'User';
     return [account.Fname, account.Lname].filter(Boolean).join(' ').trim()
         || account.Username
-        || 'Người dùng';
+        || 'User';
 };
 
 const isFriend = (firstId, secondId) => FriendRequestModel.exists({
@@ -82,15 +83,15 @@ const messageController = {
     getConversation: async (req, res, next) => {
         try {
             if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
-                return res.status(400).json({ success: false, message: 'Tài khoản không hợp lệ' });
+                return res.status(400).json({ success: false, message: 'Invalid account' });
             }
 
             const target = await getTargetAccount(req.params.userId);
             if (!target) {
-                return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+                return res.status(404).json({ success: false, message: 'Account not found' });
             }
             if (!(await isFriend(req.user._id, target._id))) {
-                return res.status(403).json({ success: false, message: 'Chỉ có thể nhắn tin với bạn bè' });
+                return res.status(403).json({ success: false, message: 'You can only message friends' });
             }
 
             await MessageModel.updateMany(
@@ -131,19 +132,19 @@ const messageController = {
     sendMessage: async (req, res, next) => {
         try {
             if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
-                return res.status(400).json({ success: false, message: 'Tài khoản không hợp lệ' });
+                return res.status(400).json({ success: false, message: 'Invalid account' });
             }
             const text = String(req.body.text || '').trim();
             if (!text) {
-                return res.status(400).json({ success: false, message: 'Tin nhắn không được để trống' });
+                return res.status(400).json({ success: false, message: 'Message cannot be empty' });
             }
 
             const target = await getTargetAccount(req.params.userId);
             if (!target) {
-                return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+                return res.status(404).json({ success: false, message: 'Account not found' });
             }
             if (!(await isFriend(req.user._id, target._id))) {
-                return res.status(403).json({ success: false, message: 'Chỉ có thể nhắn tin với bạn bè' });
+                return res.status(403).json({ success: false, message: 'You can only message friends' });
             }
 
             const message = await MessageModel.create({
@@ -162,7 +163,7 @@ const messageController = {
                     from: 'me',
                 },
                 success: true,
-                message: 'Đã gửi tin nhắn',
+                message: 'Message sent successfully',
             });
         } catch (error) {
             next(error);
@@ -193,7 +194,7 @@ const messageController = {
                     actorName: senderName,
                     actorRole: sender?.role,
                     actorAvatar: sender?.avatar,
-                    message: `${senderName} đã phản hồi: ${message.text}`,
+                    message: `${senderName} replied: ${message.text}`,
                     createdAt: message.createdAt,
                     type: 'message',
                 };
@@ -206,9 +207,29 @@ const messageController = {
                     actorName: 'Byway',
                     actorRole: account.role,
                     actorAvatar: '',
-                    message: `Chào mừng người mới ${roleLabel}!`,
+                    message: `Welcome, new ${roleLabel}!`,
                     createdAt: account.createdAt,
                     type: 'welcome',
+                });
+            }
+
+            // THÊM MỚI — gộp thông báo hệ thống (VD: trúng thưởng event) chưa đọc
+            const systemNotifications = await NotificationModel.find({
+                accountId: req.user._id,
+                read: false,
+            }).sort({ createdAt: -1 }).lean();
+
+            for (const notification of systemNotifications) {
+                data.push({
+                    id: notification._id,
+                    accountId: notification.accountId,
+                    actorName: 'Byway',
+                    actorRole: undefined,
+                    actorAvatar: '',
+                    message: notification.message,
+                    createdAt: notification.createdAt,
+                    type: notification.type, // 'event_reward'
+                    meta: notification.meta, // THÊM — chứa couponCode để FE hiển thị nút copy
                 });
             }
 

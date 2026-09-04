@@ -216,7 +216,7 @@ export default function CoursesPage() {
   );
 
 
-  if (loading) return <p>Đang tải...</p>;
+  if (loading) return <p>Loading...</p>;
   if (error) return <p>Lỗi: {error}</p>;
 
   return (

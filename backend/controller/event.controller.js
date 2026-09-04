@@ -11,7 +11,7 @@ const todayStr = () => new Date().toISOString().slice(0, 10);
 function scoreQuiz(question, answer, cappedTime, speedBonusMaxRatio) {
     const { selectedIndex } = answer;
     if (typeof selectedIndex !== 'number') {
-        throw badRequest('Thiếu hoặc sai định dạng selectedIndex');
+        throw badRequest('selectedIndex is required and must be valid');
     }
     const isCorrect = selectedIndex === question.correctIndex;
     let pointsEarned = 0;
@@ -25,7 +25,7 @@ function scoreQuiz(question, answer, cappedTime, speedBonusMaxRatio) {
 
 function scoreUnscramble(question, answer, cappedTime, speedBonusMaxRatio) {
     if (typeof answer.submittedWord !== 'string') {
-        throw badRequest('Thiếu submittedWord');
+        throw badRequest('submittedWord is required');
     }
     // Chuỗi rỗng (hết giờ mà chưa ghép chữ nào) là hợp lệ — tính là trả lời sai,
     // không phải lỗi request.
@@ -43,7 +43,7 @@ function scoreUnscramble(question, answer, cappedTime, speedBonusMaxRatio) {
 function scoreMatching(question, answer, cappedTime, speedBonusMaxRatio) {
     const submittedPairs = Array.isArray(answer.submittedPairs) ? answer.submittedPairs : null;
     if (!submittedPairs) {
-        throw badRequest('Thiếu submittedPairs');
+        throw badRequest('submittedPairs is required');
     }
     const total = question.pairs.length;
     const correctCount = submittedPairs.filter((sp) =>
@@ -94,9 +94,9 @@ export default {
             // correctIndex của quiz — việc "giấu đáp án" ở đây chỉ mang tính
             // tương đối (giống cách các app unscramble khác vẫn gửi thẳng chữ
             // cái cho client). Nếu cần chống gian lận tuyệt đối, phải xáo trộn
-            // và chấm điểm hoàn toàn ở server — có thể làm ở bản nâng cấp sau.
+            // and chấm điểm hoàn toàn ở server — có thể làm ở bản nâng cấp sau.
             const event = await EventModel.findById(req.params.eventId).select('-questions.correctIndex');
-            if (!event) throw notFound('Không tìm thấy sự kiện');
+            if (!event) throw notFound('Event not found');
             res.json({ success: true, data: event });
         } catch (err) {
             next(err);
@@ -110,19 +110,19 @@ export default {
             const accountId = req.user._id;
 
             if (!questionId || typeof timeTakenMs !== 'number') {
-                throw badRequest('Thiếu hoặc sai định dạng questionId/timeTakenMs');
+                throw badRequest('questionId and timeTakenMs are required and must be valid');
             }
 
             const event = await EventModel.findById(eventId);
-            if (!event) throw notFound('Không tìm thấy sự kiện');
+            if (!event) throw notFound('Event not found');
 
             const status = event.getComputedStatus();
             if (status !== 'active') {
-                throw badRequest(`Sự kiện hiện không mở (trạng thái: ${status})`);
+                throw badRequest(`This event is not open (status: ${status})`);
             }
 
             const question = event.questions.id(questionId);
-            if (!question) throw badRequest('questionId không hợp lệ');
+            if (!question) throw badRequest('Invalid questionId');
 
             let score = await EventScoreModel.findOne({ accountId, eventId });
             if (!score) {
@@ -133,14 +133,14 @@ export default {
                 (a) => a.questionId.toString() === questionId.toString()
             );
             if (alreadyAnswered) {
-                throw conflict('Bạn đã trả lời câu hỏi này rồi');
+                throw conflict('You have already answered this question');
             }
 
             const { speedBonusMaxRatio, streakBonusPerDay, streakMultiplierCap } = event.scoringConfig;
             const cappedTime = Math.max(0, Math.min(timeTakenMs, question.timeLimitSeconds * 1000));
 
             const scorer = SCORERS[event.gameType];
-            if (!scorer) throw badRequest('gameType của sự kiện không hợp lệ');
+            if (!scorer) throw badRequest('Invalid event game type');
 
             const { isCorrect, pointsEarned: basePointsEarned } = scorer(
                 question,
@@ -187,17 +187,17 @@ export default {
             const accountId = req.user._id;
 
             if (!['realname', 'nickname', 'anonymous'].includes(displayMode)) {
-                throw badRequest('displayMode không hợp lệ');
+                throw badRequest('Invalid display mode');
             }
             if (displayMode === 'nickname' && !nickname?.trim()) {
-                throw badRequest('Cần nhập nickname khi chọn hiển thị biệt danh');
+                throw badRequest('A nickname is required when displaying a nickname');
             }
 
             let score = await EventScoreModel.findOne({ accountId, eventId });
             if (!score) {
                 score = new EventScoreModel({ accountId, eventId });
             } else if (score.attemptsLog.length > 0) {
-                throw conflict('Bạn đã bắt đầu chơi, không thể đổi cách hiển thị nữa');
+                throw conflict('You have already started playing and cannot change the display mode');
             }
 
             score.displayMode = displayMode;
@@ -219,7 +219,7 @@ export default {
                 .populate('accountId', 'Username Fname Lname avatar');
 
             const leaderboard = scores.map((s, index) => {
-                let displayName = 'Học viên ẩn danh';
+                let displayName = 'Anonymous student';
                 if (s.displayMode === 'realname') {
                     displayName = s.accountId?.Username || `${s.accountId?.Fname || ''} ${s.accountId?.Lname || ''}`.trim();
                 } else if (s.displayMode === 'nickname') {
@@ -236,6 +236,28 @@ export default {
             });
 
             res.json({ success: true, data: leaderboard });
+        } catch (err) {
+            next(err);
+        }
+    },
+      getMyScore: async (req, res, next) => {
+        try {
+            const { eventId } = req.params;
+            const accountId = req.user._id;
+
+            const score = await EventScoreModel.findOne({ accountId, eventId });
+            const hasPlayed = Boolean(score && score.attemptsLog.length > 0);
+
+            res.json({
+                success: true,
+                data: hasPlayed
+                    ? {
+                          hasPlayed: true,
+                          totalScore: score.totalScore,
+                          currentStreak: score.currentStreak,
+                      }
+                    : { hasPlayed: false },
+            });
         } catch (err) {
             next(err);
         }

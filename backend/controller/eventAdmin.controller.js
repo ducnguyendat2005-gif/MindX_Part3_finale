@@ -10,13 +10,13 @@ export default {
             const { title, description, coverImage, startDate, endDate, questions, scoringConfig, gameType } = req.body;
 
             if (!title || !startDate || !endDate) {
-                throw badRequest('Thiếu title/startDate/endDate');
+                throw badRequest('title, startDate, and endDate are required');
             }
             if (new Date(startDate) >= new Date(endDate)) {
-                throw badRequest('startDate phải trước endDate');
+                throw badRequest('startDate must be before endDate');
             }
             if (gameType && !GAME_TYPES.includes(gameType)) {
-                throw badRequest('gameType không hợp lệ');
+                throw badRequest('Invalid game type');
             }
 
             const resolvedGameType = gameType || 'quiz';
@@ -51,7 +51,7 @@ export default {
     getEventByIdAdmin: async (req, res, next) => {
         try {
             const event = await EventModel.findById(req.params.id);
-            if (!event) throw notFound('Không tìm thấy sự kiện');
+            if (!event) throw notFound('Event not found');
             res.json({ success: true, data: event });
         } catch (err) {
             next(err);
@@ -67,11 +67,11 @@ export default {
             // cũ (vd: đổi từ quiz sang matching sẽ làm options/correctIndex vô nghĩa).
 
             if (startDate && endDate && new Date(startDate) >= new Date(endDate)) {
-                throw badRequest('startDate phải trước endDate');
+                throw badRequest('startDate must be before endDate');
             }
 
             const existingEvent = await EventModel.findById(id);
-            if (!existingEvent) throw notFound('Không tìm thấy sự kiện');
+            if (!existingEvent) throw notFound('Event not found');
 
             const event = await EventModel.findByIdAndUpdate(
                 id,
@@ -99,8 +99,8 @@ export default {
     deleteEvent: async (req, res, next) => {
         try {
             const event = await EventModel.findByIdAndDelete(req.params.id);
-            if (!event) throw notFound('Không tìm thấy sự kiện');
-            res.json({ success: true, message: 'Đã xóa sự kiện' });
+            if (!event) throw notFound('Event not found');
+            res.json({ success: true, message: 'Event deleted successfully' });
         } catch (err) {
             next(err);
         }

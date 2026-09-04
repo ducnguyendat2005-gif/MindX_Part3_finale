@@ -10,7 +10,7 @@ const getContactId = (contact) => String(contact?.accountId || contact?.id || ''
 
 const normalizeContact = (contact) => ({
   accountId: contact.accountId || contact.id,
-  name: contact.name || contact.username || 'Người dùng',
+  name: contact.name || contact.username || 'User',
   username: contact.username,
   avatar: contact.avatar || DEFAULT_AVATAR,
   role: contact.role,
@@ -146,7 +146,7 @@ export default function MessageTab() {
         <aside className="conversation-list">
           <h2 className="conversation-list__title">Conversations</h2>
           {loadingConversations && conversations.length === 0 ? (
-            <p className="conversation-list__empty">Đang tải...</p>
+            <p className="conversation-list__empty">Loading...</p>
           ) : conversations.length === 0 ? (
             <p className="conversation-list__empty">Chưa có cuộc trò chuyện</p>
           ) : (
@@ -162,7 +162,7 @@ export default function MessageTab() {
                   <img src={conversation.avatar} alt={conversation.name} referrerPolicy="no-referrer" />
                   <span>
                     <strong>{conversation.name}</strong>
-                    <small>{conversation.lastMessage || 'Bắt đầu trò chuyện'}</small>
+                    <small>{conversation.lastMessage || 'Start trò chuyện'}</small>
                   </span>
                   {conversation.unreadCount > 0 && <b>{conversation.unreadCount}</b>}
                 </button>

@@ -22,13 +22,15 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dns from 'dns';
 dns.setServers(['8.8.8.8', '8.8.4.4']);
+import cron from 'node-cron';
+import { distributeEventRewards } from './src/jobs/eventRewardJob.js';
 
 import dotenv from "dotenv";
 import { verifyToken } from './middleware/verifyToken.middleware.js';
 dotenv.config();
 
 const app = express();
-app.use(cors({ origin:'http://localhost:5173', credentials: true }));
+app.use(cors({ origin:process.env.FRONTEND_URL, credentials: true }));
 app.use(express.json());
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -151,6 +153,7 @@ app.get('/events/:eventId', verifyToken, isStudent, eventController.getEventById
 app.post('/events/:eventId/submit-answer', verifyToken, isStudent, hasAnyEnrollment, eventController.submitAnswer);
 app.post('/events/:eventId/display-mode', verifyToken, isStudent, hasAnyEnrollment, eventController.setDisplayMode);
 app.get('/events/:eventId/leaderboard', verifyToken, isStudent, eventController.getLeaderboard);
+app.get('/events/:eventId/my-score', verifyToken, isStudent, eventController.getMyScore);
 
 app.post('/admin/events', verifyToken, isAdmin, eventAdminController.createEvent);
 app.get('/admin/events', verifyToken, isAdmin, eventAdminController.getAllEventsAdmin);
@@ -174,6 +177,12 @@ mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/final3")
   .then(() => console.log('MongoDB connected!'))
   .catch((err) => console.log('MongoDB error:', err));
 
+cron.schedule('*/1 * * * *', () => {
+  // console.log('[cron] tick lúc', new Date().toLocaleTimeString('vi-VN')); // thêm dòng debug này
+  distributeEventRewards().catch((err) =>
+    console.error('[cron] distributeEventRewards lỗi:', err)
+  );
+});
 app.listen(process.env.PORT, () => {
     console.log('Server is running!');
 });

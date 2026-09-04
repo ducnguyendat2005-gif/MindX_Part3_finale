@@ -247,11 +247,11 @@ export default function ProfilePage() {
       return;
     }
     if (newPassword.length < 6) {
-      setPasswordError('Mật khẩu mới phải có ít nhất 6 ký tự.');
+      setPasswordError('Password mới phải có ít nhất 6 ký tự.');
       return;
     }
     if (newPassword !== confirmPassword) {
-      setPasswordError('Mật khẩu xác nhận không khớp.');
+      setPasswordError('Password xác nhận không khớp.');
       return;
     }
 
@@ -265,19 +265,19 @@ export default function ProfilePage() {
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(body.message || 'Đổi mật khẩu thất bại');
+        throw new Error(body.message || 'Failed to change password');
       }
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      setPasswordSuccess(body.message || 'Đổi mật khẩu thành công!'); // 👈 set success
+      setPasswordSuccess(body.message || 'Password changed successfully!'); // 👈 set success
       setTimeout(() => setPasswordSuccess(''), 3000); // tự ẩn sau 3s
     } catch (err) {
-      setPasswordError(err.message || 'Đổi mật khẩu thất bại.');
+      setPasswordError(err.message || 'Failed to change password.');
     } finally {
       setSavingPassword(false);
     }
   };
 
-  if (!user) return <p className="profile-page__loading">Đang tải...</p>;
+  if (!user) return <p className="profile-page__loading">Loading...</p>;
 
   const isTeacher = user.role === 'teacher';
 

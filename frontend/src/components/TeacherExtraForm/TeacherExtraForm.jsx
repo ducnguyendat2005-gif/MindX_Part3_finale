@@ -39,13 +39,13 @@ export default function TeacherExtraForm({ onSubmit, onBack }) {
 
   const handleSubmit = async () => {
     const newErrors = {};
-    if (!expertise.trim()) newErrors.expertise = 'Vui lòng nhập chuyên môn của bạn';
+    if (!expertise.trim()) newErrors.expertise = 'Please enter your expertise';
     if (experienceYears === '') {
-      newErrors.experienceYears = 'Vui lòng nhập số năm kinh nghiệm';
+      newErrors.experienceYears = 'Please enter your years of experience';
     } else if (Number.isNaN(Number(experienceYears)) || Number(experienceYears) < 0) {
-      newErrors.experienceYears = 'Số năm kinh nghiệm phải từ 0 trở lên';
+      newErrors.experienceYears = 'Years of experience must be 0 or greater';
     }
-    if (!bio.trim()) newErrors.bio = 'Vui lòng giới thiệu ngắn về bản thân';
+    if (!bio.trim()) newErrors.bio = 'Please provide a brief introduction';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -141,10 +141,10 @@ export default function TeacherExtraForm({ onSubmit, onBack }) {
       <div className="extra-form-actions">
         <button type="button" className="back-btn" onClick={onBack}>
           <ArrowLeft className="btn-icon" />
-          Quay lại
+          Back
         </button>
         <button type="button" className="signup-btn" onClick={handleSubmit} disabled={submitting}>
-          {submitting ? 'Đang tạo...' : 'Hoàn tất'}
+          {submitting ? 'Creating...' : 'Finish'}
           <ArrowRight className="btn-icon" />
         </button>
       </div>

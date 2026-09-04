@@ -263,7 +263,7 @@ useEffect(() => {
 
   
 
-  if (loading) return <p>Đang tải...</p>;
+  if (loading) return <p>Loading...</p>;
   if (!course) return <p>Không tìm thấy khóa học</p>;
   const reviewStats = buildReviewStats(course.reviews);
 

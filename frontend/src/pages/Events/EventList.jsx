@@ -14,7 +14,7 @@ function EventsList() {
       try {
         const res = await fetchWithAuth(API.activeEvents);
         const body = await res.json();
-        if (!res.ok) throw new Error(body.message || 'Không tải được sự kiện');
+        if (!res.ok) throw new Error(body.message || 'Could not load event');
         setEvents(body.data);
       } catch (err) {
         setError(err.message);
@@ -25,7 +25,7 @@ function EventsList() {
   }, []);
 
   if (loading) {
-    return <div className={`${styles.state}`}>Đang tải sự kiện...</div>;
+    return <div className={`${styles.state}`}>Loading event...</div>;
   }
   if (error) {
     return <div className={`${styles.state} ${styles.stateError}`}>{error}</div>;
@@ -41,7 +41,7 @@ function EventsList() {
 
       {events.length === 0 ? (
         <div className={styles.empty}>
-          Hiện chưa có sự kiện nào đang mở. Quay lại sau nhé.
+          Hiện chưa có sự kiện nào đang mở. Back sau nhé.
         </div>
       ) : (
         <div className={styles.grid}>
@@ -58,7 +58,7 @@ function EventsList() {
                 <h3>{ev.title}</h3>
                 <p>{ev.description}</p>
                 <span className={styles.cardMeta}>
-                  {ev.questions?.length || 0} câu hỏi · Kết thúc{' '}
+                  {ev.questions?.length || 0} câu hỏi · End{' '}
                   {new Date(ev.endDate).toLocaleDateString('vi-VN')}
                 </span>
               </div>

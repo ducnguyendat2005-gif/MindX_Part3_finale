@@ -60,6 +60,7 @@ export const API = {
   submitEventAnswer: (eventId) => `${BASE_URL}/events/${eventId}/submit-answer`,
   setEventDisplayMode: (eventId) => `${BASE_URL}/events/${eventId}/display-mode`,
   eventLeaderboard: (eventId) => `${BASE_URL}/events/${eventId}/leaderboard`,
+    myEventScore: (eventId) => `${BASE_URL}/events/${eventId}/my-score`,
 
   adminEvents: `${BASE_URL}/admin/events`,
   adminEventById: (id) => `${BASE_URL}/admin/events/${id}`,

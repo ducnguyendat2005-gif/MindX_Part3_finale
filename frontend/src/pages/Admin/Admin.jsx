@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { API, fetchWithAuth } from '../../config/api.js'; // chỉnh lại đường dẫn cho đúng vị trí file api.js trong project của bạn
 import { useTheme } from '../../context/ThemeContext.jsx';
+import AdminEvents from './AdminEvent.jsx'; 
 import { useIsMobile } from '../../hooks/use-mobile.jsx';
 import './Admin.scss';
 
@@ -73,6 +74,7 @@ const NAV = [
   { key: 'overview', label: 'Overview' },
   { key: 'courses', label: 'Courses' },
   { key: 'approvals', label: 'Course Approvals' },
+  { key: 'events', label: 'Events' },    
   { key: 'instructors', label: 'Instructors' },
   { key: 'accounts', label: 'Accounts' },
   { key: 'testimonials', label: 'Testimonials' },
@@ -115,15 +117,15 @@ function Overview({ courses, accounts, testimonials,instructors, onSelectCourse 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14 }}>
-        <StatCard label="Tổng khóa học" value={stats.totalCourses} accentBg="#EEF5FF" accentFg="#1947D6" icon="📚" />
-        <StatCard label="Tài khoản" value={stats.totalAccounts} accentBg="#EAF8EE" accentFg="#19874A" icon="👥" />
-        <StatCard label="Đánh giá TB" value={stats.avgRating + ' / 5'} accentBg="#FFF3E6" accentFg="#C2540A" icon="⭐" />
-        <StatCard label="Giảng viên" value={instructors.length} accentBg="#FEF1F1" accentFg="#C0263A" icon="🎓" />
+        <StatCard label="Total courses" value={stats.totalCourses} accentBg="#EEF5FF" accentFg="#1947D6" icon="📚" />
+        <StatCard label="Accounts" value={stats.totalAccounts} accentBg="#EAF8EE" accentFg="#19874A" icon="👥" />
+        <StatCard label="Rating TB" value={stats.avgRating + ' / 5'} accentBg="#FFF3E6" accentFg="#C2540A" icon="⭐" />
+        <StatCard label="Instructors" value={instructors.length} accentBg="#FEF1F1" accentFg="#C0263A" icon="🎓" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,3fr) minmax(0,2fr)', gap: 16 }}>
         <div className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', boxShadow: '0 1px 2px rgba(13,19,33,0.04), 0 8px 24px -12px rgba(13,19,33,0.1)', padding: 20 }}>
-          <p style={{ fontWeight: 600, margin: '0 0 4px', color: '#0d1321' }}>Khóa học theo danh mục</p>
+          <p style={{ fontWeight: 600, margin: '0 0 4px', color: '#0d1321' }}>Course theo danh mục</p>
           <p style={{ fontSize: 12, color: '#8893ab', margin: '0 0 16px' }}>Phân bố {stats.totalCourses} khóa học</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {categoryData.map((c, i) => (
@@ -139,7 +141,7 @@ function Overview({ courses, accounts, testimonials,instructors, onSelectCourse 
         </div>
 
         <div className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', boxShadow: '0 1px 2px rgba(13,19,33,0.04), 0 8px 24px -12px rgba(13,19,33,0.1)', overflow: 'hidden' }}>
-          <p style={{ fontWeight: 600, margin: '20px 20px 4px', color: '#0d1321' }}>Giảng viên nổi bật</p>
+          <p style={{ fontWeight: 600, margin: '20px 20px 4px', color: '#0d1321' }}>Instructors nổi bật</p>
           <div>
             {instructors.slice(0, 5).map((t) => (
               <div key={t._id || t.id || t.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 20px', borderTop: '1px solid #f1f3f9' }}>
@@ -158,7 +160,7 @@ function Overview({ courses, accounts, testimonials,instructors, onSelectCourse 
       </div>
 
       <div className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', boxShadow: '0 1px 2px rgba(13,19,33,0.04), 0 8px 24px -12px rgba(13,19,33,0.1)', overflow: 'hidden' }}>
-        <p style={{ fontWeight: 600, margin: '20px 20px 4px', color: '#0d1321' }}>Khóa học đánh giá cao nhất</p>
+        <p style={{ fontWeight: 600, margin: '20px 20px 4px', color: '#0d1321' }}>Course đánh giá cao nhất</p>
         <div>
           {topCourses.map((c) => (
             <div key={c.id} onClick={() => onSelectCourse(c)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderTop: '1px solid #f1f3f9', cursor: 'pointer' }}>
@@ -178,7 +180,7 @@ function Overview({ courses, accounts, testimonials,instructors, onSelectCourse 
 
       {testimonials?.length > 0 && (
         <div className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', boxShadow: '0 1px 2px rgba(13,19,33,0.04), 0 8px 24px -12px rgba(13,19,33,0.1)', padding: 20 }}>
-          <p style={{ fontWeight: 600, margin: '0 0 14px', color: '#0d1321' }}>Phản hồi gần đây</p>
+          <p style={{ fontWeight: 600, margin: '0 0 14px', color: '#0d1321' }}>Recent feedback</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
             {testimonials.slice(0, 3).map((t) => (
               <div key={t.id} className="admin-testimonial-card" style={{ background: '#f8f9fc', borderRadius: 12, padding: 14, border: '1px solid #eef1f7' }}>
@@ -217,14 +219,14 @@ function Courses({ courses, query, onSelectCourse }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div className="admin-course-filters" style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', background: '#fff', border: '1px solid #eef1f7', borderRadius: 16, padding: 12 }}>
         <select className="admin-course-filter" value={category} onChange={(e) => setCategory(e.target.value)} style={{ padding: '8px 10px', fontSize: 13, borderRadius: 10, border: '1px solid #dde1ec', background: '#fff' }}>
-          {categories.map((c) => <option key={c} value={c}>{c === 'all' ? 'Tất cả danh mục' : categoryLabel(c)}</option>)}
+          {categories.map((c) => <option key={c} value={c}>{c === 'all' ? 'All categories' : categoryLabel(c)}</option>)}
         </select>
         <select className="admin-course-filter" value={level} onChange={(e) => setLevel(e.target.value)} style={{ padding: '8px 10px', fontSize: 13, borderRadius: 10, border: '1px solid #dde1ec', background: '#fff' }}>
-          <option value="all">Tất cả cấp độ</option>
+          <option value="all">All levels</option>
           {['Beginner', 'Intermediate', 'Advanced', 'Expert'].map((l) => <option key={l} value={l}>{l}</option>)}
         </select>
         <div style={{ flex: 1 }} />
-        <span style={{ fontSize: 12, color: '#8893ab', fontWeight: 500 }}>{filtered.length} kết quả</span>
+        <span style={{ fontSize: 12, color: '#8893ab', fontWeight: 500 }}>{filtered.length} results</span>
       </div>
 
       <div className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', overflow: 'hidden' }}>
@@ -232,11 +234,11 @@ function Courses({ courses, query, onSelectCourse }) {
           <table className="admin-course-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ background: '#f6f8fb', color: '#8893ab', fontSize: 11, textTransform: 'uppercase' }}>
-                <th style={{ textAlign: 'left', padding: '10px 16px', fontWeight: 600 }}>Khóa học</th>
-                <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Danh mục</th>
-                <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Cấp độ</th>
-                <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Đánh giá</th>
-                <th style={{ textAlign: 'right', padding: '10px 16px', fontWeight: 600 }}>Giá</th>
+                <th style={{ textAlign: 'left', padding: '10px 16px', fontWeight: 600 }}>Course</th>
+                <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Category</th>
+                <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Level</th>
+                <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Rating</th>
+                <th style={{ textAlign: 'right', padding: '10px 16px', fontWeight: 600 }}>Price</th>
               </tr>
             </thead>
             <tbody>
@@ -294,7 +296,7 @@ function Instructors({ courses, instructors }) {
               </div>
               <div className="admin-instructor-stat" style={{ background: '#f6f8fb', borderRadius: 10, padding: '10px 0', textAlign: 'center' }}>
                 <p style={{ margin: 0, fontWeight: 700, color: '#1947D6' }}>{t.totalStudents.toLocaleString()}</p>
-                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#8893ab' }}>học viên</p>
+                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#8893ab' }}>students</p>
               </div>
             </div>
             {taught.length > 0 && (
@@ -329,7 +331,7 @@ function Accounts({ accounts, query, onToggleStatus }) {
 
   const handleToggleStatus = async (account) => {
     const nextStatus = account.isActive === false;
-    const actionLabel = nextStatus ? 'mở khóa' : 'tạm khóa';
+    const actionLabel = nextStatus ? 'unlock' : 'suspend';
     const confirmed = window.confirm(`Bạn có chắc muốn ${actionLabel} tài khoản @${account.Username} không?`);
     if (!confirmed) return;
 
@@ -338,7 +340,7 @@ function Accounts({ accounts, query, onToggleStatus }) {
     try {
       await onToggleStatus(account.id, nextStatus);
     } catch (error) {
-      setStatusError(error.message || 'Không thể cập nhật trạng thái tài khoản');
+      setStatusError(error.message || 'Could not update account status');
     } finally {
       setUpdatingId(null);
     }
@@ -351,17 +353,17 @@ function Accounts({ accounts, query, onToggleStatus }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: '#f6f8fb', color: '#8893ab', fontSize: 11, textTransform: 'uppercase' }}>
-              <th style={{ textAlign: 'left', padding: '10px 16px', fontWeight: 600 }}>Người dùng</th>
+              <th style={{ textAlign: 'left', padding: '10px 16px', fontWeight: 600 }}>User</th>
               <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Username</th>
               <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Email</th>
-              <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Mật khẩu</th>
-              <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Trạng thái</th>
+              <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Password</th>
+              <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Status</th>
               <th style={{ textAlign: 'right', padding: '10px 16px', fontWeight: 600 }}>ID</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((a) => {
-              const fullName = (a.Fname + ' ' + a.Lname).trim() || 'Người dùng';
+              const fullName = (a.Fname + ' ' + a.Lname).trim() || 'User';
               const isR = revealed[a.id];
               const isActive = a.isActive !== false;
               return (
@@ -385,9 +387,9 @@ function Accounts({ accounts, query, onToggleStatus }) {
                       className={`admin-account-status ${isActive ? 'admin-account-status--active' : 'admin-account-status--suspended'}`}
                       disabled={updatingId === a.id}
                       onClick={() => handleToggleStatus(a)}
-                      title={isActive ? 'Tạm khóa tài khoản' : 'Mở khóa tài khoản'}
+                      title={isActive ? 'Suspend account' : 'Unlock account'}
                     >
-                      {updatingId === a.id ? 'Đang lưu...' : (isActive ? 'Hoạt động' : 'Tạm khóa')}
+                      {updatingId === a.id ? 'Saving...' : (isActive ? 'Active' : 'Tạm khóa')}
                     </button>
                   </td>
                   <td style={{ padding: '10px 16px', textAlign: 'right', color: '#8893ab', fontSize: 12 }}>#{a.id}</td>
@@ -426,29 +428,28 @@ function CourseDetail({ course, onClose }) {
   if (!course) return null;
   const d = course.details || {};
   const tabs = [
-    { key: 'description', label: 'Mô tả' },
-    { key: 'instructor', label: 'Giảng viên' },
+    { key: 'description', label: 'Description' },
+    { key: 'instructor', label: 'Instructors' },
     { key: 'syllabus', label: 'Chương trình' },
-    { key: 'reviews', label: 'Đánh giá' },
+    { key: 'reviews', label: 'Rating' },
   ];
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', justifyContent: 'flex-end' }}>
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(13,19,33,0.5)' }} />
-      <div style={{ position: 'relative', width: '100%', maxWidth: 480, height: '100%', background: '#fff', display: 'flex', flexDirection: 'column', boxShadow: '-12px 0 32px rgba(0,0,0,0.15)' }}>
-        <div style={{ display: 'flex', gap: 12, padding: '18px 20px', borderBottom: '1px solid #eef1f7' }}>
+      <div className="admin-course-detail" style={{ position: 'relative', width: '100%', maxWidth: 480, height: '100%', background: '#fff', display: 'flex', flexDirection: 'column', boxShadow: '-12px 0 32px rgba(0,0,0,0.15)' }}>        <div style={{ display: 'flex', gap: 12, padding: '18px 20px', borderBottom: '1px solid #eef1f7' }}>
           <Avatar name={course.title} size={48} rounded="14px" />
           <div style={{ minWidth: 0, flex: 1 }}>
-            <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: '#EEF5FF', color: '#1947D6' }}>{categoryLabel(course.category)}</span>
+            <span className="admin-course-badge" style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: '#EEF5FF', color: '#1947D6' }}>{categoryLabel(course.category)}</span>
             <p style={{ margin: '6px 0 0', fontWeight: 700, fontSize: 15, color: '#0d1321', lineHeight: 1.3 }}>{course.title}</p>
             <p style={{ margin: 0, fontSize: 12, color: '#8893ab' }}>by {course.author}</p>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8893ab', fontSize: 20, lineHeight: 1, padding: 4 }}>×</button>
         </div>
 
-        <div style={{ display: 'flex', gap: 16, padding: '12px 20px', background: '#f6f8fb', borderBottom: '1px solid #eef1f7', fontSize: 12 }}>
+        <div className="admin-course-detail-highlight" style={{ display: 'flex', gap: 16, padding: '12px 20px', background: '#f6f8fb', borderBottom: '1px solid #eef1f7', fontSize: 12 }}>
           <div><span style={{ color: '#f59e0b', fontWeight: 700 }}>★ {course.rating}</span> <span style={{ color: '#8893ab' }}>({course.reviews})</span></div>
           <div style={{ color: '#39455e' }}>{course.hours}h</div>
-          <div style={{ color: '#39455e' }}>{course.lectures} bài giảng</div>
+          <div style={{ color: '#39455e' }}>{course.lectures} lessons</div>
         </div>
 
         <div style={{ display: 'flex', gap: 4, padding: '0 16px', borderBottom: '1px solid #eef1f7', overflowX: 'auto' }}>
@@ -467,23 +468,23 @@ function CourseDetail({ course, onClose }) {
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                 <p style={{ fontSize: 22, fontWeight: 700, margin: 0, color: '#0d1321' }}>{fmtMoney(course.promotionalPrice ?? course.price)}</p>
                 {d.originalPrice && d.originalPrice !== course.promotionalPrice && <p style={{ fontSize: 13, color: '#8893ab', textDecoration: 'line-through', margin: 0 }}>{fmtMoney(d.originalPrice)}</p>}
-                {course.discount && <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 999, background: '#EAF8EE', color: '#19874A' }}>{d.discount}</span>}
+                {course.discount && <span className="admin-course-badge" style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 999, background: '#EAF8EE', color: '#19874A' }}>{d.discount}</span>}
               </div>
               {course.shortDescription && <p style={{ fontSize: 13, color: '#39455e', lineHeight: 1.6, margin: 0 }}>{course.shortDescription}</p>}
               {course.courseDescription && (
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#0d1321', margin: '0 0 4px' }}>Mô tả khóa học</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#0d1321', margin: '0 0 4px' }}>Course description</p>
                   <p style={{ fontSize: 13, color: '#39455e', lineHeight: 1.6, margin: 0 }}>{course.courseDescription}</p>
                 </div>
               )}
               {course.certification && (
-                <div style={{ background: '#f5f8ff', border: '1px solid #dce9ff', borderRadius: 12, padding: 14 }}>
+                <div className="admin-course-detail-highlight" style={{ background: '#f5f8ff', border: '1px solid #dce9ff', borderRadius: 12, padding: 14 }}>
                   <p style={{ fontSize: 13, color: '#1947D6', lineHeight: 1.6, margin: 0 }}>{course.certification}</p>
                 </div>
               )}
               {d.languages?.length > 0 && (
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  {d.languages.map((l) => <span key={l} style={{ fontSize: 11, fontWeight: 500, padding: '3px 8px', borderRadius: 999, background: '#eef1f7', color: '#39455e' }}>{l}</span>)}
+                  {d.languages.map((l) => <span key={l}  className="admin-course-badge" style={{ fontSize: 11, fontWeight: 500, padding: '3px 8px', borderRadius: 999, background: '#eef1f7', color: '#39455e' }}>{l}</span>)}
                 </div>
               )}
             </div>
@@ -499,15 +500,15 @@ function CourseDetail({ course, onClose }) {
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, textAlign: 'center' }}>
-                <div style={{ background: '#f6f8fb', borderRadius: 10, padding: 10 }}>
+                <div className="admin-instructor-stat" style={{ background: '#f6f8fb', borderRadius: 10, padding: 10 }}>
                   <p style={{ margin: 0, fontWeight: 700, color: '#0d1321' }}>{course.instructor.totalReviews?.toLocaleString()}</p>
                   <p style={{ margin: 0, fontSize: 11, color: '#8893ab' }}>đánh giá</p>
                 </div>
-                <div style={{ background: '#f6f8fb', borderRadius: 10, padding: 10 }}>
+                <div className="admin-instructor-stat" style={{ background: '#f6f8fb', borderRadius: 10, padding: 10 }}>
                   <p style={{ margin: 0, fontWeight: 700, color: '#0d1321' }}>{course.instructor.totalStudents?.toLocaleString()}</p>
-                  <p style={{ margin: 0, fontSize: 11, color: '#8893ab' }}>học viên</p>
+                  <p style={{ margin: 0, fontSize: 11, color: '#8893ab' }}>students</p>
                 </div>
-                <div style={{ background: '#f6f8fb', borderRadius: 10, padding: 10 }}>
+                <div className="admin-instructor-stat" style={{ background: '#f6f8fb', borderRadius: 10, padding: 10 }}>
                   <p style={{ margin: 0, fontWeight: 700, color: '#0d1321' }}>{course.instructor.totalCourses}</p>
                   <p style={{ margin: 0, fontSize: 11, color: '#8893ab' }}>khóa học</p>
                 </div>
@@ -536,7 +537,7 @@ function CourseDetail({ course, onClose }) {
                             style={{ width: '100%', maxHeight: 200, borderRadius: 8, background: '#000' }}
                           />
                         ) : (
-                          <p style={{ margin: 0, fontSize: 11, color: '#c2540a' }}>Chưa có video</p>
+                          <p style={{ margin: 0, fontSize: 11, color: '#c2540a' }}>No video yet</p>
                         )}
                       </div>
                     ))}
@@ -582,10 +583,11 @@ function RejectModal({ course, onCancel, onConfirm, submitting }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div onClick={onCancel} style={{ position: 'absolute', inset: 0, background: 'rgba(13,19,33,0.5)' }} />
-      <div style={{ position: 'relative', width: '100%', maxWidth: 420, background: '#fff', borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="admin-surface" style={{ position: 'relative', width: '100%', maxWidth: 420, background: '#fff', borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
         <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: '#0d1321' }}>Reject "{course.title}"</p>
         <p style={{ margin: 0, fontSize: 12, color: '#8893ab' }}>Please provide a reason so the instructor can fix and resubmit.</p>
         <textarea
+          className="admin-reject-textarea"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           rows={4}
@@ -681,6 +683,7 @@ function CourseApprovals() {
         {pending.map((c) => (
           <div
             key={c._id}
+            className="admin-approval-card"
             onClick={() => setViewingCourse({
               ...c,
               author: c.instructorId?.name || 'Unknown instructor',
@@ -693,7 +696,7 @@ function CourseApprovals() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <p style={{ margin: 0, fontWeight: 600, color: '#0d1321', fontSize: 14 }}>{c.title}</p>
-                <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: STATUS_BADGE.pending.bg, color: STATUS_BADGE.pending.fg }}>
+                <span className="admin-course-badge" style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: STATUS_BADGE.pending.bg, color: STATUS_BADGE.pending.fg }}>
                   {STATUS_BADGE.pending.label}
                 </span>
               </div>
@@ -815,19 +818,20 @@ export default function AdminPage() {
   const showSearch = active === 'courses' || active === 'accounts';
 
   const titles = {
-    overview: ['Tổng quan', 'Số liệu nền tảng theo thời gian thực'],
-    courses: ['Khóa học', 'Quản lý toàn bộ khóa học trên Byway'],
+    overview: ['Overview', 'Real-time platform metrics'],
+    courses: ['Course', 'Management toàn bộ khóa học trên Byway'],
     approvals: ['Course Approvals', 'Review and moderate pending course submissions'],
-    instructors: ['Giảng viên', 'Đội ngũ giảng viên nổi bật'],
-    accounts: ['Tài khoản', 'Người dùng đã đăng ký'],
-    testimonials: ['Đánh giá nổi bật', 'Phản hồi từ học viên'],
+    events: ['Events', 'Tạo và quản lý sự kiện, minigame cho students'], 
+    instructors: ['Instructors', 'Featured instructor team'],
+    accounts: ['Accounts', 'Registered users'],
+    testimonials: ['Rating nổi bật', 'Phản hồi từ students'],
   };
   const [title, subtitle] = titles[active];
 
   if (loading) {
     return (
       <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, system-ui, sans-serif', color: '#39455e' }}>
-        Đang tải dữ liệu...
+        Loading data...
       </div>
     );
   }
@@ -835,7 +839,7 @@ export default function AdminPage() {
   if (error) {
     return (
       <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, system-ui, sans-serif', color: '#dc2626' }}>
-        Lỗi tải dữ liệu: {error}
+        Failed to load data: {error}
       </div>
     );
   }
@@ -853,7 +857,7 @@ export default function AdminPage() {
           <span style={{ fontWeight: 600, fontSize: 14 }}>Byway Admin</span>
         </div>
         <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <p style={{ padding: '0 12px', margin: '0 0 6px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8893ab' }}>Quản lý</p>
+          <p style={{ padding: '0 12px', margin: '0 0 6px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8893ab' }}>Management</p>
           {NAV.map((n) => (
             <button key={n.key} className={active === n.key ? 'admin-nav-item admin-nav-item--active' : 'admin-nav-item'} onClick={() => { setActive(n.key); setSidebarOpen(false); }} style={{
               display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, fontSize: 13, fontWeight: 500,
@@ -867,7 +871,7 @@ export default function AdminPage() {
             <div style={{ width: 30, height: 30, borderRadius: 999, background: '#4f8fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>HĐ</div>
             <div style={{ minWidth: 0 }}>
               <p style={{ margin: 0, fontSize: 12, fontWeight: 500 }}>Hoa Đỗ</p>
-              <p style={{ margin: 0, fontSize: 10, color: '#8893ab' }}>Quản trị viên</p>
+              <p style={{ margin: 0, fontSize: 10, color: '#8893ab' }}>Administrator</p>
             </div>
           </div>
         </div>
@@ -882,7 +886,7 @@ export default function AdminPage() {
           </div>
           <div style={{ flex: 1 }} />
           {showSearch && (
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tìm kiếm..." style={{
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search..." style={{
               padding: '8px 12px', fontSize: 13, borderRadius: 10, border: '1px solid #dde1ec', background: '#f6f8fb', width: 200, outline: 'none',
             }} />
           )}
@@ -894,6 +898,7 @@ export default function AdminPage() {
             {active === 'courses' && <Courses courses={courses} query={query} onSelectCourse={setSelectedCourse} />}
             {active === 'instructors' && <Instructors courses={courses} instructors={instructors} />}
             {active === 'approvals' && <CourseApprovals />}
+            {active === 'events' && <AdminEvents />}   
             {active === 'accounts' && <Accounts accounts={accounts} query={query} onToggleStatus={handleToggleAccountStatus} />}
             {active === 'testimonials' && <Testimonials testimonials={testimonials} />}
           </div>

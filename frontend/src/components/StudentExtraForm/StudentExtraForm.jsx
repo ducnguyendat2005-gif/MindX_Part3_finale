@@ -99,10 +99,10 @@ export default function StudentExtraForm({ onSubmit, onBack }) {
       <div className="extra-form-actions">
         <button type="button" className="back-btn" onClick={onBack}>
           <ArrowLeft className="btn-icon" />
-          Quay lại
+          Back
         </button>
         <button type="button" className="signup-btn" onClick={handleSubmit} disabled={submitting}>
-          {submitting ? 'Đang tạo...' : 'Hoàn tất'}
+          {submitting ? 'Creating...' : 'Finish'}
           <ArrowRight className="btn-icon" />
         </button>
       </div>

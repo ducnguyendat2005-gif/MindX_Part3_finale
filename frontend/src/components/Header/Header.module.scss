@@ -444,6 +444,9 @@
 
     .messageIcon { color: #2563eb; background: #eff6ff; }
     .friendIcon { color: #7c3aed; background: #f5f3ff; }
+    .messageIcon { color: #2563eb; background: #eff6ff; }
+    .friendIcon { color: #7c3aed; background: #f5f3ff; }
+    .rewardIcon { color: #d97706; background: #fffbeb; }
 
     .notificationContent { min-width: 0; flex: 1; }
 
@@ -453,6 +456,24 @@
       gap: 7px;
 
       strong { font-size: 13px; }
+      .dismissBtn {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: inherit;
+        opacity: 0.5;
+        cursor: pointer;
+        padding: 2px;
+        border-radius: 4px;
+
+        &:hover {
+          opacity: 1;
+          background: rgba(255, 255, 255, 0.08);
+        }
+      }
     }
 
     .unreadDot {
@@ -503,6 +524,7 @@
 
     .acceptBtn { color: #166534; background: #f0fdf4; border: 1px solid #bbf7d0; }
     .rejectBtn { color: #b91c1c; background: transparent; border: 1px solid var(--border-color); }
+    .copyBtn { color: #92400e; background: #fffbeb; border: 1px solid #fde68a; }
     .requestStatus { display: inline-block; margin-top: 10px; color: var(--muted-text); font-size: 11px; }
 
     .wishlistBadge {

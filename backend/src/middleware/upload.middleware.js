@@ -7,7 +7,7 @@ const portfolioStorage = multer.memoryStorage();
 const portfolioFileFilter = (_req, file, cb) => {
   const allowed = ['application/pdf', 'image/jpeg', 'image/png'];
   if (allowed.includes(file.mimetype)) cb(null, true);
-  else cb(new Error('Chỉ chấp nhận file PDF, JPG hoặc PNG'), false);
+  else cb(new Error('Only PDF, JPG, or PNG files are accepted'), false);
 };
 
 export const uploadPortfolio = multer({
@@ -19,7 +19,7 @@ export const uploadPortfolio = multer({
 const avatarFileFilter = (req, file, cb) => {
   const allowed = ['image/jpeg', 'image/png', 'image/webp'];
   if (allowed.includes(file.mimetype)) cb(null, true);
-  else cb(new Error('Chỉ chấp nhận file JPG, PNG hoặc WEBP'), false);
+  else cb(new Error('Only JPG, PNG, or WEBP files are accepted'), false);
 };
 
 export const uploadAvatar = multer({
@@ -45,7 +45,7 @@ const courseFileFilter = (_req, file, cb) => {
     'video/mp4', 'video/webm',
   ];
   if (allowed.includes(file.mimetype)) return cb(null, true);
-  cb(new Error('Chỉ chấp nhận ảnh JPG, PNG, GIF hoặc video MP4, WebM'));
+  cb(new Error('Only JPG, PNG, GIF images or MP4, WebM videos are accepted'));
 };
 export const uploadCourseMedia = multer({
   storage: portfolioStorage, // dùng chung memoryStorage với portfolio/avatar

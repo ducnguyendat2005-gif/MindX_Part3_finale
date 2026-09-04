@@ -273,7 +273,7 @@ function Header() {
             <input
               type="text"
               className={styles.searchBox}
-              placeholder={loading ? 'Đang tải...' : 'Search courses'}
+              placeholder={loading ? 'Loading...' : 'Search courses'}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => { if (searchResults.length > 0) setShowSearch(true); }}

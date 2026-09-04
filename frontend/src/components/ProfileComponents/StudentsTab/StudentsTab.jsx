@@ -196,7 +196,7 @@ export default function StudentsTab() {
                       disabled={loadingFriendStatuses || friendActionId === targetId || status === 'pending' || status === 'incoming'}
                       onClick={() => handleAddFriend(student)}
                     >
-                      {loadingFriendStatuses ? 'Đang tải...' : friendActionId === targetId ? 'Đang gửi...' : status === 'incoming' ? 'Chờ bạn phản hồi' : status === 'pending' ? 'Chờ phản hồi' : 'Add Friend'}
+                      {loadingFriendStatuses ? 'Loading...' : friendActionId === targetId ? 'Đang gửi...' : status === 'incoming' ? 'Chờ bạn phản hồi' : status === 'pending' ? 'Chờ phản hồi' : 'Add Friend'}
                       {status !== 'pending' && status !== 'incoming' && <UserPlus size={14} />}
                     </button>
                   );

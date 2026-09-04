@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children, requiredRole }) {
   // Đang trong lúc AuthContext verify/refresh session lúc app khởi động
   // -> chưa vội kết luận gì, tránh redirect nhầm trong lúc RT còn đang được dùng để refresh AT
   if (isLoading) {
-    return <div className="protected-route-loading">Đang tải...</div>;
+    return <div className="protected-route-loading">Loading...</div>;
   }
 
   if (!isAuthenticated) {
