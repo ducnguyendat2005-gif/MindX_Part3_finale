@@ -77,6 +77,7 @@
   color: #991b1b;
 }
 
+
 .admin-page--dark {
   background: #0f172a !important;
   color: #f8fafc !important;
@@ -214,6 +215,55 @@
     background: #7f1d1d !important;
     color: #fecaca !important;
   }
+  .admin-approval-card {
+  background: #111827 !important;
+  border-color: #334155 !important;
+
+  p {
+    color: #f8fafc !important;
+  }
+}
+.admin-course-detail {
+  background: #111827 !important;
+
+  p, span, td, th {
+    color: #f8fafc !important;
+  }
+
+  // các dòng phụ (giá gốc gạch ngang, mô tả ngắn, meta...) giữ tông xám nhạt
+  p[style*="color: #8893ab"],
+  p[style*="color: #39455e"] {
+    color: #cbd5e1 !important;
+  }
+
+  // border ngăn cách các vùng (header, stats row, tabs)
+  div[style*="border-bottom"] {
+    border-color: #334155 !important;
+  }
+  .admin-instructor-stat {
+  background: #1e293b !important;
+  p { color: #f8fafc !important; }
+}
+.admin-course-detail-highlight {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+  // nút đóng (×)
+  button {
+    color: #cbd5e1 !important;
+  }
+}
+
+.admin-reject-textarea {
+  background: #1e293b !important;
+  border-color: #64748b !important;
+  color: #ffffff !important;
+
+  &::placeholder {
+    color: #94a3b8 !important;
+  }
+}
 }
 
 .admin-page--light {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Check, Clock3, MessageCircle, UserPlus, X } from 'lucide-react';
+import { Check, Clock3, Copy, Gift, MessageCircle, UserPlus, X } from 'lucide-react';
 import { API, fetchWithAuth } from '../../config/api.js';
 import styles from './Header.module.scss';
 
@@ -22,6 +22,14 @@ export default function NotificationPanel({ user, isOpen, onOpenMessage, onUnrea
   const [messageNotifications, setMessageNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [actingRequestId, setActingRequestId] = useState(null);
+  const [copiedCode, setCopiedCode] = useState(null);
+  const [dismissedKeys, setDismissedKeys] = useState(() => new Set());
+
+  const dismissNotification = (event, notification) => {
+    event.stopPropagation();
+    const key = notification.notificationType + '-' + notification.id;
+    setDismissedKeys((current) => new Set(current).add(key));
+  };
 
   const loadNotifications = useCallback(async () => {
     if (!user) {
@@ -42,6 +50,7 @@ export default function NotificationPanel({ user, isOpen, onOpenMessage, onUnrea
       if (!messageRes.ok) throw new Error(messageResult.message || 'Không thể tải thông báo tin nhắn');
 
       setFriendRequests(friendResult.data || []);
+      // messageResult.data giờ đã gồm cả message/welcome/event_reward (BE gộp sẵn)
       setMessageNotifications(messageResult.data || []);
     } catch (error) {
       console.error('Could not load notifications:', error);
@@ -65,13 +74,23 @@ export default function NotificationPanel({ user, isOpen, onOpenMessage, onUnrea
     if (isOpen) loadNotifications();
   }, [isOpen, loadNotifications]);
 
+  // type từ BE: 'message' | 'welcome' | 'event_reward' → map ra notificationType để render
+  const mapNotificationType = (type) => {
+    if (type === 'welcome') return 'welcome';
+    if (type === 'event_reward') return 'reward';
+    return 'message';
+  };
+
   const notifications = useMemo(() => [
     ...friendRequests.map((request) => ({ ...request, notificationType: 'friend' })),
     ...messageNotifications.map((notification) => ({
       ...notification,
-      notificationType: notification.type === 'welcome' ? 'welcome' : 'message',
+      notificationType: mapNotificationType(notification.type),
     })),
-  ].sort((first, second) => new Date(second.createdAt) - new Date(first.createdAt)), [friendRequests, messageNotifications]);
+  ]
+    .filter((item) => !dismissedKeys.has(item.notificationType + '-' + item.id)) // THÊM MỚI
+    .sort((first, second) => new Date(second.createdAt) - new Date(first.createdAt)),
+  [friendRequests, messageNotifications, dismissedKeys]); // THÊM dismissedKeys vào deps
 
   useEffect(() => {
     onUnreadCountChange?.(notifications.length);
@@ -111,6 +130,18 @@ export default function NotificationPanel({ user, isOpen, onOpenMessage, onUnrea
     }
   };
 
+  const copyRewardCode = async (notification) => {
+    const code = notification.meta?.couponCode;
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(String(notification.id));
+      window.setTimeout(() => setCopiedCode(null), 2000);
+    } catch (error) {
+      console.error('Could not copy coupon code:', error);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -118,7 +149,7 @@ export default function NotificationPanel({ user, isOpen, onOpenMessage, onUnrea
       <div className={styles.notificationHeader}>
         <div>
           <h2>Thông báo</h2>
-          <p>Lời mời kết bạn và tin nhắn mới</p>
+          <p>Lời mời kết bạn, tin nhắn và phần thưởng mới</p>
         </div>
       </div>
 
@@ -137,8 +168,11 @@ export default function NotificationPanel({ user, isOpen, onOpenMessage, onUnrea
           notifications.map((notification) => {
             const isFriendRequest = notification.notificationType === 'friend';
             const isWelcome = notification.notificationType === 'welcome';
+            const isReward = notification.notificationType === 'reward';
             const isMessage = notification.notificationType === 'message';
             const isActing = actingRequestId === String(notification.id);
+            const isCopied = copiedCode === String(notification.id);
+
             return (
               <article
                 key={notification.notificationType + '-' + notification.id}
@@ -160,13 +194,26 @@ export default function NotificationPanel({ user, isOpen, onOpenMessage, onUnrea
                   }
                 }}
               >
-                <div className={styles.notificationIcon + ' ' + (isFriendRequest ? styles.friendIcon : styles.messageIcon)}>
-                  {isFriendRequest ? <UserPlus size={17} /> : <MessageCircle size={17} />}
+                <div className={
+                  styles.notificationIcon + ' ' +
+                  (isFriendRequest ? styles.friendIcon : isReward ? styles.rewardIcon : styles.messageIcon)
+                }>
+                  {isFriendRequest ? <UserPlus size={17} /> : isReward ? <Gift size={17} /> : <MessageCircle size={17} />}
                 </div>
                 <div className={styles.notificationContent}>
                   <div className={styles.notificationItemTopline}>
-                    <strong>{isFriendRequest ? 'Lời mời kết bạn' : isWelcome ? 'Chào mừng' : 'Tin nhắn mới'}</strong>
+                    <strong>
+                      {isFriendRequest ? 'Lời mời kết bạn' : isWelcome ? 'Chào mừng' : isReward ? 'Trúng thưởng sự kiện' : 'Tin nhắn mới'}
+                    </strong>
                     <span className={styles.unreadDot} aria-label="Unread" />
+                    <button
+                      type="button"
+                      className={styles.dismissBtn}
+                      aria-label="Delete thông báo"
+                      onClick={(event) => dismissNotification(event, notification)}
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
                   <p className={styles.notificationMessage}>{notification.message}</p>
                   <div className={styles.notificationMeta}>
@@ -199,6 +246,21 @@ export default function NotificationPanel({ user, isOpen, onOpenMessage, onUnrea
                         }}
                       >
                         <X size={14} /> Từ chối
+                      </button>
+                    </div>
+                  )}
+
+                  {isReward && notification.meta?.couponCode && (
+                    <div className={styles.notificationActions}>
+                      <button
+                        type="button"
+                        className={styles.copyBtn}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          copyRewardCode(notification);
+                        }}
+                      >
+                        <Copy size={14} /> {isCopied ? 'Đã sao chép!' : `Sao chép mã ${notification.meta.couponCode}`}
                       </button>
                     </div>
                   )}

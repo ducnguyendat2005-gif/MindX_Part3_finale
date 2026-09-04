@@ -21,7 +21,7 @@ const quizQuestionSchema = new mongoose.Schema({
 });
 
 const quizSchema = new mongoose.Schema({
-    title: { type: String, default: 'Kiểm tra nhanh' },
+    title: { type: String, default: 'Quick quiz' },
     passingScore: { type: Number, default: 70, min: 0, max: 100 },
     questions: { type: [quizQuestionSchema], default: [] },
 });

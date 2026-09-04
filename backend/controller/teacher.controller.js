@@ -72,7 +72,7 @@ const teacherController = {
     updateInstructorProfile : async(req,res,next) =>{
         try {
             if (req.user.role !== 'teacher') {
-            return res.status(403).json({ success: false, message: 'Chỉ giáo viên mới được sửa mục này' });
+            return res.status(403).json({ success: false, message: 'Only instructors can edit this section' });
             }
 
             await runMiddleware(req, res, uploadAvatar);
@@ -95,10 +95,10 @@ const teacherController = {
             );
 
             if (!updated) {
-                return res.status(404).json({ success: false, message: 'Không tìm thấy hồ sơ giảng viên' });
+                return res.status(404).json({ success: false, message: 'Instructor profile not found' });
             }
 
-            res.status(200).json({ success: true, data: updated, message: 'Cập nhật hồ sơ giảng viên thành công' });
+            res.status(200).json({ success: true, data: updated, message: 'Instructor profile updated successfully' });
         } catch (error) {
             next(error);
         }

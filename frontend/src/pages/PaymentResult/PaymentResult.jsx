@@ -47,13 +47,13 @@ export default function PaymentResult() {
     <div style={{ maxWidth: 480, margin: '80px auto', textAlign: 'center', padding: 24 }}>
       {status === 'success' && (
         <>
-          <h1 style={{ color: '#16a34a' }}>Thanh toán thành công!</h1>
-          <p>Khóa học đã được thêm vào tài khoản của bạn.</p>
+          <h1 style={{ color: '#16a34a' }}>Payment successful!</h1>
+          <p>Course đã được thêm vào tài khoản của bạn.</p>
         </>
       )}
       {status === 'failed' && (
         <>
-          <h1 style={{ color: '#dc2626' }}>Thanh toán thất bại</h1>
+          <h1 style={{ color: '#dc2626' }}>Payment failed</h1>
           <p>Giao dịch không thành công, vui lòng thử lại.</p>
         </>
       )}
@@ -68,7 +68,7 @@ export default function PaymentResult() {
       <div style={{ marginTop: 24 }}>
         <Link to="/mycoursespage">Xem khóa học của tôi</Link>
         {' · '}
-        <Link to="/">Về trang chủ</Link>
+        <Link to="/">Back to home</Link>
       </div>
     </div>
   );

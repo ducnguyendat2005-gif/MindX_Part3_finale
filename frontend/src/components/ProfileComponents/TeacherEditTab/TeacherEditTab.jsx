@@ -111,7 +111,7 @@ export default function TeacherEditTab({
             disabled={saving}
             type="button"
           >
-            {saving ? 'Đang lưu...' : 'Save changes'}
+            {saving ? 'Saving...' : 'Save changes'}
           </button>
         </div>
       </section>
@@ -158,7 +158,7 @@ export default function TeacherEditTab({
             disabled={savingAvatar}
             type="button"
           >
-            {savingAvatar ? 'Đang lưu...' : 'Save changes'}
+            {savingAvatar ? 'Saving...' : 'Save changes'}
           </button>
         </div>
       </section>
@@ -171,7 +171,7 @@ export default function TeacherEditTab({
         </h3>
 
         <div className={styles.profileCardField}>
-          <label>Mật khẩu hiện tại</label>
+          <label>Password hiện tại</label>
           <input
             type="password"
             placeholder="Nhập mật khẩu hiện tại"
@@ -182,7 +182,7 @@ export default function TeacherEditTab({
 
         <div className={styles.profileCardRow}>
           <div className={styles.profileCardField}>
-            <label>Mật khẩu mới</label>
+            <label>Password mới</label>
             <input
               type="password"
               placeholder="Nhập mật khẩu mới"

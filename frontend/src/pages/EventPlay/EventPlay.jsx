@@ -8,6 +8,7 @@ const PHASE = {
   LOADING: 'loading',
   ERROR: 'error',
   DISPLAY_MODE: 'display_mode',
+  ALREADY_PLAYED: 'already_played', 
   QUESTION: 'question',
   ANSWERED: 'answered',
   DONE: 'done',
@@ -50,13 +51,39 @@ function EventPlay() {
   const startedAtRef = useRef(null);
   const timerRef = useRef(null);
   const submittedRef = useRef(false); // chặn double-submit (vd: auto-submit matching + bấm nút cùng lúc)
+  const [myScore, setMyScore] = useState(null); // THÊM MỚI
+
+useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetchWithAuth(API.eventById(eventId));
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.message || 'Could not load event');
+        setEvent(body.data);
+
+        // THÊM MỚI — kiểm tra đã chơi chưa trước khi cho vào DISPLAY_MODE
+        const scoreRes = await fetchWithAuth(API.myEventScore(eventId));
+        const scoreBody = await scoreRes.json();
+        if (scoreRes.ok && scoreBody.data.hasPlayed) {
+          setMyScore(scoreBody.data);
+          setPhase(PHASE.ALREADY_PLAYED);
+          return;
+        }
+
+        setPhase(PHASE.DISPLAY_MODE);
+      } catch (err) {
+        setErrorMsg(err.message);
+        setPhase(PHASE.ERROR);
+      }
+    })();
+  }, [eventId]);
 
   useEffect(() => {
     (async () => {
       try {
         const res = await fetchWithAuth(API.eventById(eventId));
         const body = await res.json();
-        if (!res.ok) throw new Error(body.message || 'Không tải được sự kiện');
+        if (!res.ok) throw new Error(body.message || 'Could not load event');
         setEvent(body.data);
         setPhase(PHASE.DISPLAY_MODE);
       } catch (err) {
@@ -112,7 +139,7 @@ function EventPlay() {
       });
       const body = await res.json();
       if (!res.ok && body.code !== undefined && res.status !== 409) {
-        throw new Error(body.message || 'Không lưu được lựa chọn hiển thị');
+        throw new Error(body.message || 'Could not save display preference');
       }
       startQuestion(0);
     } catch (err) {
@@ -158,7 +185,7 @@ function EventPlay() {
           goNext();
           return;
         }
-        throw new Error(resBody.message || 'Không nộp được câu trả lời');
+        throw new Error(resBody.message || 'Could not submit answer');
       }
 
       setLastResult(resBody.data);
@@ -226,7 +253,7 @@ function EventPlay() {
 
   useEffect(() => () => clearInterval(timerRef.current), []);
 
-  if (phase === PHASE.LOADING) return <div className={styles.state}>Đang tải sự kiện...</div>;
+  if (phase === PHASE.LOADING) return <div className={styles.state}>Loading event...</div>;
   if (phase === PHASE.ERROR) return <div className={`${styles.state} ${styles.stateError}`}>{errorMsg}</div>;
 
   let phaseContent = null;
@@ -236,13 +263,13 @@ function EventPlay() {
       <div className={styles.modeCard}>
         <span className={styles.eyebrow}>{event.title}</span>
         <h2>Bạn muốn hiển thị tên thế nào trên bảng xếp hạng?</h2>
-        <p className={styles.hint}>Lựa chọn này sẽ được khóa sau khi bạn bắt đầu chơi.</p>
+        <p className={styles.hint}>Option này sẽ được khóa sau khi bạn bắt đầu chơi.</p>
 
         <div className={styles.modeOptions}>
           {[
-            { value: 'realname', label: 'Tên tài khoản' },
-            { value: 'nickname', label: 'Biệt danh' },
-            { value: 'anonymous', label: 'Ẩn danh' },
+            { value: 'realname', label: 'Account name' },
+            { value: 'nickname', label: 'Nickname' },
+            { value: 'anonymous', label: 'Anonymous' },
           ].map((opt) => (
             <button
               key={opt.value}
@@ -258,7 +285,7 @@ function EventPlay() {
         {displayMode === 'nickname' && (
           <input
             className={styles.nicknameInput}
-            placeholder="Nhập biệt danh của bạn"
+            placeholder="Enter your nickname"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             maxLength={24}
@@ -270,7 +297,7 @@ function EventPlay() {
           onClick={handleConfirmDisplayMode}
           disabled={displayMode === 'nickname' && !nickname.trim()}
         >
-          Bắt đầu chơi
+          Start chơi
         </button>
       </div>
     );
@@ -281,7 +308,7 @@ function EventPlay() {
     const header = (
       <>
         <div className={styles.playHeader}>
-          <span>Câu {qIndex + 1}/{event.questions.length}</span>
+          <span>Question {qIndex + 1}/{event.questions.length}</span>
           <span className={styles.sessionScore}>{sessionScore} đ</span>
         </div>
         <div className={styles.timerTrack}>
@@ -341,7 +368,7 @@ function EventPlay() {
               onClick={() => submitCurrentAnswer()}
               disabled={filledCount !== totalLen}
             >
-              Nộp đáp án
+              Submit answer
             </button>
           </div>
         </>
@@ -427,21 +454,29 @@ function EventPlay() {
     phaseContent = (
       <div className={styles.resultCard} data-correct={lastResult.isCorrect}>
         <span className={styles.resultIcon}>{lastResult.isCorrect ? '✓' : '✕'}</span>
-        <h2>{lastResult.isCorrect ? 'Chính xác!' : 'Chưa đúng'}</h2>
+        <h2>{lastResult.isCorrect ? 'Correct!' : 'Incorrect'}</h2>
         <p>+{lastResult.pointsEarned} điểm{lastResult.currentStreak > 1 ? ` · Streak x${lastResult.currentStreak}` : ''}</p>
         <button className={styles.primaryBtn} onClick={goNext}>
-          {qIndex + 1 >= event.questions.length ? 'Xem kết quả' : 'Câu tiếp theo'}
+          {qIndex + 1 >= event.questions.length ? 'Xem results' : 'Question tiếp theo'}
         </button>
       </div>
     );
   } else if (phase === PHASE.DONE) {
     phaseContent = (
       <div className={styles.doneCard}>
-        <span className={styles.eyebrow}>Hoàn thành</span>
+        <span className={styles.eyebrow}>Complete</span>
         <h2>Bạn ghi được {sessionScore} điểm trong lượt này</h2>
-        <Link to="/events" className={styles.secondaryBtn}>← Về danh sách sự kiện</Link>
+        <Link to="/events" className={styles.secondaryBtn}>← Back to events</Link>
       </div>
     );
+  } else if (phase === PHASE.ALREADY_PLAYED) {
+      phaseContent = (
+        <div className={styles.doneCard}>
+          <span className={styles.eyebrow}>Đã hoàn thành</span>
+          <h2>Bạn đã chơi sự kiện này rồi — {myScore.totalScore} điểm</h2>
+          <Link to="/events" className={styles.secondaryBtn}>← Back to events</Link>
+        </div>
+      );
   }
 
   return (

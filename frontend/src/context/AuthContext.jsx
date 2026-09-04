@@ -6,7 +6,7 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   // isLoading = đang trong quá trình verify/refresh AT lúc khởi động app
-  // isAuthenticated = kết quả sau khi verify xong (chỉ đáng tin khi isLoading === false)
+  // isAuthenticated = results sau khi verify xong (chỉ đáng tin khi isLoading === false)
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 

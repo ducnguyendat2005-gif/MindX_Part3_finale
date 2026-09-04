@@ -211,22 +211,22 @@ const accountController = {
         try {
             const { isActive } = req.body;
             if (typeof isActive !== 'boolean') {
-                return res.status(400).json({ success: false, message: 'Trạng thái tài khoản không hợp lệ' });
+                return res.status(400).json({ success: false, message: 'Invalid account status' });
             }
 
             const account = await AccountModel.findById(req.params.id);
             if (!account) {
-                return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+                return res.status(404).json({ success: false, message: 'Account not found' });
             }
 
             const normalizedUsername = String(account.Username || '').replace(/^@/, '').toLowerCase();
             if (normalizedUsername === 'hoado') {
-                return res.status(403).json({ success: false, message: 'Không thể thay đổi trạng thái tài khoản quản trị' });
+                return res.status(403).json({ success: false, message: 'The administrator account status cannot be changed' });
             }
 
             account.isActive = isActive;
             await account.save();
-            res.status(200).json({ success: true, data: account, message: 'Cập nhật trạng thái thành công' });
+            res.status(200).json({ success: true, data: account, message: 'Account status updated successfully' });
         } catch (error) {
             next(error);
         }
@@ -313,9 +313,9 @@ const accountController = {
             );
 
             if (!updated) {
-                return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+                return res.status(404).json({ success: false, message: 'Account not found' });
             }
-            res.status(200).json({ success: true, data: updated, message: 'Cập nhật thành công' });
+            res.status(200).json({ success: true, data: updated, message: 'Updated successfully' });
         } catch (error) {
             next(error);
         }
@@ -340,7 +340,7 @@ const accountController = {
                 { new: true, runValidators: true }
             )
             console.log(prePass);
-            res.status(200).json({ success: true, data: updated, message: 'Cập nhật thành công' });
+            res.status(200).json({ success: true, data: updated, message: 'Updated successfully' });
         }
         catch(error){
             next(error)

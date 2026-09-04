@@ -17,7 +17,7 @@ export const errorHandler = (err, req, res, next) => {
             message: [
                 duplicateUsername ? usernameMessage : '',
                 duplicateEmail ? emailMessage : '',
-            ].filter(Boolean).join(' và '),
+            ].filter(Boolean).join(' and '),
         });
     }
 

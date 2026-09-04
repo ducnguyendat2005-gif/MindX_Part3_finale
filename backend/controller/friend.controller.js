@@ -5,10 +5,10 @@ import FriendRequestModel from '../model/friendRequest.js';
 const publicAccountFields = 'Fname Lname Username role avatar';
 
 const getDisplayName = (account) => {
-    if (!account) return 'Người dùng';
+    if (!account) return 'User';
     return [account.Fname, account.Lname].filter(Boolean).join(' ').trim()
         || account.Username
-        || 'Người dùng';
+        || 'User';
 };
 
 const getCurrentAccount = async (id) => AccountModel.findOne({
@@ -64,7 +64,7 @@ const friendController = {
                     actorName: senderName,
                     actorRole: sender?.role,
                     actorAvatar: sender?.avatar,
-                    message: `${senderName} muốn add friend bạn`,
+                    message: `${senderName} wants to add you as a friend`,
                     createdAt: request.createdAt,
                     type: 'friend_request',
                     status: request.status,
@@ -81,7 +81,7 @@ const friendController = {
         try {
             const { recipientId } = req.body;
             if (!mongoose.Types.ObjectId.isValid(recipientId)) {
-                return res.status(400).json({ success: false, message: 'Tài khoản nhận không hợp lệ' });
+                return res.status(400).json({ success: false, message: 'Invalid recipient account' });
             }
 
             const requester = await getCurrentAccount(req.user._id);
@@ -92,10 +92,10 @@ const friendController = {
             }).select(publicAccountFields).lean();
 
             if (!requester || !recipient) {
-                return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+                return res.status(404).json({ success: false, message: 'Account not found' });
             }
             if (String(requester._id) === String(recipient._id)) {
-                return res.status(400).json({ success: false, message: 'Không thể add friend với chính mình' });
+                return res.status(400).json({ success: false, message: 'You cannot add yourself as a friend' });
             }
 
             const existingRequest = await FriendRequestModel.findOne({
@@ -106,10 +106,10 @@ const friendController = {
             }).sort({ createdAt: -1 });
 
             if (existingRequest?.status === 'accepted') {
-                return res.status(409).json({ success: false, message: 'Hai tài khoản đã là bạn bè' });
+                return res.status(409).json({ success: false, message: 'These accounts are already friends' });
             }
             if (existingRequest?.status === 'pending') {
-                return res.status(409).json({ success: false, message: 'Lời mời kết bạn đang chờ phản hồi' });
+                return res.status(409).json({ success: false, message: 'A friend request is already pending' });
             }
 
             const request = existingRequest || new FriendRequestModel();
@@ -121,7 +121,7 @@ const friendController = {
             res.status(201).json({
                 data: { id: request._id, status: request.status, recipientId: recipient._id },
                 success: true,
-                message: 'Đã gửi lời mời kết bạn',
+                message: 'Friend request sent successfully',
             });
         } catch (error) {
             next(error);
@@ -132,10 +132,10 @@ const friendController = {
         try {
             const { action } = req.body;
             if (!['accept', 'reject'].includes(action)) {
-                return res.status(400).json({ success: false, message: 'Thao tác không hợp lệ' });
+                return res.status(400).json({ success: false, message: 'Invalid action' });
             }
             if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-                return res.status(400).json({ success: false, message: 'Lời mời kết bạn không hợp lệ' });
+                return res.status(400).json({ success: false, message: 'Invalid friend request' });
             }
 
             const request = await FriendRequestModel.findOne({
@@ -144,7 +144,7 @@ const friendController = {
                 status: 'pending',
             });
             if (!request) {
-                return res.status(404).json({ success: false, message: 'Lời mời kết bạn không còn tồn tại' });
+                return res.status(404).json({ success: false, message: 'Friend request no longer exists' });
             }
 
             request.status = action === 'accept' ? 'accepted' : 'rejected';
@@ -153,7 +153,7 @@ const friendController = {
             res.status(200).json({
                 data: { id: request._id, status: request.status, userId: request.requesterId },
                 success: true,
-                message: action === 'accept' ? 'Đã chấp nhận lời mời kết bạn' : 'Đã từ chối lời mời kết bạn',
+                message: action === 'accept' ? 'Friend request accepted' : 'Friend request declined',
             });
         } catch (error) {
             next(error);

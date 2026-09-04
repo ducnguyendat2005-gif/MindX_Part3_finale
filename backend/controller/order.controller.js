@@ -19,14 +19,14 @@ const getSalePrice = (course) => {
 // Tính subtotal/discount/total dùng chung cho cả MoMo & VNPay (tránh lặp code)
 const buildOrderData = async (courseIds, couponCode) => {
   if (!Array.isArray(courseIds) || courseIds.length === 0) {
-    const err = new Error('Giỏ hàng trống');
+    const err = new Error('Cart is empty');
     err.status = 400;
     throw err;
   }
 
   const courses = await CourseModel.find({ _id: { $in: courseIds } });
   if (courses.length !== courseIds.length) {
-    const err = new Error('Có khóa học không tồn tại');
+    const err = new Error('One or more courses do not exist');
     err.status = 400;
     throw err;
   }
@@ -45,18 +45,18 @@ const buildOrderData = async (courseIds, couponCode) => {
   if (couponCode) {
     const coup = await CouponModel.findOne({ code: couponCode, isActive: true });
     if (!coup) {
-      const err = new Error('Mã giảm giá không hợp lệ');
+      const err = new Error('Invalid coupon code');
       err.status = 400;
       throw err;
     }
     const now = new Date();
     if (coup.expiresAt && coup.expiresAt < now) {
-      const err = new Error('Mã đã hết hạn');
+      const err = new Error('Coupon has expired');
       err.status = 400;
       throw err;
     }
     if (coup.maxUses !== null && coup.usedCount >= coup.maxUses) {
-      const err = new Error('Mã đã hết lượt dùng');
+      const err = new Error('Coupon usage limit has been reached');
       err.status = 400;
       throw err;
     }
@@ -119,7 +119,7 @@ const createMomoOrder = async (req, res, next) => {
     if (momoRes.resultCode !== 0) {
       order.status = 'failed';
       await order.save();
-      return res.status(400).json({ message: momoRes.message || 'Tạo giao dịch MoMo thất bại', success: false });
+      return res.status(400).json({ message: momoRes.message || 'Failed to create MoMo payment', success: false });
     }
 
     order.providerOrderId = momoRes.requestId;
@@ -127,7 +127,7 @@ const createMomoOrder = async (req, res, next) => {
 
     res.json({
       data: { payUrl: momoRes.payUrl, orderId: order._id },
-      message: 'Tạo giao dịch MoMo thành công',
+      message: 'MoMo payment created successfully',
       success: true,
     });
   } catch (err) {
@@ -200,7 +200,7 @@ const createVnpayOrder = async (req, res, next) => {
 
     res.json({
       data: { payUrl, orderId: order._id },
-      message: 'Tạo giao dịch VNPay thành công',
+      message: 'VNPay payment created successfully',
       success: true,
     });
   } catch (err) {

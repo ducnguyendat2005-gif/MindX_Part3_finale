@@ -19,21 +19,21 @@ function EventLeaderboard({ eventId, highlightRefreshKey }) {
     })();
   }, [eventId, highlightRefreshKey]);
 
-  if (loading) return <div className={styles.loading}>Đang tải bảng xếp hạng...</div>;
+  if (loading) return <div className={styles.loading}>Loading leaderboard...</div>;
 
   const medal = (rank) => (rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null);
 
   return (
     <div className={styles.board}>
       <div className={styles.header}>
-        <h3 className={styles.title}>Bảng xếp hạng</h3>
-        <span className={styles.subtitle}>{rows.length} người tham gia</span>
+        <h3 className={styles.title}>Leaderboard</h3>
+        <span className={styles.subtitle}>{rows.length} participants</span>
       </div>
 
       {rows.length === 0 ? (
         <div className={styles.emptyWrap}>
           <span className={styles.emptyIcon}>🏆</span>
-          <p className={styles.empty}>Chưa có ai ghi điểm. Hãy là người đầu tiên!</p>
+          <p className={styles.empty}>No scores yet. Be the first!</p>
         </div>
       ) : (
         <ol className={styles.list}>

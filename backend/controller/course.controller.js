@@ -65,7 +65,7 @@ const buildQuizFromInput = (quizInput, existingQuiz = null) => {
 
     const passingScore = Number(quizInput.passingScore);
     const quizDoc = {
-        title: String(quizInput.title || '').trim() || 'Kiểm tra nhanh',
+        title: String(quizInput.title || '').trim() || 'Quick quiz',
         passingScore: Number.isFinite(passingScore) && passingScore >= 0 && passingScore <= 100 ? passingScore : 70,
         questions,
     };
@@ -82,20 +82,20 @@ const courseController = {
             const curriculum = Array.isArray(data.curriculum) ? data.curriculum : [];
 
             if (!title) {
-                return res.status(400).json({ message: 'Tên khóa học là bắt buộc', success: false });
+                return res.status(400).json({ message: 'Course title is required', success: false });
             }
             if (!Number.isFinite(price) || price < 0) {
-                return res.status(400).json({ message: 'Giá khóa học không hợp lệ', success: false });
+                return res.status(400).json({ message: 'Invalid course price', success: false });
             }
 
             const instructor = await InstructorModel.findOne({ accountId: req.user._id });
             if (!instructor) {
-                return res.status(400).json({ message: 'Tài khoản chưa có hồ sơ giáo viên', success: false });
+                return res.status(400).json({ message: 'Account does not have an instructor profile', success: false });
             }
 
             if (status === 'pending') {
                 if (!String(data.overview || '').trim()) {
-                    return res.status(400).json({ message: 'Vui lòng nhập phần giới thiệu khóa học', success: false });
+                    return res.status(400).json({ message: 'Please provide a course introduction', success: false });
                 }
                 if (!curriculum.length || curriculum.some((section) => (
                     !String(section.title || '').trim() ||
@@ -103,13 +103,13 @@ const courseController = {
                     !section.lessons.length ||
                     section.lessons.some((lesson) => !String(lesson.title || '').trim())
                 ))) {
-                    return res.status(400).json({ message: 'Mỗi phần phải có tên và ít nhất một bài học có tên', success: false });
+                    return res.status(400).json({ message: 'Each section must have a title and at least one titled lesson', success: false });
                 }
             }
             if (data.promotionalPrice !== undefined && data.promotionalPrice !== null) {
                 const promoPrice = Number(data.promotionalPrice);
                 if (!Number.isFinite(promoPrice) || promoPrice < 0 || promoPrice >= price) {
-                    return res.status(400).json({ message: 'Giá khuyến mãi không hợp lệ', success: false });
+                    return res.status(400).json({ message: 'Invalid sale price', success: false });
                 }
             }
 
@@ -198,7 +198,7 @@ const courseController = {
 
             const result = await CourseModel.findById(created._id)
                 .populate('instructorId', 'name title bio totalStudents totalCourses totalReviews thumbnail');
-            res.status(201).json({ data: result, message: 'Tạo khóa học thành công', success: true });
+            res.status(201).json({ data: result, message: 'Course created successfully', success: true });
         } catch (error) {
             next(error);
         }
@@ -211,9 +211,9 @@ const courseController = {
             const price = Number(data.price ?? 0);
             const curriculum = Array.isArray(data.curriculum) ? data.curriculum : [];
 
-            if (!title) return res.status(400).json({ message: 'Tên khóa học là bắt buộc', success: false });
+            if (!title) return res.status(400).json({ message: 'Course title is required', success: false });
             if (!Number.isFinite(price) || price < 0) {
-                return res.status(400).json({ message: 'Giá khóa học không hợp lệ', success: false });
+                return res.status(400).json({ message: 'Invalid course price', success: false });
             }
             if (status === 'pending' && (!String(data.overview || '').trim() || !curriculum.length || curriculum.some((section) => (
                 !String(section.title || '').trim() ||
@@ -221,7 +221,7 @@ const courseController = {
                 !section.lessons.length ||
                 section.lessons.some((lesson) => !String(lesson.title || '').trim())
             )))) {
-                return res.status(400).json({ message: 'Vui lòng hoàn thiện phần giới thiệu và nội dung bài học', success: false });
+                return res.status(400).json({ message: 'Please complete the introduction and lesson content', success: false });
             }
 
             const instructor = await InstructorModel.findOne({ accountId: req.user._id });
@@ -319,7 +319,7 @@ const courseController = {
 
             const result = await CourseModel.findById(course._id)
                 .populate('instructorId', 'name title bio totalStudents totalCourses totalReviews thumbnail');
-            res.status(200).json({ data: result, message: 'Cập nhật khóa học thành công', success: true });
+            res.status(200).json({ data: result, message: 'Course updated successfully', success: true });
         } catch (error) {
             next(error);
         }
@@ -402,7 +402,7 @@ const courseController = {
             // (optional) kiểm tra user đã enroll course này chưa mới cho review
             
             const enrolled = await EnrollmentModel.findOne({ accountId, courseId });
-            if (!enrolled) return res.status(403).json({ message: 'Bạn cần mua khóa học trước khi review', success: false });
+            if (!enrolled) return res.status(403).json({ message: 'You need to purchase this course before reviewing it', success: false });
 
             const account = await AccountModel.findById(accountId);
             const displayName = account.Username;
@@ -474,7 +474,7 @@ const courseController = {
 
             const enrollment = await EnrollmentModel.findOne({ accountId, courseId }).lean();
             if (!enrollment) {
-                return res.status(404).json({ message: 'Chưa mua khóa học này', success: false });
+                return res.status(404).json({ message: 'You have not purchased this course', success: false });
             }
 
             const course = await CourseModel.findById(courseId).select('syllabus').lean();
@@ -504,7 +504,7 @@ const courseController = {
             const accountId = req.user._id;
 
             if (!lessonId) {
-                return res.status(400).json({ message: 'Thiếu lessonId', success: false });
+                return res.status(400).json({ message: 'lessonId is required', success: false });
             }
 
             const enrollment = await EnrollmentModel.findOneAndUpdate(
@@ -517,10 +517,10 @@ const courseController = {
             );
 
             if (!enrollment) {
-                return res.status(404).json({ message: 'Chưa mua khóa học này', success: false });
+                return res.status(404).json({ message: 'You have not purchased this course', success: false });
             }
 
-            res.status(200).json({ data: enrollment, message: 'Cập nhật tiến trình thành công', success: true });
+            res.status(200).json({ data: enrollment, message: 'Progress updated successfully', success: true });
         } catch (error) {
             next(error);
         }
@@ -532,17 +532,17 @@ const courseController = {
             const accountId = req.user._id;
 
             if (!sectionId || !Array.isArray(answers)) {
-                throw badRequest('Thiếu sectionId hoặc answers');
+                throw badRequest('sectionId or answers is required');
             }
 
             const enrollment = await EnrollmentModel.findOne({ accountId, courseId });
-            if (!enrollment) throw notFound('Chưa mua khóa học này');
+            if (!enrollment) throw notFound('You have not purchased this course');
 
             const course = await CourseModel.findById(courseId).select('syllabus').lean();
             const section = course?.syllabus.find((s) => String(s._id) === String(sectionId));
             const quiz = section?.quiz;
 
-            if (!quiz || !quiz.questions.length) throw notFound('Section này không có quiz');
+            if (!quiz || !quiz.questions.length) throw notFound('This section does not have a quiz');
 
             let correctCount = 0;
             quiz.questions.forEach((q, i) => {

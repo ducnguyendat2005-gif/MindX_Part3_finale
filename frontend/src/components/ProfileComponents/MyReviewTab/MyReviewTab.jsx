@@ -42,7 +42,7 @@ export default function MyReviewsTab() {
     return () => { ignore = true; };
   }, []);
 
-  // ── Bắt đầu edit ──
+  // ── Start edit ──
   const handleStartEdit = (review) => {
     setEditingId(review._id);
     setEditForm({ rating: review.rating, comment: review.comment });
@@ -81,7 +81,7 @@ export default function MyReviewsTab() {
       setSaving(false);
     }
   };
-  // ── Xóa review ──
+  // ── Delete review ──
 
   const handleConfirmDelete = async () => {
     const reviewId = deleteConfirmId;
@@ -92,7 +92,7 @@ export default function MyReviewsTab() {
       });
       const body = await res.json();
 
-      if (!res.ok) throw new Error(body.message || 'Xóa thất bại');
+      if (!res.ok) throw new Error(body.message || 'Delete thất bại');
 
       setReviews((prev) => prev.filter((r) => r._id !== reviewId));
     } catch (err) {
@@ -270,7 +270,7 @@ export default function MyReviewsTab() {
       {deleteConfirmId && (
         <div className="confirm-modal-overlay" onClick={() => setDeleteConfirmId(null)}>
           <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <h3 className="confirm-modal__title">Xóa review</h3>
+            <h3 className="confirm-modal__title">Delete review</h3>
             <p className="confirm-modal__message">
               Bạn có chắc muốn xóa review này? Hành động này không thể hoàn tác.
             </p>
@@ -287,7 +287,7 @@ export default function MyReviewsTab() {
                 onClick={handleConfirmDelete}
                 disabled={deleting}
               >
-                {deleting ? 'Đang xóa...' : 'Xóa'}
+                {deleting ? 'Đang xóa...' : 'Delete'}
               </button>
             </div>
           </div>

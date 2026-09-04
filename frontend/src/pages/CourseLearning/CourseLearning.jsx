@@ -171,7 +171,7 @@ const QuizIcon = () => (
 
 function Lesson({ lesson, isActive, isCompleted, isLocked, onSelect }) {
   const handleClick = () => {
-    if (isLocked) return; // không cho chọn lesson chưa mở khóa
+    if (isLocked) return; // không cho chọn lesson chưa unlock
     onSelect(lesson);
   };
 
@@ -364,7 +364,7 @@ function QuizModal({ section, courseId, onClose, onPassed }) {
 
   const handleSubmit = async () => {
     if (answers.some((a) => a === null)) {
-      setError('Vui lòng trả lời tất cả câu hỏi.');
+      setError('Please answer all questions.');
       return;
     }
     setSubmitting(true);
@@ -376,13 +376,13 @@ function QuizModal({ section, courseId, onClose, onPassed }) {
       });
       const body = await res.json();
       if (!res.ok) {
-        setError(body.message || 'Nộp bài thất bại');
+        setError(body.message || 'Failed to submit quiz');
         return;
       }
       setResult(body.data);
       if (body.data.passed) onPassed?.();
     } catch (err) {
-      setError('Không kết nối được server');
+      setError('Could not connect to the server');
     } finally {
       setSubmitting(false);
     }
@@ -432,7 +432,7 @@ function QuizModal({ section, courseId, onClose, onPassed }) {
               disabled={submitting}
               className={styles.quizSubmitBtn}
             >
-              {submitting ? 'Đang nộp...' : 'Nộp bài'}
+              {submitting ? 'Submitting...' : 'Submit quiz'}
             </button>
           </>
         ) : (
@@ -451,7 +451,7 @@ function QuizModal({ section, courseId, onClose, onPassed }) {
                   Bạn chọn: {r.options[r.selectedIndex]}
                 </p>
                 {r.selectedIndex !== r.correctIndex && (
-                  <p className={styles.quizAnswerCorrect}>Đáp án đúng: {r.options[r.correctIndex]}</p>
+                  <p className={styles.quizAnswerCorrect}>Correct answer: {r.options[r.correctIndex]}</p>
                 )}
                 {r.explanation && <p className={styles.quizExplanation}>{r.explanation}</p>}
               </div>
@@ -460,11 +460,11 @@ function QuizModal({ section, courseId, onClose, onPassed }) {
             <div className={styles.quizActions}>
               {result.passed ? (
                 <button onClick={onClose} className={styles.quizContinueBtn}>
-                  Tiếp tục học
+                  Continue learning
                 </button>
               ) : (
                 <button onClick={handleRetry} className={styles.quizRetryBtn}>
-                  Làm lại
+                  Try again
                 </button>
               )}
             </div>
@@ -848,17 +848,17 @@ export default function CourseLearning() {
     setActiveQuiz(null);
   };
 
-  // THÊM MỚI — được gọi khi học viên bấm vào quiz row trong sidebar
+  // THÊM MỚI — được gọi khi students bấm vào quiz row trong sidebar
   const handleSelectQuiz = (section) => {
     setActiveQuiz({ section });
   };
 
-  // THÊM MỚI — cập nhật quizAttempts ngay khi pass (optimistic), để sidebar mở khóa mà không cần load lại trang
+  // THÊM MỚI — cập nhật quizAttempts ngay khi pass (optimistic), để sidebar unlock mà không cần load lại trang
   const handleQuizPassed = (sectionId) => {
     setQuizAttempts(prev => [...prev, { sectionId, passed: true, score: 100 }]);
   };
-  if (loading) return <p style={{ padding: "2rem", color: "#94a3b8" }}>Đang tải...</p>;
-  if (!course) return <p style={{ padding: "2rem", color: "#94a3b8" }}>Không tìm thấy dữ liệu khoá học.</p>;
+  if (loading) return <p style={{ padding: "2rem", color: "#94a3b8" }}>Loading...</p>;
+  if (!course) return <p style={{ padding: "2rem", color: "#94a3b8" }}>Course data not found.</p>;
 
   // Shortcut — course đã flatten, không còn field "details" lồng nữa
   const instructor = course.instructorId ?? {};
@@ -908,7 +908,7 @@ export default function CourseLearning() {
                 src={activeLesson?.videoUrl || course.promotionalVideo || vid}
                 type={activeLesson?.videoUrl?.endsWith('.webm') ? 'video/webm' : 'video/mp4'}
               />
-              Trình duyệt của bạn không hỗ trợ thẻ video.
+              Your browser does not support the video tag.
             </video>
           </div>
 

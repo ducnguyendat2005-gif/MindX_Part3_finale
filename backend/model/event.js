@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 // Một "câu hỏi" (question) giờ là 1 đơn vị chơi chung cho cả 3 loại game.
 // Field nào không dùng tới với gameType hiện tại thì cứ để trống — validate
 // "đúng đủ field theo gameType" được xử lý ở buildEventQuestions.js (backend)
-// và validateForm (frontend), KHÔNG ép cứng required ở schema để tránh xung đột
+// and validateForm (frontend), KHÔNG ép cứng required ở schema để tránh xung đột
 // giữa 3 loại game dùng chung 1 schema.
 const eventQuestionSchema = new mongoose.Schema({
     basePoints: { type: Number, default: 100 },
@@ -52,6 +52,11 @@ const eventSchema = new mongoose.Schema({
         streakBonusPerDay: { type: Number, default: 0.05 },
         streakMultiplierCap: { type: Number, default: 1.5 },
     },
+
+    // THÊM MỚI — đánh dấu đã phát thưởng top 3 chưa, tránh cron job phát trùng
+    // mỗi lần chạy. Chỉ được set true bởi eventRewardJob, không expose cho
+    // client/admin chỉnh tay.
+    rewardsDistributed: { type: Boolean, default: false },
 }, { timestamps: true });
 
 eventSchema.methods.getComputedStatus = function () {

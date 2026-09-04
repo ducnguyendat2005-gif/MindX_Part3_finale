@@ -60,7 +60,7 @@ $transition-default: 200ms ease;
     flex: 1;
   }
 
-  // Trạng thái loading / error — dùng khi fetch API
+  // Status loading / error — dùng khi fetch API
   &--state {
     display: flex;
     align-items: center;

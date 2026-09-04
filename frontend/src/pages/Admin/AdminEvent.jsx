@@ -3,9 +3,9 @@ import { API, fetchWithAuth } from '../../config/api.js';
 import styles from './AdminEvent.module.scss';
 
 const GAME_TYPE_OPTIONS = [
-  { value: 'quiz', label: 'Quiz trắc nghiệm' },
-  { value: 'unscramble', label: 'Xáo chữ (Unscramble)' },
-  { value: 'matching', label: 'Nối cặp (Matching pairs)' },
+  { value: 'quiz', label: 'Multiple-choice quiz' },
+  { value: 'unscramble', label: 'Unscramble' },
+  { value: 'matching', label: 'Matching pairs' },
 ];
 
 const emptyQuestion = (gameType) => {
@@ -48,7 +48,7 @@ function getStatus(ev) {
 }
 
 function gameTypeLabel(gameType) {
-  return GAME_TYPE_OPTIONS.find((g) => g.value === gameType)?.label || 'Quiz trắc nghiệm';
+  return GAME_TYPE_OPTIONS.find((g) => g.value === gameType)?.label || 'Multiple-choice quiz';
 }
 
 function AdminEvents() {
@@ -67,7 +67,7 @@ function AdminEvents() {
     try {
       const res = await fetchWithAuth(API.adminEvents);
       const body = await res.json();
-      if (!res.ok) throw new Error(body.message || 'Không tải được danh sách sự kiện');
+      if (!res.ok) throw new Error(body.message || 'Could not load the event list');
       setEvents(body.data);
     } catch (err) {
       setError(err.message);
@@ -197,24 +197,24 @@ function AdminEvents() {
   };
 
   const validateForm = () => {
-    if (!form.title.trim()) return 'Cần nhập tiêu đề sự kiện';
-    if (!form.startDate || !form.endDate) return 'Cần chọn thời gian bắt đầu/kết thúc';
-    if (new Date(form.startDate) >= new Date(form.endDate)) return 'Thời gian bắt đầu phải trước kết thúc';
-    if (form.questions.length === 0) return 'Cần ít nhất 1 câu hỏi';
+    if (!form.title.trim()) return 'Event title is required';
+    if (!form.startDate || !form.endDate) return 'Start and end times are required';
+    if (new Date(form.startDate) >= new Date(form.endDate)) return 'The start time must be before the end time';
+    if (form.questions.length === 0) return 'At least one question is required';
 
     if (form.gameType === 'unscramble') {
       for (const [i, q] of form.questions.entries()) {
-        if (!q.word.trim()) return `Câu ${i + 1}: thiếu từ khóa (word)`;
-        if (q.word.trim().length < 2) return `Câu ${i + 1}: từ khóa cần ít nhất 2 ký tự`;
+        if (!q.word.trim()) return `Question ${i + 1}: thiếu từ khóa (word)`;
+        if (q.word.trim().length < 2) return `Question ${i + 1}: từ khóa cần ít nhất 2 ký tự`;
       }
       return '';
     }
 
     if (form.gameType === 'matching') {
       for (const [i, q] of form.questions.entries()) {
-        if (!q.pairs || q.pairs.length < 2) return `Câu ${i + 1}: cần ít nhất 2 cặp nối`;
+        if (!q.pairs || q.pairs.length < 2) return `Question ${i + 1}: cần ít nhất 2 cặp nối`;
         if (q.pairs.some((p) => !p.left.trim() || !p.right.trim())) {
-          return `Câu ${i + 1}: có cặp nối bị trống`;
+          return `Question ${i + 1}: có cặp nối bị trống`;
         }
       }
       return '';
@@ -222,9 +222,9 @@ function AdminEvents() {
 
     // quiz
     for (const [i, q] of form.questions.entries()) {
-      if (!q.questionText.trim()) return `Câu ${i + 1}: thiếu nội dung câu hỏi`;
-      if (q.options.some((o) => !o.trim())) return `Câu ${i + 1}: có lựa chọn trống`;
-      if (q.options.length < 2) return `Câu ${i + 1}: cần ít nhất 2 lựa chọn`;
+      if (!q.questionText.trim()) return `Question ${i + 1}: thiếu nội dung câu hỏi`;
+      if (q.options.some((o) => !o.trim())) return `Question ${i + 1}: có lựa chọn trống`;
+      if (q.options.length < 2) return `Question ${i + 1}: cần ít nhất 2 lựa chọn`;
     }
     return '';
   };
@@ -254,7 +254,7 @@ function AdminEvents() {
 
       const res = await fetchWithAuth(url, { method, body: JSON.stringify(payload) });
       const body = await res.json();
-      if (!res.ok) throw new Error(body.message || 'Không lưu được sự kiện');
+      if (!res.ok) throw new Error(body.message || 'Could not save the event');
 
       await loadEvents();
       closeForm();
@@ -266,11 +266,11 @@ function AdminEvents() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Xóa sự kiện này? Hành động không thể hoàn tác.')) return;
+    if (!window.confirm('Delete this event? This action cannot be undone.')) return;
     try {
       const res = await fetchWithAuth(API.adminEventById(id), { method: 'DELETE' });
       const body = await res.json();
-      if (!res.ok) throw new Error(body.message || 'Không xóa được sự kiện');
+      if (!res.ok) throw new Error(body.message || 'Could not delete the event');
       await loadEvents();
     } catch (e) {
       alert(e.message);
@@ -281,18 +281,18 @@ function AdminEvents() {
     return (
       <div className={styles.wrap}>
         <div className={styles.formHeader}>
-          <button className={styles.backBtn} onClick={closeForm}>← Quay lại</button>
-          <h2>{editingId ? 'Sửa sự kiện' : 'Tạo sự kiện mới'}</h2>
+          <button className={styles.backBtn} onClick={closeForm}>← Back</button>
+          <h2>{editingId ? 'Edit event' : 'Create event mới'}</h2>
         </div>
 
         <div className={styles.formCard}>
           <label className={styles.field}>
-            <span>Tiêu đề</span>
+            <span>Title</span>
             <input value={form.title} onChange={(e) => updateField('title', e.target.value)} />
           </label>
 
           <label className={styles.field}>
-            <span>Mô tả</span>
+            <span>Description</span>
             <textarea
               rows={2}
               value={form.description}
@@ -301,13 +301,13 @@ function AdminEvents() {
           </label>
 
           <label className={styles.field}>
-            <span>Ảnh bìa (URL)</span>
+            <span>Cover image (URL)</span>
             <input value={form.coverImage} onChange={(e) => updateField('coverImage', e.target.value)} />
           </label>
 
           <div className={styles.fieldRow}>
             <label className={styles.field}>
-              <span>Bắt đầu</span>
+              <span>Start</span>
               <input
                 type="datetime-local"
                 value={form.startDate}
@@ -315,7 +315,7 @@ function AdminEvents() {
               />
             </label>
             <label className={styles.field}>
-              <span>Kết thúc</span>
+              <span>End</span>
               <input
                 type="datetime-local"
                 value={form.endDate}
@@ -325,11 +325,11 @@ function AdminEvents() {
           </div>
 
           <div className={styles.field}>
-            <span>Loại trò chơi</span>
+            <span>Game type</span>
             {editingId ? (
               <div className={styles.gameTypeLocked}>
                 {gameTypeLabel(form.gameType)}
-                <em>Không thể đổi loại game sau khi đã tạo sự kiện</em>
+                <em>The game type cannot be changed after the event is created</em>
               </div>
             ) : (
               <div className={styles.gameTypeOptions}>
@@ -349,17 +349,17 @@ function AdminEvents() {
           </div>
 
           <div className={styles.questionsHead}>
-            <h3>Câu hỏi ({form.questions.length})</h3>
-            <button type="button" className={styles.addBtn} onClick={addQuestion}>+ Thêm câu hỏi</button>
+            <h3>Question hỏi ({form.questions.length})</h3>
+            <button type="button" className={styles.addBtn} onClick={addQuestion}>+ Add question</button>
           </div>
 
           {form.questions.map((q, qi) => (
             <div key={qi} className={styles.questionCard}>
               <div className={styles.questionCardHead}>
-                <span>Câu {qi + 1}</span>
+                <span>Question {qi + 1}</span>
                 {form.questions.length > 1 && (
                   <button type="button" className={styles.removeBtn} onClick={() => removeQuestion(qi)}>
-                    Xóa câu
+                    Delete câu
                   </button>
                 )}
               </div>
@@ -369,7 +369,7 @@ function AdminEvents() {
                 <>
                   <input
                     className={styles.questionInput}
-                    placeholder="Nội dung câu hỏi"
+                    placeholder="Question content"
                     value={q.questionText}
                     onChange={(e) => updateQuestion(qi, { questionText: e.target.value })}
                   />
@@ -382,11 +382,11 @@ function AdminEvents() {
                           name={`correct-${qi}`}
                           checked={q.correctIndex === oi}
                           onChange={() => updateQuestion(qi, { correctIndex: oi })}
-                          title="Đáp án đúng"
+                          title="Correct answer"
                         />
                         <input
                           value={opt}
-                          placeholder={`Lựa chọn ${String.fromCharCode(65 + oi)}`}
+                          placeholder={`Option ${String.fromCharCode(65 + oi)}`}
                           onChange={(e) => updateOption(qi, oi, e.target.value)}
                         />
                         {q.options.length > 2 && (
@@ -397,7 +397,7 @@ function AdminEvents() {
                       </div>
                     ))}
                     <button type="button" className={styles.addOptBtn} onClick={() => addOption(qi)}>
-                      + Thêm lựa chọn
+                      + Add option
                     </button>
                   </div>
                 </>
@@ -407,7 +407,7 @@ function AdminEvents() {
               {form.gameType === 'unscramble' && (
                 <>
                   <label className={styles.field}>
-                    <span>Từ khóa (đáp án đúng)</span>
+                    <span>Keyword (correct answer)</span>
                     <input
                       className={styles.questionInput}
                       placeholder="VD: REACT"
@@ -416,7 +416,7 @@ function AdminEvents() {
                     />
                   </label>
                   <label className={styles.field}>
-                    <span>Gợi ý (hiển thị cho người chơi)</span>
+                    <span>Hint (shown to players)</span>
                     <input
                       className={styles.questionInput}
                       placeholder="VD: Thư viện UI phổ biến của Facebook"
@@ -433,13 +433,13 @@ function AdminEvents() {
                   {q.pairs.map((p, pi) => (
                     <div key={pi} className={styles.optionRow}>
                       <input
-                        placeholder="Vế trái"
+                        placeholder="Left side"
                         value={p.left}
                         onChange={(e) => updatePair(qi, pi, 'left', e.target.value)}
                       />
                       <span className={styles.pairLink}>↔</span>
                       <input
-                        placeholder="Vế phải"
+                        placeholder="Right side"
                         value={p.right}
                         onChange={(e) => updatePair(qi, pi, 'right', e.target.value)}
                       />
@@ -451,14 +451,14 @@ function AdminEvents() {
                     </div>
                   ))}
                   <button type="button" className={styles.addOptBtn} onClick={() => addPair(qi)}>
-                    + Thêm cặp nối
+                    + Add matching pair
                   </button>
                 </div>
               )}
 
               <div className={styles.fieldRow}>
                 <label className={styles.field}>
-                  <span>Điểm gốc</span>
+                  <span>Base score</span>
                   <input
                     type="number"
                     min={0}
@@ -467,7 +467,7 @@ function AdminEvents() {
                   />
                 </label>
                 <label className={styles.field}>
-                  <span>Thời gian (giây)</span>
+                  <span>Time (seconds)</span>
                   <input
                     type="number"
                     min={5}
@@ -482,7 +482,7 @@ function AdminEvents() {
           {formError && <div className={styles.formError}>{formError}</div>}
 
           <button className={styles.submitBtn} onClick={handleSubmit} disabled={saving}>
-            {saving ? 'Đang lưu...' : editingId ? 'Lưu thay đổi' : 'Tạo sự kiện'}
+            {saving ? 'Saving...' : editingId ? 'Save changes' : 'Create event'}
           </button>
         </div>
       </div>
@@ -492,16 +492,16 @@ function AdminEvents() {
   return (
     <div className={styles.wrap}>
       <div className={styles.listHeader}>
-        <h2>Quản lý sự kiện</h2>
-        <button className={styles.addBtn} onClick={openCreate}>+ Tạo sự kiện</button>
+        <h2>Management sự kiện</h2>
+        <button className={styles.addBtn} onClick={openCreate}>+ Create event</button>
       </div>
 
-      {loading && <p className={styles.state}>Đang tải...</p>}
+      {loading && <p className={styles.state}>Loading...</p>}
       {error && <p className={`${styles.state} ${styles.stateError}`}>{error}</p>}
 
       {!loading && !error && (
         events.length === 0 ? (
-          <p className={styles.state}>Chưa có sự kiện nào. Tạo sự kiện đầu tiên.</p>
+          <p className={styles.state}>Chưa có sự kiện nào. Create event đầu tiên.</p>
         ) : (
           <div className={styles.table}>
             {events.map((ev) => {
@@ -510,7 +510,7 @@ function AdminEvents() {
                 <div key={ev._id} className={styles.row}>
                   <div className={styles.rowMain}>
                     <span className={styles.status} data-status={status}>
-                      {status === 'active' ? 'Đang diễn ra' : status === 'upcoming' ? 'Sắp diễn ra' : 'Đã kết thúc'}
+                      {status === 'active' ? 'Active' : status === 'upcoming' ? 'Upcoming' : 'Ended'}
                     </span>
                     <div>
                       <p className={styles.rowTitle}>{ev.title}</p>
@@ -524,8 +524,8 @@ function AdminEvents() {
                     </div>
                   </div>
                   <div className={styles.rowActions}>
-                    <button onClick={() => openEdit(ev)}>Sửa</button>
-                    <button className={styles.deleteBtn} onClick={() => handleDelete(ev._id)}>Xóa</button>
+                    <button onClick={() => openEdit(ev)}>Edit</button>
+                    <button className={styles.deleteBtn} onClick={() => handleDelete(ev._id)}>Delete</button>
                   </div>
                 </div>
               );

@@ -72,7 +72,7 @@ export default function MyCoursesTab({ myCourses }) {
         c.author?.toLowerCase().includes(searchText.toLowerCase());
 
       if (isTeacher) {
-        // Giáo viên: lọc theo status thay vì category/level
+        // Priceo viên: lọc theo status thay vì category/level
         const matchStatus = (c.status || 'published') === filterStatus;
         return matchSearch && matchStatus;
       }
@@ -107,7 +107,7 @@ export default function MyCoursesTab({ myCourses }) {
     draft: 'Draft Courses',
   };
 
-  if (loading) return <p style={{ padding: 24 }}>Đang tải...</p>;
+  if (loading) return <p style={{ padding: 24 }}>Loading...</p>;
   if (error) return <p style={{ padding: 24, color: 'red' }}>Lỗi: {error}</p>;
 
   return (

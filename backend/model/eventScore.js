@@ -22,6 +22,11 @@ const eventScoreSchema = new mongoose.Schema({
         default: 'realname',
     },
     nickname: { type: String, default: '', trim: true },
+
+    // THÊM MỚI — mã coupon thưởng đã cấp cho người chơi này ở event này (nếu
+    // lọt top 3 khi event kết thúc). null nghĩa là chưa được cấp / không đủ
+    // điều kiện. Chỉ được set bởi eventRewardJob.
+    rewardCouponCode: { type: String, default: null },
 }, { timestamps: true });
 
 eventScoreSchema.index({ accountId: 1, eventId: 1 }, { unique: true });

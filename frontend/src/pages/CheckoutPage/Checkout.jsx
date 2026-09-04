@@ -78,7 +78,7 @@ export default function CheckoutPage() {
       const result = await res.json().catch(() => ({}));
 
       if (!res.ok || !result.success) {
-        throw new Error(result.message || 'Mã giảm giá không hợp lệ');
+        throw new Error(result.message || 'Invalid coupon code');
       }
 
       setAppliedCoupon({
@@ -87,7 +87,7 @@ export default function CheckoutPage() {
         subtotal: result.data.subtotal,
         total: result.data.total,
       });
-      setCouponToast({ type: 'success', message: `Đã áp mã "${code}"` });
+      setCouponToast({ type: 'success', message: `Coupon "${code}" applied` });
     } catch (err) {
       setAppliedCoupon(null);
       setCouponToast({ type: 'error', message: err.message });
@@ -126,7 +126,7 @@ export default function CheckoutPage() {
       const result = await res.json().catch(() => ({}));
 
       if (!res.ok || !result.success) {
-        throw new Error(result.message || 'Tạo giao dịch thất bại');
+        throw new Error(result.message || 'Failed to create payment');
       }
 
       // Lưu lại giỏ hàng hiện tại để sau khi thanh toán xong (redirect quay về) còn biết mà xóa/refresh
@@ -215,16 +215,16 @@ export default function CheckoutPage() {
                     <div className={`radio ${paymentMethod === 'momo' ? 'radio--active' : ''}`}>
                       {paymentMethod === 'momo' && <div className="radio__dot" />}
                     </div>
-                    <span className="payment-option__label">Ví MoMo</span>
+                    <span className="payment-option__label">MoMo wallet</span>
                   </div>
                 </div>
 
                 {paymentMethod === 'momo' && (
                   <div className="card-fields" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                     {[
-                      { value: 'payWithATM', label: 'Thẻ ATM nội địa' },
-                      { value: 'payWithCC', label: 'Thẻ quốc tế (Visa/Mastercard)' },
-                      { value: 'captureWallet', label: 'Quét QR bằng ví MoMo' },
+                      { value: 'payWithATM', label: 'Domestic ATM card' },
+                      { value: 'payWithCC', label: 'International card (Visa/Mastercard)' },
+                      { value: 'captureWallet', label: 'Scan QR with MoMo wallet' },
                     ].map((opt) => (
                       <label
                         key={opt.value}

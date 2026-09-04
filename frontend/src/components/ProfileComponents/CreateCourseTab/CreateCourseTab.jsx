@@ -315,10 +315,10 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
 
   const validate = (status) => {
     if (!title.trim()) return 'Vui lòng nhập tên khóa học.';
-    if (Number(price) < 0) return 'Giá khóa học không được âm.';
+    if (Number(price) < 0) return 'Price khóa học không được âm.';
     if (status === 'published') {
       if (!overview.trim()) return 'Vui lòng nhập phần giới thiệu khóa học.';
-      if (!sections.length) return 'Khóa học phải có ít nhất một phần.';
+      if (!sections.length) return 'Course phải có ít nhất một phần.';
       if (sections.some((section) => !section.title.trim() || !section.lessons.length)) {
         return 'Mỗi phần phải có tên và ít nhất một bài học.';
       }
@@ -485,7 +485,7 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
             onClick={() => handleSave('published')}
             disabled={saving}
           >
-            {saving ? 'Đang lưu...' : 'Publish Course'}
+            {saving ? 'Saving...' : 'Publish Course'}
           </button>
         </div>
       </div>
@@ -674,7 +674,7 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
                               <input
                                 type="text"
                                 className="cc-form-control"
-                                placeholder={`Câu hỏi ${qIndex + 1}`}
+                                placeholder={`Question hỏi ${qIndex + 1}`}
                                 value={q.question}
                                 onChange={(e) => handleQuestionFieldChange(section.id, q.id, 'question', e.target.value)}
                               />
@@ -699,7 +699,7 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
                                 <input
                                   type="text"
                                   className="cc-form-control"
-                                  placeholder={`Lựa chọn ${optIndex + 1}`}
+                                  placeholder={`Option ${optIndex + 1}`}
                                   value={opt}
                                   onChange={(e) => handleOptionChange(section.id, q.id, optIndex, e.target.value)}
                                 />
@@ -709,7 +709,7 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
                             <input
                               type="text"
                               className="cc-form-control cc-quiz-question__explanation"
-                              placeholder="Giải thích đáp án (hiện sau khi học viên nộp bài)"
+                              placeholder="Giải thích đáp án (hiện sau khi students nộp bài)"
                               value={q.explanation}
                               onChange={(e) => handleQuestionFieldChange(section.id, q.id, 'explanation', e.target.value)}
                             />
@@ -722,7 +722,7 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
                           onClick={() => handleAddQuestion(section.id)}
                         >
                           <Plus size={16} />
-                          Thêm câu hỏi
+                          Add question
                         </button>
                       </div>
                     )}
