@@ -86,6 +86,11 @@ function AdminEvents() {
     setFormError('');
     setMode('create');
   };
+  const toLocalInputValue = (isoString) => {
+    const d = new Date(isoString);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
 
   const openEdit = (ev) => {
     const gameType = ev.gameType || 'quiz';
@@ -93,8 +98,8 @@ function AdminEvents() {
       title: ev.title,
       description: ev.description || '',
       coverImage: ev.coverImage || '',
-      startDate: ev.startDate.slice(0, 16),
-      endDate: ev.endDate.slice(0, 16),
+      startDate: toLocalInputValue(ev.startDate),
+      endDate: toLocalInputValue(ev.endDate),
       gameType,
       questions: ev.questions.length ? ev.questions.map((q) => ({ ...q })) : [emptyQuestion(gameType)],
     });
@@ -243,8 +248,8 @@ function AdminEvents() {
         title: form.title.trim(),
         description: form.description.trim(),
         coverImage: form.coverImage.trim(),
-        startDate: form.startDate,
-        endDate: form.endDate,
+        startDate: new Date(form.startDate).toISOString(),
+        endDate: new Date(form.endDate).toISOString(),
         gameType: form.gameType, // backend chỉ dùng field này khi TẠO MỚI, bỏ qua khi update
         questions: form.questions,
       };
