@@ -12,7 +12,7 @@ import TeacherInfoTab from '../../components/ProfileComponents/TeacherInfoTab/Te
 import MessageTab from '../../components/ProfileComponents/MessageTab/MessageTab.jsx';
 import MyReviewsTab from '../../components/ProfileComponents/MyReviewTab/MyReviewTab.jsx';
 import CreateCourseTab from '../../components/ProfileComponents/CreateCourseTab/CreateCourseTab.jsx';
-import './ProfilePage.scss';
+import './Profilepage.scss';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
