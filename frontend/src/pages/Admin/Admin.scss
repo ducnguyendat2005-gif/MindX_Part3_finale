@@ -77,6 +77,320 @@
   color: #991b1b;
 }
 
+.admin-account-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+
+  select {
+    min-width: 140px;
+    padding: 9px 12px;
+    border: 1px solid #dde1ec;
+    border-radius: 10px;
+    background: #fff;
+    color: #0d1321;
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  span {
+    margin-left: auto;
+    color: #8893ab;
+    font-size: 12px;
+  }
+}
+
+.admin-instructor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #8893ab;
+    font-size: 12px;
+  }
+}
+
+.admin-instructor-count {
+  color: #8893ab;
+  font-size: 12px;
+}
+
+.admin-instructor-heading {
+  overflow: hidden;
+}
+
+.admin-truncate {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-instructor-sort {
+  min-width: 190px;
+  padding: 9px 12px;
+  border: 1px solid #dde1ec;
+  border-radius: 10px;
+  background: #fff;
+  color: #0d1321;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+@media (max-width: 560px) {
+  .admin-instructor-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+
+    label {
+      justify-content: space-between;
+    }
+  }
+
+  .admin-instructor-sort {
+    flex: 1;
+  }
+}
+
+.admin-username-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(13, 19, 33, 0.58);
+}
+
+.admin-username-modal {
+  width: min(420px, 100%);
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+  color: #0d1321;
+  box-shadow: 0 20px 55px rgba(13, 19, 33, 0.25);
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+  }
+
+  label {
+    display: block;
+    margin: 20px 0 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    color: #0d1321;
+    background: #fff;
+  }
+}
+
+.admin-username-modal__account {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.admin-username-modal__error {
+  margin: 8px 0 0;
+  color: #dc2626;
+  font-size: 12px;
+}
+
+.admin-username-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+
+  button {
+    padding: 9px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #0d1321;
+    cursor: pointer;
+
+    &:last-child {
+      border-color: #2563f5;
+      background: #2563f5;
+      color: #fff;
+    }
+
+    &:disabled {
+      cursor: wait;
+      opacity: 0.65;
+    }
+  }
+}
+
+.admin-course-manage-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(13, 19, 33, 0.58);
+}
+
+.admin-course-manage-modal {
+  width: min(520px, 100%);
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+  color: #0d1321;
+  box-shadow: 0 20px 55px rgba(13, 19, 33, 0.25);
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+  }
+
+  label {
+    display: block;
+    margin: 18px 0 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    resize: vertical;
+    color: #0d1321;
+    background: #fff;
+    font: inherit;
+  }
+}
+
+.admin-course-manage-modal__course {
+  margin: 6px 0 0;
+  font-weight: 600;
+  color: #39455e;
+}
+
+.admin-course-manage-modal__hint {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.admin-course-manage-modal__reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.admin-course-reason {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: #39455e;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.admin-course-reason:hover,
+.admin-course-reason--active {
+  border-color: #2563f5;
+  background: #eaf1ff;
+  color: #1947d6;
+}
+
+.admin-course-manage-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+
+  button {
+    padding: 9px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #0d1321;
+    cursor: pointer;
+
+    &:last-child {
+      border-color: #dc2626;
+      background: #dc2626;
+      color: #fff;
+    }
+
+    &:disabled {
+      cursor: wait;
+      opacity: 0.65;
+    }
+  }
+}
+
+.admin-course-manage-btn {
+  align-self: center;
+  margin-left: auto;
+  padding: 7px 12px;
+  border: 1px solid #dc2626;
+  border-radius: 8px;
+  background: transparent;
+  color: #dc2626;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-course-manage-btn:hover {
+  background: #fef2f2;
+}
+
+.admin-course-unhide-btn {
+  align-self: center;
+  margin-left: auto;
+  padding: 7px 12px;
+  border: 1px solid #19874a;
+  border-radius: 8px;
+  background: transparent;
+  color: #19874a;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-course-unhide-btn:hover {
+  background: #eaf8ee;
+}
+
+.admin-course-unhide-btn:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 
 .admin-page--dark {
   background: #0f172a !important;
@@ -214,6 +528,101 @@
   .admin-account-status--suspended {
     background: #7f1d1d !important;
     color: #fecaca !important;
+  }
+
+  .admin-account-filters {
+    select {
+      background: #1e293b;
+      border-color: #64748b;
+      color: #f8fafc;
+    }
+
+    select option {
+      background: #1e293b;
+      color: #f8fafc;
+    }
+
+    span { color: #cbd5e1; }
+  }
+
+  .admin-username-modal {
+    background: #111827;
+    border-color: #475569;
+    color: #f8fafc;
+
+    input {
+      background: #1e293b;
+      border-color: #64748b;
+      color: #f8fafc;
+    }
+  }
+
+  .admin-username-modal__account { color: #cbd5e1; }
+
+  .admin-username-modal__actions button {
+    background: #1e293b;
+    border-color: #64748b;
+    color: #f8fafc;
+
+    &:last-child {
+      border-color: #2563f5;
+      background: #2563f5;
+      color: #fff;
+    }
+  }
+
+  .admin-course-manage-modal {
+    background: #111827;
+    border-color: #475569;
+    color: #f8fafc;
+
+    textarea {
+      background: #1e293b;
+      border-color: #64748b;
+      color: #f8fafc;
+    }
+  }
+
+  .admin-course-manage-modal__course { color: #f8fafc; }
+  .admin-course-manage-modal__hint { color: #cbd5e1; }
+
+  .admin-course-reason {
+    background: #1e293b;
+    border-color: #64748b;
+    color: #f8fafc;
+  }
+
+  .admin-course-reason:hover,
+  .admin-course-reason--active {
+    border-color: #60a5fa;
+    background: #1e3a8a;
+    color: #dbeafe;
+  }
+
+  .admin-course-manage-modal__actions button {
+    background: #1e293b;
+    border-color: #64748b;
+    color: #f8fafc;
+
+    &:last-child {
+      border-color: #dc2626;
+      background: #dc2626;
+      color: #fff;
+    }
+  }
+
+  .admin-course-manage-btn {
+    border-color: #f87171;
+    color: #fca5a5;
+
+    &:hover { background: #450a0a; }
+  }
+
+  .admin-course-unhide-btn {
+    border-color: #4ade80;
+    color: #86efac;
+
+    &:hover { background: #14532d; }
   }
   .admin-approval-card {
   background: #111827 !important;

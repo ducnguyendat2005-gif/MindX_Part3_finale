@@ -78,6 +78,7 @@ export default function NotificationPanel({ user, isOpen, onOpenMessage, onUnrea
   const mapNotificationType = (type) => {
     if (type === 'welcome') return 'welcome';
     if (type === 'event_reward') return 'reward';
+    if (type === 'course_hidden' || type === 'course_unhidden' || type === 'course_rejected') return 'system';
     return 'message';
   };
 
@@ -170,6 +171,7 @@ export default function NotificationPanel({ user, isOpen, onOpenMessage, onUnrea
             const isWelcome = notification.notificationType === 'welcome';
             const isReward = notification.notificationType === 'reward';
             const isMessage = notification.notificationType === 'message';
+            const isSystem = notification.notificationType === 'system';
             const isActing = actingRequestId === String(notification.id);
             const isCopied = copiedCode === String(notification.id);
 
@@ -177,20 +179,20 @@ export default function NotificationPanel({ user, isOpen, onOpenMessage, onUnrea
               <article
                 key={notification.notificationType + '-' + notification.id}
                 className={styles.notificationItem + ' ' + styles.notificationUnread}
-                role={isMessage || isWelcome ? 'button' : undefined}
-                tabIndex={isMessage || isWelcome ? 0 : undefined}
+                role={isMessage && !isSystem || isWelcome ? 'button' : undefined}
+                tabIndex={isMessage && !isSystem || isWelcome ? 0 : undefined}
                 onClick={() => {
                   if (isWelcome) {
                     markWelcomeAsRead(notification);
-                  } else if (isMessage) {
+                  } else if (isMessage && !isSystem) {
                     onOpenMessage?.(notification);
                   }
                 }}
                 onKeyDown={(event) => {
-                  if ((isMessage || isWelcome) && (event.key === 'Enter' || event.key === ' ')) {
+                  if ((isMessage && !isSystem || isWelcome) && (event.key === 'Enter' || event.key === ' ')) {
                     event.preventDefault();
                     if (isWelcome) markWelcomeAsRead(notification);
-                    else onOpenMessage?.(notification);
+                    else if (!isSystem) onOpenMessage?.(notification);
                   }
                 }}
               >

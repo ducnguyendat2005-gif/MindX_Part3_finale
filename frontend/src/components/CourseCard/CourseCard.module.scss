@@ -61,6 +61,11 @@
         font-weight: 600;
         font-size: 18px;
         color: var(--text-color);
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        overflow-wrap: anywhere;
     }
 
     > p:nth-of-type(2),
@@ -68,6 +73,9 @@
         font-weight: 200;
         font-size: 14px;
         color: var(--muted-text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
     >p:nth-of-type(4) {
         color:#5D5FEF;

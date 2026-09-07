@@ -2,6 +2,7 @@ import React from 'react'
 import styles from './CourseCard.module.scss'
 import image from '../../assets/Rectangle 1080.png'
 import { Link } from "react-router-dom";
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 // StarRating.jsx
 const StarRating = ({ rating, maxStars = 5 }) => {
@@ -41,6 +42,7 @@ const CourseCard = ({
   originalPrice,
   id
 }) => {
+  const { t } = useLanguage();
   const hasDiscount =
     promotionalPrice != null &&
     originalPrice != null &&
@@ -55,7 +57,7 @@ const CourseCard = ({
       <div className={styles.CourCard}>
         <img src={thumbnail} alt="course thumbnail" />
         <p className={styles.title}>{title}</p>
-        <p className={styles.instructor}>By {instructor}</p>
+        <p className={styles.instructor}>{t('course.by')} {instructor}</p>
         <div className={styles.rtin}>
           <p>{rating}</p>
           <StarRating rating={rating} />

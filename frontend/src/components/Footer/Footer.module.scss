@@ -1,7 +1,7 @@
 footer {
   width: 100%;
   height: 350px;
-  background-color: #1E293B;
+  background-color: var(--footer-bg);
   position: relative;
 
   .footerInfo {           // ← footer-info

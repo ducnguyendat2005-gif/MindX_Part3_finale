@@ -11,9 +11,11 @@ import { API, tokenStorage, fetchWithAuth } from '../../config/api.js';
 import { jwtDecode } from 'jwt-decode';
 import ThemeToggleButton from './ThemeToggleButton';
 import NotificationPanel from './NotificationPanel';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 function Header() {
   const navigate = useNavigate();
+  const { language, t, toggleLanguage } = useLanguage();
 
   // Categories dropdown
   const [open, setOpen] = useState(false);
@@ -245,7 +247,7 @@ function Header() {
             aria-expanded={open}
             aria-haspopup="true"
           >
-            Categories
+            {t('header.categories')}
             <svg
               className={`${styles.chevron} ${open ? styles.chevronUp : ''}`}
               width="14" height="14" viewBox="0 0 14 14" fill="none"
@@ -257,11 +259,11 @@ function Header() {
 
           {open && (
             <div className={styles.dropdown}>
-              {!user && <button onClick={() => navigate('/signin')} className={styles.dropdownItem}>Sign In</button>}
-              {!user && <button onClick={() => navigate('/signup')} className={styles.dropdownItem}>Sign Up</button>}
-              <button onClick={() => navigate('/course-page')} className={styles.dropdownItem}>All Courses</button>
-              {user && <button onClick={() => navigate('/home/cartpage')} className={styles.dropdownItem}>My Cart</button>}
-              {user && <button onClick={() => { navigate('/profile', { state: { tab: 'courses' } }); setOpen(false); }} className={styles.dropdownItem}>My Course</button>}
+              {!user && <button onClick={() => navigate('/signin')} className={styles.dropdownItem}>{t('header.signIn')}</button>}
+              {!user && <button onClick={() => navigate('/signup')} className={styles.dropdownItem}>{t('header.signUp')}</button>}
+              <button onClick={() => navigate('/course-page')} className={styles.dropdownItem}>{t('header.allCourses')}</button>
+              {user && <button onClick={() => navigate('/home/cartpage')} className={styles.dropdownItem}>{t('header.myCart')}</button>}
+              {user && <button onClick={() => { navigate('/profile', { state: { tab: 'courses' } }); setOpen(false); }} className={styles.dropdownItem}>{t('header.myCourse')}</button>}
             </div>
           )}
         </div>
@@ -273,7 +275,7 @@ function Header() {
             <input
               type="text"
               className={styles.searchBox}
-              placeholder={loading ? 'Loading...' : 'Search courses'}
+              placeholder={loading ? t('header.loading') : t('header.searchCourses')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => { if (searchResults.length > 0) setShowSearch(true); }}
@@ -290,9 +292,9 @@ function Header() {
           {showSearch && (
             <div className={styles.searchDropdown}>
               {error ? (
-                <div className={styles.noResult}>Error! {error}</div>
+                <div className={styles.noResult}>{t('header.searchError')}</div>
               ) : searchResults.length === 0 ? (
-                <div className={styles.noResult}>No Course can be found</div>
+                <div className={styles.noResult}>{t('header.noCourseFound')}</div>
               ) : (
                 searchResults.map((course) => (
                   <Link
@@ -320,11 +322,20 @@ function Header() {
           )}
         </div>
 
-        <p>Teach on Byway</p>
+        <p>{t('header.teachOnByway')}</p>
       </div>
 
       {/* FuncBar */}
       <div className={styles.funcBar}>
+        <button
+          type="button"
+          className={styles.languageToggle}
+          onClick={toggleLanguage}
+          title={t('language.switch')}
+          aria-label={t('language.switch')}
+        >
+          {language}
+        </button>
         {/* Wishlist */}
         {user && (
           <>
@@ -359,7 +370,8 @@ function Header() {
                   setNotificationOpen((value) => !value);
                   setProfileOpen(false);
                 }}
-                aria-label="Mở thông báo"
+                title={t('header.openNotifications')}
+                aria-label={t('header.openNotifications')}
                 aria-expanded={notificationOpen}
                 aria-haspopup="dialog"
               >
@@ -428,33 +440,33 @@ function Header() {
                 <div className={styles.profileDivider} />
                 {isAdmin && (
                   <button className={styles.profileItem} onClick={() => { navigate('/admin'); setProfileOpen(false); }}>
-                    🛡️ My Admin
+                    🛡️ {t('header.myAdmin')}
                   </button>
                 )}
                 {!isAdmin && (
                   <>
                     <button className={styles.profileItem} onClick={() => { navigate('/profile', { state: { tab: profileTab } }); setProfileOpen(false); }}>
-                      👤 My Profile
+                      👤 {t('header.myProfile')}
                     </button>
                     <button className={styles.profileItem} onClick={() => { navigate('/profile', { state: { tab: 'courses' } }); setProfileOpen(false); }}>
-                      📚 My Courses
+                      📚 {t('header.myCourses')}
                     </button>
                   </>
                 )}
                 <button className={styles.profileItem} onClick={() => { navigate('/home/cartpage'); setProfileOpen(false); }}>
-                  🛒 My Cart
+                  🛒 {t('header.myCart')}
                 </button>
                 <div className={styles.profileDivider} />
                 <button className={`${styles.profileItem} ${styles.logoutItem}`} onClick={handleLogout}>
-                  🚪 Log Out
+                  🚪 {t('header.logOut')}
                 </button>
               </div>
             )}
           </div>
         ) : (
           <div className={styles.buttonContainer}>
-            <button onClick={() => navigate('/signin')} className={styles.loginBtn}>Log In</button>
-            <button onClick={() => navigate('/signup')} className={styles.signupBtn}>Sign Up</button>
+            <button onClick={() => navigate('/signin')} className={styles.loginBtn}>{t('header.logIn')}</button>
+            <button onClick={() => navigate('/signup')} className={styles.signupBtn}>{t('header.signUp')}</button>
           </div>
         )}
       </div>

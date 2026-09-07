@@ -293,6 +293,39 @@
     color: #f8fafc;
   }
   .rowTitle { color: #f8fafc; }
+  .rowMeta { color: #cbd5e1; }
+
+  .rowActions button {
+    background: #1e293b;
+    border-color: #64748b;
+    color: #f8fafc;
+
+    &:hover { background: #334155; }
+  }
+
+  .deleteBtn {
+    background: #450a0a !important;
+    border-color: #f87171 !important;
+    color: #fecaca !important;
+  }
+
+  .status[data-status="active"] {
+    background: #14532d;
+    color: #bbf7d0;
+  }
+
+  .status[data-status="upcoming"] {
+    background: #1e3a8a;
+    color: #bfdbfe;
+  }
+
+  .status[data-status="ended"] {
+    background: #334155;
+    color: #e2e8f0;
+  }
+
+  .gameTypeTag { color: #fbbf24; }
+
   .gameTypeOption { background: #1e293b; border-color: #334155; color: #f8fafc; }
   .gameTypeLocked { background: #1e293b; border-color: #334155; color: #f8fafc; }
 }

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import img from '../../assets/photo-1542744094-3a31f272c490.avif'
 import './CartPage.scss';
 import { getCoursePricing, normalizeCartItem } from '../../utils/pricing.js';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 
 const MOCK_CART_ITEMS = [
@@ -56,6 +57,7 @@ const readCart = () => {
 };
 
 export default function CartPage() {
+  const { t } = useLanguage();
   const [cart, setCart] = useState(readCart);
 
   const cartPricing = cart.map(getCoursePricing);
@@ -76,28 +78,28 @@ export default function CartPage() {
     <div className="cart-page">
       <div className="cart-container">
         <div className="cart-breadcrumb">
-          <Link to="/categories">Categories</Link>
+          <Link to="/categories">{t('header.categories')}</Link>
           <span>›</span>
-          <Link to="/details">Details</Link>
+          <Link to="/details">{t('cart.details')}</Link>
           <span>›</span>
-          <span className="cart-breadcrumb__current">Shopping Cart</span>
+          <span className="cart-breadcrumb__current">{t('cart.shoppingCart')}</span>
         </div>
 
-        <h1 className="cart-title">Shopping Cart</h1>
+        <h1 className="cart-title">{t('cart.shoppingCart')}</h1>
 
         {cart.length === 0 ? (
           <div className="cart-empty">
-            <p className="cart-empty__text">Your cart is empty. Start shopping to add courses!</p>
+            <p className="cart-empty__text">{t('cart.empty')}</p>
             <button
               className="cart-empty__btn"
               onClick={() => navigate('/course-page')}
             >
-              Browse Courses
+              {t('cart.browse')}
             </button>
           </div>
         ) : (
           <>
-            <p className="cart-subtitle">{cart.length} Course{cart.length !== 1 ? 's' : ''} in cart</p>
+            <p className="cart-subtitle">{cart.length} {cart.length !== 1 ? t('cart.coursesInCart') : t('cart.courseInCart')}</p>
 
             <div className="cart-layout">
               {/* Items */}
@@ -143,8 +145,8 @@ export default function CartPage() {
                         <span>{item.level}</span>
                       </div>
                       <div className="cart-item__actions">
-                        <button className="cart-item__action cart-item__action--save">Save for later</button>
-                        <button onClick={() => handleRemove(itemId)} className="cart-item__action cart-item__action--remove">Remove</button>
+                        <button className="cart-item__action cart-item__action--save">{t('cart.save')}</button>
+                        <button onClick={() => handleRemove(itemId)} className="cart-item__action cart-item__action--remove">{t('cart.remove')}</button>
                       </div>
                     </div>
                   </div>
@@ -155,27 +157,27 @@ export default function CartPage() {
               {/* Order Summary */}
               <div className="cart-summary">
                 <div className="cart-summary__box">
-                  <h2 className="cart-summary__title">Order Details</h2>
+                  <h2 className="cart-summary__title">{t('cart.orderDetails')}</h2>
                   <div className="cart-summary__rows">
                     <div className="cart-summary__row">
                       <span>Price</span>
                       <span className="cart-summary__value">${subtotal.toFixed(2)}</span>
                     </div>
                     <div className="cart-summary__row">
-                      <span>Discount</span>
+                      <span>{t('cart.discount')}</span>
                       <span className="cart-summary__value">-${discount.toFixed(2)}</span>
                     </div>
                     <div className="cart-summary__row">
-                      <span>Tax</span>
+                      <span>{t('cart.tax')}</span>
                       <span className="cart-summary__value">${tax.toFixed(2)}</span>
                     </div>
                     <div className="cart-summary__row cart-summary__row--total">
-                      <span>Total</span>
+                      <span>{t('cart.total')}</span>
                       <span>${total.toFixed(2)}</span>
                     </div>
                   </div>
                   <button onClick={() => navigate('/home/cartpage/checkout')} className="cart-summary__btn">
-                    Proceed to Checkout
+                    {t('cart.checkout')}
                   </button>
                 </div>
               </div>

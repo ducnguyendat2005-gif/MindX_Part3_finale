@@ -56,10 +56,12 @@ const courseSchema = new mongoose.Schema({
     syllabus: [syllabusSectionSchema],
     status: {
         type: String,
-        enum: ['draft', 'pending', 'approved', 'rejected'],
+        enum: ['draft', 'pending', 'approved', 'rejected', 'hidden'],
         default: 'draft',
     },
     rejectionReason: { type: String, default: '' },
+    hiddenReason: { type: String, default: '' },
+    hiddenAt: Date,
     publishedAt: Date,
 }, { timestamps: true });
 

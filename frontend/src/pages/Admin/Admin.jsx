@@ -3,6 +3,7 @@ import { API, fetchWithAuth } from '../../config/api.js'; // chỉnh lại đư�
 import { useTheme } from '../../context/ThemeContext.jsx';
 import AdminEvents from './AdminEvent.jsx'; 
 import { useIsMobile } from '../../hooks/use-mobile.jsx';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 import './Admin.scss';
 
 
@@ -27,6 +28,9 @@ function initials(name) {
 }
 function fmtMoney(n) {
   if (n == null) return '$0';
+
+  const value = Number(n);
+  return Number.isFinite(value) ? `$${value.toLocaleString('en-US')}` : '$0';
 }
 function categoryLabel(cat) {
   return (cat || '').split('-').map((w) => w[0]?.toUpperCase() + w.slice(1)).join(' ');
@@ -100,6 +104,7 @@ function StatCard({ label, value, accentBg, accentFg, icon }) {
 }
 
 function Overview({ courses, accounts, testimonials,instructors, onSelectCourse }) {
+  const { t } = useLanguage();
   const stats = useMemo(() => {
     const avgRating = courses.length ? (courses.reduce((s, c) => s + (c.rating || 0), 0) / courses.length).toFixed(1) : 0;
     return { totalCourses: courses.length, totalAccounts: accounts.length, avgRating };
@@ -117,10 +122,10 @@ function Overview({ courses, accounts, testimonials,instructors, onSelectCourse 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14 }}>
-        <StatCard label="Total courses" value={stats.totalCourses} accentBg="#EEF5FF" accentFg="#1947D6" icon="📚" />
-        <StatCard label="Accounts" value={stats.totalAccounts} accentBg="#EAF8EE" accentFg="#19874A" icon="👥" />
-        <StatCard label="Rating TB" value={stats.avgRating + ' / 5'} accentBg="#FFF3E6" accentFg="#C2540A" icon="⭐" />
-        <StatCard label="Instructors" value={instructors.length} accentBg="#FEF1F1" accentFg="#C0263A" icon="🎓" />
+        <StatCard label={t('admin.totalCourses')} value={stats.totalCourses} accentBg="#EEF5FF" accentFg="#1947D6" icon="📚" />
+        <StatCard label={t('admin.accountsLabel')} value={stats.totalAccounts} accentBg="#EAF8EE" accentFg="#19874A" icon="👥" />
+        <StatCard label={t('admin.averageRating')} value={stats.avgRating + ' / 5'} accentBg="#FFF3E6" accentFg="#C2540A" icon="⭐" />
+        <StatCard label={t('admin.instructors')} value={instructors.length} accentBg="#FEF1F1" accentFg="#C0263A" icon="🎓" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,3fr) minmax(0,2fr)', gap: 16 }}>
@@ -276,32 +281,72 @@ function Courses({ courses, query, onSelectCourse }) {
 }
 
 function Instructors({ courses, instructors }) {
+  const { t } = useLanguage();
+  const [sortBy, setSortBy] = useState('rating-desc');
+
+  const sortedInstructors = useMemo(() => {
+    const getMetric = (instructor, metric) => {
+      const value = Number(instructor?.[metric]);
+      return Number.isFinite(value) ? value : 0;
+    };
+
+    const metric = sortBy.startsWith('rating') ? 'rating' : 'totalStudents';
+    const direction = sortBy.endsWith('-asc') ? 'asc' : 'desc';
+    const directionMultiplier = direction === 'asc' ? 1 : -1;
+
+    return [...instructors].sort((a, b) => {
+      const difference = (getMetric(a, metric) - getMetric(b, metric)) * directionMultiplier;
+      return difference || String(a.name || '').localeCompare(String(b.name || ''));
+    });
+  }, [instructors, sortBy]);
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
-      {instructors.map((t) => {
-        const taught = courses.filter((c) => c.instructorId === t._id);
+    <>
+      <div className="admin-instructor-toolbar">
+        <span className="admin-instructor-count">{t('admin.instructorCount', { count: instructors.length })}</span>
+        <label>
+          <span>{t('admin.sortBy')}</span>
+          <select
+            className="admin-instructor-sort"
+            value={sortBy}
+            onChange={(event) => setSortBy(event.target.value)}
+            aria-label="Sắp xếp instructors"
+          >
+            <option value="rating-desc">{t('admin.ratingHigh')}</option>
+            <option value="rating-asc">{t('admin.ratingLow')}</option>
+            <option value="students-desc">{t('admin.studentsHigh')}</option>
+            <option value="students-asc">{t('admin.studentsLow')}</option>
+          </select>
+        </label>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+      {sortedInstructors.map((instructor) => {
+        const taught = courses.filter((c) => c.instructorId === instructor._id);
         return (
-          <div key={t._id} className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div key={instructor._id} className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Avatar name={t.name} size={48} />
-              <div style={{ minWidth: 0 }}>
-                <p style={{ margin: 0, fontWeight: 600, color: '#0d1321' }}>{t.name}</p>
-                <p style={{ margin: 0, fontSize: 12, color: '#8893ab' }}>{t.title}</p>
+              <Avatar name={instructor.name} size={48} />
+              <div className="admin-instructor-heading" style={{ minWidth: 0 }}>
+                <p className="admin-truncate" style={{ margin: 0, fontWeight: 600, color: '#0d1321' }} title={instructor.name}>{instructor.name}</p>
+                <p className="admin-truncate" style={{ margin: 0, fontSize: 12, color: '#8893ab' }} title={instructor.title}>{instructor.title}</p>
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <div className="admin-instructor-stat" style={{ background: '#f6f8fb', borderRadius: 10, padding: '10px 0', textAlign: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, color: '#f59e0b', fontWeight: 700 }}><Star size={13} />{t.rating}</div>
-                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#8893ab' }}>đánh giá</p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, color: '#f59e0b', fontWeight: 700 }}><Star size={13} />{instructor.rating}</div>
+                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#8893ab' }}>{t('admin.ratingLabel')}</p>
               </div>
               <div className="admin-instructor-stat" style={{ background: '#f6f8fb', borderRadius: 10, padding: '10px 0', textAlign: 'center' }}>
-                <p style={{ margin: 0, fontWeight: 700, color: '#1947D6' }}>{t.totalStudents.toLocaleString()}</p>
-                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#8893ab' }}>students</p>
+                <p style={{ margin: 0, fontWeight: 700, color: '#1947D6' }}>{Number(instructor.totalStudents || 0).toLocaleString()}</p>
+                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#8893ab' }}>{t('admin.studentsLabel')}</p>
               </div>
             </div>
             {taught.length > 0 && (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#5c6884', margin: '0 0 6px' }}>{taught.length} khóa học trên Byway</p>
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#5c6884', margin: '0 0 6px' }}>
+                  {taught.length} {taught.length === 1 ? t('admin.courseOnByway') : t('admin.coursesOnByway')}
+                </p>
                 {taught.slice(0, 3).map((c) => (
                   <p key={c.id} style={{ fontSize: 12, color: '#39455e', margin: '2px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>• {c.title}</p>
                 ))}
@@ -310,7 +355,8 @@ function Instructors({ courses, instructors }) {
           </div>
         );
       })}
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -318,16 +364,33 @@ function isHoadoAccount(account) {
   return String(account?.Username || '').replace(/^@/, '').toLowerCase() === 'hoado';
 }
 
-function Accounts({ accounts, query, onToggleStatus }) {
+function Accounts({ accounts, query, onToggleStatus, onUpdateUsername }) {
   const [revealed, setRevealed] = useState({});
   const [updatingId, setUpdatingId] = useState(null);
   const [statusError, setStatusError] = useState('');
-  const filtered = accounts.filter((a) => {
-    if (isHoadoAccount(a)) return false;
-    if (!query) return true;
-    const q = query.toLowerCase();
-    return a.Fname?.toLowerCase().includes(q) || a.Lname?.toLowerCase().includes(q) || a.Username?.toLowerCase().includes(q) || a.Email?.toLowerCase().includes(q);
-  });
+  const [editingAccount, setEditingAccount] = useState(null);
+  const [usernameDraft, setUsernameDraft] = useState('');
+  const [usernameError, setUsernameError] = useState('');
+  const [savingUsername, setSavingUsername] = useState(false);
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState('az');
+  const filtered = accounts
+    .filter((a) => {
+      if (isHoadoAccount(a)) return false;
+      if (roleFilter !== 'all' && a.role !== roleFilter) return false;
+      if (statusFilter === 'active' && a.isActive === false) return false;
+      if (statusFilter === 'locked' && a.isActive !== false) return false;
+      if (!query) return true;
+      const q = query.toLowerCase();
+      return a.Fname?.toLowerCase().includes(q) || a.Lname?.toLowerCase().includes(q) || a.Username?.toLowerCase().includes(q) || a.Email?.toLowerCase().includes(q);
+    })
+    .sort((first, second) => {
+      if (sortOrder !== 'az') return 0;
+      const firstName = `${first.Fname || ''} ${first.Lname || ''}`.trim() || first.Username || '';
+      const secondName = `${second.Fname || ''} ${second.Lname || ''}`.trim() || second.Username || '';
+      return firstName.localeCompare(secondName, 'vi', { sensitivity: 'base' });
+    });
 
   const handleToggleStatus = async (account) => {
     const nextStatus = account.isActive === false;
@@ -346,7 +409,73 @@ function Accounts({ accounts, query, onToggleStatus }) {
     }
   };
 
+  const openUsernameEditor = (account) => {
+    setEditingAccount(account);
+    setUsernameDraft(String(account.Username || '').replace(/^@+/, ''));
+    setUsernameError('');
+  };
+
+  const closeUsernameEditor = () => {
+    setEditingAccount(null);
+    setUsernameDraft('');
+    setUsernameError('');
+  };
+
+  const handleUsernameSubmit = async (event) => {
+    event.preventDefault();
+    const nextUsername = usernameDraft.replace(/^@+/, '').trim();
+    const currentUsername = String(editingAccount?.Username || '').replace(/^@+/, '').trim();
+
+    if (!nextUsername) {
+      setUsernameError('Username cannot be empty');
+      return;
+    }
+    if (nextUsername.length > 50) {
+      setUsernameError('Username must be 50 characters or fewer');
+      return;
+    }
+    if (nextUsername.toLowerCase() === currentUsername.toLowerCase()) {
+      setUsernameError('Please enter a different username');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Bạn có chắc muốn đổi username của @${currentUsername} thành @${nextUsername} không?`
+    );
+    if (!confirmed) return;
+
+    setSavingUsername(true);
+    setUsernameError('');
+    try {
+      await onUpdateUsername(editingAccount.id, nextUsername);
+      closeUsernameEditor();
+    } catch (error) {
+      setUsernameError(error.message || 'Could not update username');
+    } finally {
+      setSavingUsername(false);
+    }
+  };
+
   return (
+    <>
+    <div className="admin-account-filters">
+      <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)} aria-label="Filter by account type">
+        <option value="all">All accounts</option>
+        <option value="user">Students</option>
+        <option value="teacher">Teachers</option>
+        <option value="admin">Admins</option>
+      </select>
+      <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value)} aria-label="Sort accounts">
+        <option value="az">A–Z</option>
+        <option value="none">Original order</option>
+      </select>
+      <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter by account status">
+        <option value="all">All statuses</option>
+        <option value="active">Active</option>
+        <option value="locked">Locked</option>
+      </select>
+      <span>{filtered.length} results</span>
+    </div>
     <div className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', overflow: 'hidden' }}>
       {statusError && <p role="alert" style={{ margin: 0, padding: '10px 16px', color: '#b42318', background: '#fff1f0', fontSize: 12 }}>{statusError}</p>}
       <div style={{ overflowX: 'auto' }}>
@@ -367,7 +496,19 @@ function Accounts({ accounts, query, onToggleStatus }) {
               const isR = revealed[a.id];
               const isActive = a.isActive !== false;
               return (
-                <tr key={a.id} style={{ borderTop: '1px solid #f1f3f9' }}>
+                <tr
+                  key={a.id}
+                  tabIndex={0}
+                  onClick={() => openUsernameEditor(a)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      openUsernameEditor(a);
+                    }
+                  }}
+                  title="Click to change username"
+                  style={{ borderTop: '1px solid #f1f3f9', cursor: 'pointer' }}
+                >
                   <td style={{ padding: '10px 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <Avatar name={fullName} size={32} />
@@ -377,7 +518,7 @@ function Accounts({ accounts, query, onToggleStatus }) {
                   <td style={{ padding: '10px', color: '#39455e' }}>@{a.Username}</td>
                   <td style={{ padding: '10px', color: '#39455e' }}>{a.Email}</td>
                   <td style={{ padding: '10px' }}>
-                    <button onClick={() => setRevealed((r) => ({ ...r, [a.id]: !r[a.id] }))} style={{ fontFamily: 'monospace', fontSize: 12, color: '#5c6884', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                    <button onClick={(event) => { event.stopPropagation(); setRevealed((r) => ({ ...r, [a.id]: !r[a.id] })); }} style={{ fontFamily: 'monospace', fontSize: 12, color: '#5c6884', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                       {isR ? a.pass : '••••••••'}
                     </button>
                   </td>
@@ -386,7 +527,7 @@ function Accounts({ accounts, query, onToggleStatus }) {
                       type="button"
                       className={`admin-account-status ${isActive ? 'admin-account-status--active' : 'admin-account-status--suspended'}`}
                       disabled={updatingId === a.id}
-                      onClick={() => handleToggleStatus(a)}
+                      onClick={(event) => { event.stopPropagation(); handleToggleStatus(a); }}
                       title={isActive ? 'Suspend account' : 'Unlock account'}
                     >
                       {updatingId === a.id ? 'Saving...' : (isActive ? 'Active' : 'Tạm khóa')}
@@ -400,6 +541,33 @@ function Accounts({ accounts, query, onToggleStatus }) {
         </table>
       </div>
     </div>
+    {editingAccount && (
+      <div className="admin-username-modal-backdrop" onClick={closeUsernameEditor}>
+        <form className="admin-username-modal" onSubmit={handleUsernameSubmit} onClick={(event) => event.stopPropagation()}>
+          <h2>Change username</h2>
+          <p className="admin-username-modal__account">
+            Account: {(editingAccount.Fname + ' ' + editingAccount.Lname).trim() || 'User'}
+          </p>
+          <label htmlFor="admin-username-input">New username</label>
+          <input
+            id="admin-username-input"
+            value={usernameDraft}
+            onChange={(event) => { setUsernameDraft(event.target.value); setUsernameError(''); }}
+            autoFocus
+            maxLength={50}
+            placeholder="Enter username"
+          />
+          {usernameError && <p className="admin-username-modal__error" role="alert">{usernameError}</p>}
+          <div className="admin-username-modal__actions">
+            <button type="button" onClick={closeUsernameEditor} disabled={savingUsername}>Cancel</button>
+            <button type="submit" disabled={savingUsername}>
+              {savingUsername ? 'Saving...' : 'Change username'}
+            </button>
+          </div>
+        </form>
+      </div>
+    )}
+    </>
   );
 }
 
@@ -423,7 +591,7 @@ function Testimonials({ testimonials }) {
   );
 }
 
-function CourseDetail({ course, onClose }) {
+function CourseDetail({ course, onClose, onManage, onUnhide, unhiding }) {
   const [tab, setTab] = useState('description');
   if (!course) return null;
   const d = course.details || {};
@@ -460,6 +628,25 @@ function CourseDetail({ course, onClose }) {
               color: tab === t.key ? '#1947D6' : '#8893ab', whiteSpace: 'nowrap',
             }}>{t.label}</button>
           ))}
+          {course.status === 'approved' && onManage && (
+            <button
+              type="button"
+              className="admin-course-manage-btn"
+              onClick={() => onManage(course)}
+            >
+              Manage
+            </button>
+          )}
+          {course.status === 'hidden' && onUnhide && (
+            <button
+              type="button"
+              className="admin-course-unhide-btn"
+              disabled={unhiding}
+              onClick={() => onUnhide(course)}
+            >
+              {unhiding ? 'Unhiding...' : 'Unhide'}
+            </button>
+          )}
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
@@ -575,8 +762,75 @@ const STATUS_BADGE = {
   pending: { bg: '#FFF3E6', fg: '#C2540A', label: 'Pending' },
   approved: { bg: '#EAF8EE', fg: '#19874A', label: 'Approved' },
   rejected: { bg: '#FEF1F1', fg: '#C0263A', label: 'Rejected' },
+  hidden: { bg: '#F1F5F9', fg: '#475569', label: 'Hidden' },
   draft: { bg: '#eef1f7', fg: '#5c6884', label: 'Draft' },
 };
+
+const MANAGE_REASONS = [
+  { value: 'content', label: 'Nội dung' },
+  { value: 'expiry', label: 'Thời hạn' },
+  { value: 'knowledge', label: 'Kiến thức' },
+  { value: 'obscene', label: 'Tục tĩu' },
+  { value: 'other', label: 'Lý do khác' },
+];
+
+function ManageCourseModal({ course, onCancel, onConfirm, submitting }) {
+  const [reasonType, setReasonType] = useState('');
+  const [details, setDetails] = useState('');
+  const selectedReason = MANAGE_REASONS.find((reason) => reason.value === reasonType);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (!selectedReason || !details.trim()) return;
+
+    const reason = `${selectedReason.label}: ${details.trim()}`;
+    const confirmed = window.confirm(
+      `Bạn có chắc muốn khóa course "${course.title}" không? Course sẽ bị ẩn khỏi danh sách công khai.`
+    );
+    if (confirmed) onConfirm(reason);
+  };
+
+  return (
+    <div className="admin-course-manage-backdrop" onClick={onCancel}>
+      <form className="admin-surface admin-course-manage-modal" onSubmit={handleSubmit} onClick={(event) => event.stopPropagation()}>
+        <h2>Manage course</h2>
+        <p className="admin-course-manage-modal__course">{course.title}</p>
+        <p className="admin-course-manage-modal__hint">Chọn lý do và ghi rõ nội dung trước khi khóa course.</p>
+
+        <div className="admin-course-manage-modal__reasons">
+          {MANAGE_REASONS.map((reason) => (
+            <button
+              key={reason.value}
+              type="button"
+              className={`admin-course-reason ${reasonType === reason.value ? 'admin-course-reason--active' : ''}`}
+              onClick={() => setReasonType(reason.value)}
+            >
+              {reason.label}
+            </button>
+          ))}
+        </div>
+
+        <label htmlFor="course-manage-reason">Lý do chi tiết</label>
+        <textarea
+          id="course-manage-reason"
+          value={details}
+          onChange={(event) => setDetails(event.target.value)}
+          rows={4}
+          maxLength={1000}
+          placeholder="Nhập lý do admin khóa course..."
+          disabled={submitting}
+        />
+
+        <div className="admin-course-manage-modal__actions">
+          <button type="button" onClick={onCancel} disabled={submitting}>Cancel</button>
+          <button type="submit" disabled={submitting || !selectedReason || !details.trim()}>
+            {submitting ? 'Locking...' : 'Lock course'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
 
 function RejectModal({ course, onCancel, onConfirm, submitting }) {
   const [reason, setReason] = useState('');
@@ -745,10 +999,14 @@ function CourseApprovals() {
 
 export default function AdminPage() {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const isMobile = useIsMobile(900);
   const [active, setActive] = useState('overview');
   const [query, setQuery] = useState('');
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [managedCourse, setManagedCourse] = useState(null);
+  const [hidingCourse, setHidingCourse] = useState(false);
+  const [unhidingCourse, setUnhidingCourse] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [courses, setCourses] = useState([]);
@@ -815,18 +1073,96 @@ export default function AdminPage() {
     )));
   };
 
+  const handleUpdateAccountUsername = async (accountId, Username) => {
+    const res = await fetchWithAuth(API.updateAccountUsername(accountId), {
+      method: 'PUT',
+      body: JSON.stringify({ Username }),
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.message || `Failed to update username: ${res.status}`);
+
+    setAccounts((current) => current.map((account) => (
+      account.id === accountId
+        ? { ...account, ...(result.data || {}), id: account.id }
+        : account
+    )));
+
+    // Refresh the Header immediately when an admin changes their own username.
+    window.dispatchEvent(new Event('userUpdated'));
+  };
+
+  const handleHideCourse = async (course, reason) => {
+    setHidingCourse(true);
+    try {
+      const res = await fetchWithAuth(API.hideCourse(course._id || course.id), {
+        method: 'PUT',
+        body: JSON.stringify({ reason }),
+      });
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(result.message || `Failed to hide course: ${res.status}`);
+
+      setCourses((current) => current.map((item) => (
+        String(item.id || item._id) === String(course.id || course._id)
+          ? { ...item, ...(result.data || {}), id: item.id }
+          : item
+      )));
+      setManagedCourse(null);
+      setSelectedCourse(null);
+    } catch (error) {
+      window.alert(error.message || 'Could not hide course');
+    } finally {
+      setHidingCourse(false);
+    }
+  };
+
+  const handleUnhideCourse = async (course) => {
+    const confirmed = window.confirm(
+      `Bạn có chắc muốn hiện lại course "${course.title}" trên danh sách courses không?`
+    );
+    if (!confirmed) return;
+
+    setUnhidingCourse(true);
+    try {
+      const res = await fetchWithAuth(API.unhideCourse(course._id || course.id), {
+        method: 'PUT',
+      });
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(result.message || `Failed to unhide course: ${res.status}`);
+
+      setCourses((current) => current.map((item) => (
+        String(item.id || item._id) === String(course.id || course._id)
+          ? { ...item, ...(result.data || {}), id: item.id }
+          : item
+      )));
+      setSelectedCourse(null);
+    } catch (error) {
+      window.alert(error.message || 'Could not unhide course');
+    } finally {
+      setUnhidingCourse(false);
+    }
+  };
+
   const showSearch = active === 'courses' || active === 'accounts';
 
-  const titles = {
-    overview: ['Overview', 'Real-time platform metrics'],
-    courses: ['Course', 'Management toàn bộ khóa học trên Byway'],
-    approvals: ['Course Approvals', 'Review and moderate pending course submissions'],
-    events: ['Events', 'Tạo và quản lý sự kiện, minigame cho students'], 
-    instructors: ['Instructors', 'Featured instructor team'],
-    accounts: ['Accounts', 'Registered users'],
-    testimonials: ['Rating nổi bật', 'Phản hồi từ students'],
+  const localizedTitles = {
+    overview: [t('admin.overview'), t('admin.realTimeMetrics')],
+    courses: [t('admin.courses'), t('admin.manageCourses')],
+    approvals: [t('admin.approvals'), t('admin.reviewSubmissions')],
+    events: [t('admin.events'), t('admin.manageEvents')],
+    instructors: [t('admin.instructors'), t('admin.featuredTeam')],
+    accounts: [t('admin.accounts'), t('admin.registeredUsers')],
+    testimonials: [t('admin.testimonials'), t('admin.featuredRatings')],
   };
-  const [title, subtitle] = titles[active];
+  const [title, subtitle] = localizedTitles[active];
+  const navLabels = {
+    overview: t('admin.overview'),
+    courses: t('admin.courses'),
+    approvals: t('admin.approvals'),
+    events: t('admin.events'),
+    instructors: t('admin.instructors'),
+    accounts: t('admin.accounts'),
+    testimonials: t('admin.testimonials'),
+  };
 
   if (loading) {
     return (
@@ -857,13 +1193,13 @@ export default function AdminPage() {
           <span style={{ fontWeight: 600, fontSize: 14 }}>Byway Admin</span>
         </div>
         <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <p style={{ padding: '0 12px', margin: '0 0 6px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8893ab' }}>Management</p>
+          <p style={{ padding: '0 12px', margin: '0 0 6px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8893ab' }}>{t('admin.management')}</p>
           {NAV.map((n) => (
             <button key={n.key} className={active === n.key ? 'admin-nav-item admin-nav-item--active' : 'admin-nav-item'} onClick={() => { setActive(n.key); setSidebarOpen(false); }} style={{
               display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, fontSize: 13, fontWeight: 500,
               border: 'none', cursor: 'pointer', textAlign: 'left',
               background: active === n.key ? '#2563f5' : 'transparent', color: active === n.key ? '#fff' : '#b7bfd2',
-            }}>{n.label}</button>
+            }}>{navLabels[n.key]}</button>
           ))}
         </nav>
         <div style={{ padding: 14, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
@@ -899,13 +1235,36 @@ export default function AdminPage() {
             {active === 'instructors' && <Instructors courses={courses} instructors={instructors} />}
             {active === 'approvals' && <CourseApprovals />}
             {active === 'events' && <AdminEvents />}   
-            {active === 'accounts' && <Accounts accounts={accounts} query={query} onToggleStatus={handleToggleAccountStatus} />}
+            {active === 'accounts' && (
+              <Accounts
+                accounts={accounts}
+                query={query}
+                onToggleStatus={handleToggleAccountStatus}
+                onUpdateUsername={handleUpdateAccountUsername}
+              />
+            )}
             {active === 'testimonials' && <Testimonials testimonials={testimonials} />}
           </div>
         </main>
       </div>
 
-      {selectedCourse && <CourseDetail course={selectedCourse} onClose={() => setSelectedCourse(null)} />}
+      {selectedCourse && (
+        <CourseDetail
+          course={selectedCourse}
+          onClose={() => setSelectedCourse(null)}
+          onManage={setManagedCourse}
+          onUnhide={handleUnhideCourse}
+          unhiding={unhidingCourse}
+        />
+      )}
+      {managedCourse && (
+        <ManageCourseModal
+          course={managedCourse}
+          submitting={hidingCourse}
+          onCancel={() => !hidingCourse && setManagedCourse(null)}
+          onConfirm={(reason) => handleHideCourse(managedCourse, reason)}
+        />
+      )}
     </div>
   );
 }
