@@ -22,8 +22,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dns from 'dns';
 dns.setServers(['8.8.8.8', '8.8.4.4']);
-import cron from 'node-cron';
-import { distributeEventRewards } from './src/jobs/eventRewardJob.js';
+
 
 import dotenv from "dotenv";
 import { verifyToken } from './middleware/verifyToken.middleware.js';
@@ -177,12 +176,7 @@ mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/final3")
   .then(() => console.log('MongoDB connected!'))
   .catch((err) => console.log('MongoDB error:', err));
 
-cron.schedule('*/1 * * * *', () => {
-  // console.log('[cron] tick lúc', new Date().toLocaleTimeString('vi-VN')); // thêm dòng debug này
-  distributeEventRewards().catch((err) =>
-    console.error('[cron] distributeEventRewards lỗi:', err)
-  );
-});
+
 app.listen(process.env.PORT, () => {
     console.log('Server is running!');
 });
