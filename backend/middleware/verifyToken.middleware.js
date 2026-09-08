@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import AccountModel from '../model/account.js';
+import { checkAndDistributeEndedEvents } from '../src/jobs/lazyEventRewardTrigger.js';
 
 export const verifyToken = async (req, res, next) => {
     try {
@@ -30,6 +31,14 @@ export const verifyToken = async (req, res, next) => {
             return res.status(403).json({ message: 'Account is suspended', code: 'ACCOUNT_SUSPENDED' });
         }
         req.user = decoded;
+
+        // Lazy trigger cho event reward — chạy ngầm trên MỌI request đã xác thực
+        // thành công, thay thế node-cron trên Render. Fire-and-forget: không
+        // await, không được làm chậm hay làm fail request gốc dù job lỗi.
+        checkAndDistributeEndedEvents().catch((err) =>
+            console.error('[lazyTrigger] unexpected error from verifyToken:', err)
+        );
+
         next();
     } catch (error) {
         if (error.name === 'JsonWebTokenError') {
