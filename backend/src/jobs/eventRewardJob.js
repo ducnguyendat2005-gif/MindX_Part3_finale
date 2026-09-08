@@ -55,7 +55,28 @@ async function generateRewardCoupon(accountId, event, tier) {
     return code;
 }
 
-// Hàm chính — quét các event đã ended nhưng chưa phát thưởng, phát cho top 3.
+// Tách phần xử lý 1 event ra hàm riêng, để cả cron cũ (nếu còn giữ) lẫn
+// lazyEventRewardTrigger.js đều gọi chung logic, tránh lặp code / lệch bug.
+export async function distributeEventRewardsForEvent(event) {
+    const topScores = await EventScoreModel.find({ eventId: event._id })
+        .sort({ totalScore: -1 })
+        .limit(3);
+
+    for (let i = 0; i < topScores.length; i++) {
+        const score = topScores[i];
+        if (!score.attemptsLog || score.attemptsLog.length === 0) continue;
+        if (score.rewardCouponCode) continue;
+
+        const tier = REWARD_TIERS[i];
+        const code = await generateRewardCoupon(score.accountId, event, tier);
+
+        score.rewardCouponCode = code;
+        await score.save();
+    }
+}
+
+// Giữ lại hàm cũ cho tương thích ngược nếu bạn chưa muốn bỏ hẳn cron ngay —
+// nó giờ chỉ là 1 wrapper quét + gọi hàm trên cho từng event.
 export async function distributeEventRewards() {
     const now = new Date();
     const endedEvents = await EventModel.find({
@@ -65,31 +86,11 @@ export async function distributeEventRewards() {
 
     for (const event of endedEvents) {
         try {
-            // Cùng logic sort với getLeaderboard để không lệch thứ hạng hiển thị cho user
-            const topScores = await EventScoreModel.find({ eventId: event._id })
-                .sort({ totalScore: -1 })
-                .limit(3);
-
-            for (let i = 0; i < topScores.length; i++) {
-                const score = topScores[i];
-                // Bỏ qua người chưa thực sự chơi (VD: chỉ set displayMode rồi bỏ)
-                if (!score.attemptsLog || score.attemptsLog.length === 0) continue;
-                // Phòng trường hợp job bị gọi lại giữa chừng (lỗi giữa vòng lặp) — tránh cấp trùng
-                if (score.rewardCouponCode) continue;
-
-                const tier = REWARD_TIERS[i];
-                const code = await generateRewardCoupon(score.accountId, event, tier);
-
-                score.rewardCouponCode = code;
-                await score.save();
-            }
-
+            await distributeEventRewardsForEvent(event);
             event.rewardsDistributed = true;
             await event.save();
-
             console.log(`[eventRewardJob] Đã phát thưởng top 3 cho event "${event.title}" (${event._id})`);
         } catch (err) {
-            // Lỗi ở 1 event không được làm hỏng việc xử lý các event khác trong cùng lượt quét
             console.error(`[eventRewardJob] Lỗi khi phát thưởng cho event ${event._id}:`, err);
         }
     }
