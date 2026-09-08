@@ -110,6 +110,7 @@ app.get('/account/myprofile/teacher',verifyToken,teacherController.getAllTeacher
 
 app.get('/admin',verifyToken,isAdmin,accountController.getAllAdminInfo)
 app.put('/admin/accounts/:id/status', verifyToken, isAdmin, accountController.updateAccountStatus)
+app.put('/admin/accounts/:id/username', verifyToken, isAdmin, accountController.updateAccountUsername)
 
 app.post('/account/checkout',verifyToken,courseController.postCheckout)
 
@@ -128,6 +129,8 @@ app.get('/admin/courses/pending', verifyToken, isAdmin,adminController.getPendin
 app.put('/admin/courses/:id/approve', verifyToken, isAdmin,adminController.approvePendingCourses)
 
 app.put('/admin/courses/:id/reject', verifyToken, isAdmin,adminController.rejectPendingCourses)
+app.put('/admin/courses/:id/hide', verifyToken, isAdmin,adminController.hideApprovedCourse)
+app.put('/admin/courses/:id/unhide', verifyToken, isAdmin,adminController.unhideCourse)
 
 app.post('/account/apply-coupon', verifyToken,checkUserCoupon, couponController.applyCoupon);
 

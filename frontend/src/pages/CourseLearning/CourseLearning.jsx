@@ -11,6 +11,7 @@ import CourseCard from '../../components/CourseCard/CourseCard.jsx'
 import vid from '../../assets/Java GUI intro ⭐【5 minutes】 - (1080p).mp4'
 import vidrecord from '../../assets/video-recorder.png'
 import { API, fetchWithAuth } from '../../config/api.js'
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 // ==================== SUB-COMPONENTS ====================
 
@@ -51,6 +52,7 @@ function CourseSection({ section, activeLesson, completedLessons, isLessonLocked
 }
 
 const SyllabusSection = ({ course }) => {
+  const { t } = useLanguage();
   const [openIndexes, setOpenIndexes] = useState(new Set());
 
   const totalLessons = course.syllabus.reduce(
@@ -80,10 +82,10 @@ const SyllabusSection = ({ course }) => {
   return (
     <div className={styles.syllabusDetails}>
       <div className={styles.syllabusHeader}>
-        <p className={styles.syllabusTitle}>Syllabus</p>
+        <p className={styles.syllabusTitle}>{t('detail.syllabus')}</p>
         <p className={styles.syllabusSummary}>
-          {totalSections} sections &nbsp;·&nbsp; {totalLessons} lessons
-          &nbsp;·&nbsp; {totalHour(course)} hours total
+          {totalSections} {t('detail.sections')} &nbsp;·&nbsp; {totalLessons} {t('detail.lessons')}
+          &nbsp;·&nbsp; {totalHour(course)} {t('detail.hoursTotal')}
         </p>
       </div>
 
@@ -102,7 +104,9 @@ const SyllabusSection = ({ course }) => {
   );
 };
 
-const SyllabusItem = ({ item, index, isOpen, onToggle }) => (
+const SyllabusItem = ({ item, index, isOpen, onToggle }) => {
+  const { t } = useLanguage();
+  return (
   <div className={`${styles.tocCard} ${isOpen ? styles.tocCardOpen : ""}`}>
     <button className={styles.tocHeader} onClick={() => onToggle(index)}>
       <div className={styles.tocLeft}>
@@ -112,7 +116,7 @@ const SyllabusItem = ({ item, index, isOpen, onToggle }) => (
         <span className={styles.tocTitle}>{item.title}</span>
       </div>
       <div className={styles.tocRight}>
-        <span className={styles.tocMeta}>{item.lessons} Lessons</span>
+        <span className={styles.tocMeta}>{item.lessons} {t('detail.lessons')}</span>
         <span className={styles.tocDot} />
         <span className={styles.tocMeta}>{item.duration}</span>
         <ChevronIcon open={isOpen} />
@@ -132,7 +136,8 @@ const SyllabusItem = ({ item, index, isOpen, onToggle }) => (
       </ul>
     </div>
   </div>
-);
+  );
+};
 
 const ChevronIcon = ({ open }) => (
   <svg
@@ -209,6 +214,7 @@ function Lesson({ lesson, isActive, isCompleted, isLocked, onSelect }) {
 }
 
 function QuizNavItem({ quiz, status, onSelect }) {
+  const { t } = useLanguage();
   const isLocked = status === 'locked';
 
   const handleClick = () => {
@@ -275,6 +281,7 @@ function buildSections(syllabus = [], courseId = '') {
 }
 
 function CourseCompletion({ syllabus, courseId, completedLessons, activeLessonId, onSelectLesson, quizAttempts = [], onSelectQuiz }) {
+  const { t } = useLanguage();
   const sections = useMemo(() => buildSections(syllabus, courseId), [syllabus, courseId]);
   const firstLesson = sections[0]?.lessons[0]?.storageId ?? null;
   const [activeLesson, setActiveLesson] = useState(firstLesson);
@@ -329,7 +336,7 @@ function CourseCompletion({ syllabus, courseId, completedLessons, activeLessonId
   return (
     <div className={styles.courseCompletion}>
       <div className={styles.courseCompletionHeader}>
-        <h1 className={styles.courseCompletionTitle}>Course Completion</h1>
+        <h1 className={styles.courseCompletionTitle}>{t('learning.courseCompletion')}</h1>
       </div>
       {sections.map((section) => (
         <CourseSection
@@ -352,6 +359,7 @@ function CourseCompletion({ syllabus, courseId, completedLessons, activeLessonId
 }
 
 function QuizModal({ section, courseId, onClose, onPassed }) {
+  const { t } = useLanguage();
   const quiz = section.quiz;
   const [answers, setAnswers] = useState(Array(quiz.questions.length).fill(null));
   const [result, setResult] = useState(null);
@@ -432,7 +440,7 @@ function QuizModal({ section, courseId, onClose, onPassed }) {
               disabled={submitting}
               className={styles.quizSubmitBtn}
             >
-              {submitting ? 'Submitting...' : 'Submit quiz'}
+              {submitting ? t('learning.submitting') : t('learning.submitQuiz')}
             </button>
           </>
         ) : (
@@ -483,6 +491,13 @@ const navButtons = [
 ];
 
 function CourseNavbar({ activeNav, setActiveNav, setActiveTab }) {
+  const { t } = useLanguage();
+  const labels = {
+    Details: t('learning.details'),
+    Instructor: t('learning.instructor'),
+    Courses: t('learning.courses'),
+    Reviews: t('learning.reviews'),
+  };
   return (
     <div className={styles.courseNavbar}>
       {navButtons.map(({ label, tab }) => (
@@ -491,7 +506,7 @@ function CourseNavbar({ activeNav, setActiveNav, setActiveTab }) {
             className={`${styles.navBtn} ${activeNav === label ? styles.navBtnActive : ""}`}
             onClick={() => { setActiveNav(label); setActiveTab(tab); }}
           >
-            {label}
+            {labels[label]}
           </button>
         </div>
       ))}
@@ -522,6 +537,7 @@ const buildReviewStats = (reviews) => {
 };
 
 function ReviewForm({ courseId, onReviewPosted }) {
+  const { t } = useLanguage();
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -558,7 +574,7 @@ function ReviewForm({ courseId, onReviewPosted }) {
 
   return (
     <div className={styles.reviewForm}>
-      <p>Leave your comments here</p>
+      <p>{t('learning.leaveReview')}</p>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
         {[5, 4, 3, 2, 1].map((n) => (
@@ -568,16 +584,18 @@ function ReviewForm({ courseId, onReviewPosted }) {
       <textarea
         value={comment}
         onChange={(e) => setComment(e.target.value)}
-        placeholder="Your comment here"
+        placeholder={t('learning.commentPlaceholder')}
         rows={4}
       />
       <button onClick={handleSubmit} disabled={loading}>
-        {loading ? 'Sending...' : 'Send ratings'}
+        {loading ? t('learning.sending') : t('learning.sendRating')}
       </button>
     </div>
   );
 }
 function LearnerReviewsShowcase({ course, reviewStats }) {
+  const { t } = useLanguage();
+  const [showAllReviews, setShowAllReviews] = useState(false);
   const breakdown = [5, 4, 3, 2, 1].map((n) => ({
     stars: n,
     percent: reviewStats.ratingBreakdown[`${n}_star`] || "0%",
@@ -590,7 +608,7 @@ function LearnerReviewsShowcase({ course, reviewStats }) {
 
   return (
     <div className={styles.lrSection}>
-      <h2 className={styles.lrHeading}>Learner Reviews</h2>
+      <h2 className={styles.lrHeading}>{t('detail.learnerReviews')}</h2>
 
       <div className={styles.lrBody}>
         {/* Left: rating summary */}
@@ -600,7 +618,7 @@ function LearnerReviewsShowcase({ course, reviewStats }) {
             <span className={styles.lrScore}>{reviewStats.averageRating}</span>
           </div>
           <p className={styles.lrTotal}>
-            {reviewStats.totalReviews.toLocaleString("vi-VN")} reviews
+            {t('detail.reviewCount', { count: reviewStats.totalReviews.toLocaleString('vi-VN') })}
           </p>
 
           {breakdown.map(({ stars, percent }) => (
@@ -622,7 +640,7 @@ function LearnerReviewsShowcase({ course, reviewStats }) {
 
         {/* Right: individual review cards */}
         <div className={styles.lrList}>
-          {course.reviews.map((r) => (
+          {(course.reviews ?? []).slice(0, showAllReviews ? undefined : 2).map((r) => (
             <div key={r._id} className={styles.lrCard}>
               <img src={bigava} alt={r.name} className={styles.lrAvatar} />
               <div className={styles.lrCardContent}>
@@ -632,14 +650,18 @@ function LearnerReviewsShowcase({ course, reviewStats }) {
                     <img src={yellowstar} alt="star" className={styles.lrBarStarIcon} />
                     {r.rating}
                   </span>
-                  <span className={styles.lrDate}>Reviewed on {formatDate(r.createdAt)}</span>
+                  <span className={styles.lrDate}>{t('learning.reviewedOn')} {formatDate(r.createdAt)}</span>
                 </div>
                 <p className={styles.lrComment}>{r.comment}</p>
               </div>
             </div>
           ))}
 
-          <button className={styles.lrMoreBtn}>View more Reviews</button>
+          {(course.reviews ?? []).length > 2 && (
+            <button className={styles.lrMoreBtn} onClick={() => setShowAllReviews((current) => !current)}>
+              {showAllReviews ? t('detail.viewLessReviews') : t('detail.viewMoreReviews')}
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -647,14 +669,16 @@ function LearnerReviewsShowcase({ course, reviewStats }) {
 }
 
 function LearnerReviews({ course, reviewStats, onReviewPosted, showForm = true }) {
+  const { t } = useLanguage();
+  const [showAllReviews, setShowAllReviews] = useState(false);
   return (
     <div className={styles.reviews}>
-      <p>Learner Reviews</p>
+      <p>{t('detail.learnerReviews')}</p>
       <div className={styles.stars}>
         <div className={styles.starReview}>
           <img src={yellowstar} alt="star" />
           <p>{reviewStats.averageRating}</p>
-          <p>{reviewStats.totalReviews.toLocaleString('vi-VN')} reviews</p>
+          <p>{t('detail.reviewCount', { count: reviewStats.totalReviews.toLocaleString('vi-VN') })}</p>
         </div>
         <div className={styles.star5}>
           <img src={yellowstar} alt="star" />
@@ -699,7 +723,7 @@ function LearnerReviews({ course, reviewStats, onReviewPosted, showForm = true }
       </div>
       {showForm && <ReviewForm courseId={course._id} onReviewPosted={onReviewPosted} />}
       <div className={styles.review}>
-        {course.reviews.map((i) => (
+        {(course.reviews ?? []).slice(0, showAllReviews ? undefined : 2).map((i) => (
           <div key={i._id} className={styles.reviewCard}>
             <div className={styles.ava}>
               <img src={bigava} alt="avatar" />
@@ -709,18 +733,23 @@ function LearnerReviews({ course, reviewStats, onReviewPosted, showForm = true }
               <img src={yellowstar} alt="star" />
               <p>{i.rating}</p>
             </div>
-            <p>Reviewed on {new Date(i.createdAt).toLocaleDateString('vi-VN')}</p>
+            <p>{t('learning.reviewedOn')} {new Date(i.createdAt).toLocaleDateString('vi-VN')}</p>
             <p>{i.comment}</p>
           </div>
         ))}
       </div>
-      <button id="more-reviews">View more Reviews</button>
+      {(course.reviews ?? []).length > 2 && (
+        <button id="more-reviews" onClick={() => setShowAllReviews((current) => !current)}>
+          {showAllReviews ? t('detail.viewLessReviews') : t('detail.viewMoreReviews')}
+        </button>
+      )}
     </div>
   );
 }
 
 // ==================== MAIN PAGE ====================
 export default function CourseLearning() {
+  const { t } = useLanguage();
   const [allCourse, setAllCourse] = useState([]);
   const [activeNav, setActiveNav] = useState("Details");
   const [activeTab, setActiveTab] = useState('description');
@@ -857,8 +886,8 @@ export default function CourseLearning() {
   const handleQuizPassed = (sectionId) => {
     setQuizAttempts(prev => [...prev, { sectionId, passed: true, score: 100 }]);
   };
-  if (loading) return <p style={{ padding: "2rem", color: "#94a3b8" }}>Loading...</p>;
-  if (!course) return <p style={{ padding: "2rem", color: "#94a3b8" }}>Course data not found.</p>;
+  if (loading) return <p style={{ padding: "2rem", color: "#94a3b8" }}>{t('learning.loading')}</p>;
+  if (!course) return <p style={{ padding: "2rem", color: "#94a3b8" }}>{t('learning.notFound')}</p>;
 
   // Shortcut — course đã flatten, không còn field "details" lồng nữa
   const instructor = course.instructorId ?? {};
@@ -928,11 +957,11 @@ export default function CourseLearning() {
               {/* Description Tab */}
               <div className={styles.tabSlide}>
                 <div className={styles.courseDes}>
-                  <p>Course Description</p>
+                  <p>{t('learning.courseDescription')}</p>
                   <p>
                     {course.courseDescription}
                   </p>
-                  <p>Certification</p>
+                  <p>{t('learning.certification')}</p>
                   <p>
                     {course.certification}
                   </p>
@@ -946,12 +975,12 @@ export default function CourseLearning() {
                     <p>{course.instructorId?.title}</p>
                     <div className={styles.instructorProfile}>
                       <img src={bigava} alt="instructor" />
-                      <p>{course.instructorId?.totalReviews} Reviews</p>
+                      <p>{course.instructorId?.totalReviews} {t('detail.reviews')}</p>
                       <img id="medal" src={medal} alt="medal" />
                       <img src={play} alt="play" />
                       <img src={graduation} alt="grad" />
-                      <p>{course.instructorId?.totalStudents} Students</p>
-                      <p>{course.instructorId?.totalCourses} Courses</p>
+                      <p>{course.instructorId?.totalStudents} {t('detail.students')}</p>
+                      <p>{course.instructorId?.totalCourses} {t('detail.courses')}</p>
                     </div>
                     <p>{course.instructorId?.bio}</p>
                 </div>
@@ -976,7 +1005,7 @@ export default function CourseLearning() {
         </div>
 
         <div className={styles.courses}>
-          <h2 className={styles.divTitle}>More Courses Like This</h2>
+          <h2 className={styles.divTitle}>{t('learning.moreCourses')}</h2>
           <div className={styles.courseList}>
             {sameCourse({ data: allCourse, course: course }).map((data) =>
             <div key={data.id} onClick={() => window.location.reload()}> 
@@ -987,7 +1016,7 @@ export default function CourseLearning() {
               instructor={data.instructorId?.name}
               rating={data.rating}
               ratingCount={data.reviews?.length ?? 0}
-              duration={`${data.hours} Total Hours. ${data.lectures} Lectures. ${data.level}`}
+              duration={`${data.hours} ${t('course.totalHours')}. ${data.lectures} ${t('course.lectures')}. ${data.level}`}
               category={data.category}
               price={`$${data.price}`}
               >

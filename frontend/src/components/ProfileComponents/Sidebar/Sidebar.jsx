@@ -1,20 +1,22 @@
 import React from 'react';
 import { Share2, Plus } from 'lucide-react';
 import './Sidebar.scss';
+import { useLanguage } from '../../../context/LanguageContext.jsx';
 
 const BASE_NAV_ITEMS = [
-  { key: 'profile', label: 'Profile' },
-  { key: 'courses', label: 'My Courses' },
-  { key: 'teachers', label: 'Teachers' },
-  { key: 'students', label: 'Students' },
-  { key: 'message', label: 'Message' },
-  { key: 'reviews', label: 'My Reviews' },
+  { key: 'profile', labelKey: 'profile.profile' },
+  { key: 'courses', labelKey: 'profile.myCourses' },
+  { key: 'teachers', labelKey: 'profile.teachers' },
+  { key: 'students', labelKey: 'profile.students' },
+  { key: 'message', labelKey: 'profile.message' },
+  { key: 'reviews', labelKey: 'profile.myReviews' },
 ];
 
 export default function Sidebar({ user, activeTab, setActiveTab, onCreateCourse }) {
+  const { t } = useLanguage();
   const isTeacher = user?.role === 'teacher' || user?.Role === 'teacher';
   const navItems = isTeacher
-    ? [{ key: 'teacherInfo', label: 'Profile' }, ...BASE_NAV_ITEMS.slice(1)]
+    ? [{ key: 'teacherInfo', labelKey: 'profile.profile' }, ...BASE_NAV_ITEMS.slice(1)]
     : BASE_NAV_ITEMS;
 
   return (
@@ -30,7 +32,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, onCreateCourse 
         </div>
         <h2 className="sidebar__name">{user?.Username ?? 'John Doe'}</h2>
         <button className="sidebar__share-btn">
-          Share Profile <Share2 className="sidebar__share-icon" />
+          {t('profile.share')} <Share2 className="sidebar__share-icon" />
         </button>
       </div>
 
@@ -46,7 +48,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, onCreateCourse 
             }`}
             onClick={() => setActiveTab(item.key)}
           >
-            {item.label}
+            {t(item.labelKey)}
           </button>
         ))}
       </nav>
@@ -58,7 +60,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, onCreateCourse 
           onClick={onCreateCourse}
         >
           <Plus className="sidebar__create-course-icon" size={16} />
-          Create Course
+          {t('profile.createCourse')}
         </button>
       )}
     </aside>

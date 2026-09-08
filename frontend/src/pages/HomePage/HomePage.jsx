@@ -1,6 +1,7 @@
 import React from 'react'
 import styles from './HomePage.module.scss'
 import { API } from '../../config/api.js'
+import { useNavigate } from 'react-router-dom'
 import Header from '../../components/Header/Header.jsx'
 import Footer from '../../components/Footer/Footer.jsx'
 import EventPromoBanner from '../../components/EventPromoBanner/EventPromoBanner.jsx';
@@ -36,6 +37,7 @@ import quoteImg from '../../assets/Vector.png'
 import bkImg1 from '../../assets/image.png'
 import bkImg2 from '../../assets/image (1).png'
 import defaultAvatar from '../../assets/Screenshot 2026-03-30 212131.png'
+import { useLanguage } from '../../context/LanguageContext.jsx'
 
 const CircularProgress = ({ value = 80, label = "Completion rate of our courses", size = 180, color = "#4A90E2" }) => {
   const [animatedValue, setAnimatedValue] = useState(0);
@@ -119,6 +121,7 @@ const CircularProgress = ({ value = 80, label = "Completion rate of our courses"
 };
 
 const TopInstructor = ({ name, title, rating, totalStudents, thumbnail }) => {
+  const { t } = useLanguage();
   return (
     <div className={styles.TopInsCard}>
       <img src={thumbnail || defaultAvatar} alt="instructor" />
@@ -129,7 +132,7 @@ const TopInstructor = ({ name, title, rating, totalStudents, thumbnail }) => {
         <img src={star} alt="star" />
         <p>{rating}</p>
       </div>
-      <p>{totalStudents} students</p>
+      <p>{totalStudents} {t('admin.studentsLabel')}</p>
     </div>
   )
 }
@@ -189,6 +192,7 @@ const getCategoryBg = (category) => {
 
 
 const HomePage = () => {
+const { t } = useLanguage();
 
 const [products, setProducts] = useState([]);
 const [Mainreviews, setReviews] = useState([]);
@@ -196,6 +200,7 @@ const [loading, setLoading] = useState(true);
 const [error, setError] = useState(null);
 const [instructors, setInstructors] = useState([]);
 const [topCourses, setTopCourses] = useState([]);
+const navigate = useNavigate();
 
   useEffect(() => {
   const fetchData = async () => {
@@ -234,7 +239,7 @@ const [topCourses, setTopCourses] = useState([]);
   fetchData();
 }, []);
   
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p>{t('home.loading')}</p>;
   if (error) return <p>Lỗi: {error}</p>;
   
   
@@ -245,7 +250,7 @@ const [topCourses, setTopCourses] = useState([]);
     <section className={styles.mainPage}>
       <div className={styles.homePageBanner}>
         <div className={styles.leftInfo}>
-          <p>Unlock Your Potential with Byway</p>
+          <p>{t('home.unlock')}</p>
           <p>
             Welcome to Byway, where learning knows no bounds. We believe that
             education is the key to personal and professional growth, and we're
@@ -254,13 +259,15 @@ const [topCourses, setTopCourses] = useState([]);
             Learning Management System is designed to elevate your learning
             experience.
           </p>
-          <button>Start your instructor journey</button>
+          <button type="button" onClick={() => navigate('/signup')}>
+            {t('home.startInstructor')}
+          </button>
         </div>
         <div className={styles.decoRight}>
           <img src={frame1} alt="deco1" />
           <img src={frame2} alt="deco2" />
           <img src={frame3} alt="deco3" />
-          <CircularProgress></CircularProgress>
+          <CircularProgress label={t('home.completion')} />
         </div>
       </div>
 
@@ -270,29 +277,29 @@ const [topCourses, setTopCourses] = useState([]);
         <div className={styles.insideText}>
           <div className={styles.first}>
             <p>250+</p>
-            <p>Courses by our best mentors</p>
+            <p>{t('home.coursesByMentors')}</p>
           </div>
           <span className={styles.sepLine1} />
           <div className={styles.second}>
             <p>1000+</p>
-            <p>Courses by our best mentors</p>
+            <p>{t('home.coursesByMentors')}</p>
           </div>
           <span className={styles.sepLine2} />
           <div className={styles.third}>
             <p>15+</p>
-            <p>Courses by our best mentors</p>
+            <p>{t('home.coursesByMentors')}</p>
           </div>
           <span className={styles.sepLine3} />
           <div className={styles.fourth}>
             <p>2400+</p>
-            <p>Courses by our best mentors</p>
+            <p>{t('home.coursesByMentors')}</p>
           </div>
         </div>
       </div>
  
       <div className={styles.topField}>
       <div className={styles.topCat}>
-        <p>Top Catergories</p>
+        <p>{t('home.topCategories')}</p>
         <div className={styles.cardCover}>
           {TopCat(products).map((cat) => {
             const Icon = getCategoryIcon(cat.category)
@@ -302,12 +309,22 @@ const [topCourses, setTopCourses] = useState([]);
                 className={styles.ast}
                 key={cat.category}
                 style={bgImage ? { backgroundImage: `url(${bgImage})` } : {}}
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate(`/course-page?category=${encodeURIComponent(cat.category)}`)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    navigate(`/course-page?category=${encodeURIComponent(cat.category)}`);
+                  }
+                }}
+                aria-label={`View ${cat.category} courses`}
               >
                 <div className={styles.imgBino}>
                   <Icon size={28} color="#4A90E2" />
                 </div>
                 <p style={{ color: 'white', fontWeight:"700" }}>{cat.category.charAt(0).toUpperCase() + cat.category.slice(1)}</p>
-                <p style={{ color: 'white', fontWeight:"300" }}>{cat.totalReviews} Courses</p>
+                <p style={{ color: 'white', fontWeight:"300" }}>{cat.totalReviews} {t('home.courses')}</p>
               </div>
           )
         })}
@@ -315,7 +332,7 @@ const [topCourses, setTopCourses] = useState([]);
 </div>
  
         <div className={styles.topCour}>
-          <p>Top Courses</p>
+          <p>{t('home.topCourses')}</p>
           <div className={styles.topCourCard}>
             {topCourses.map((course) => (
               <CourseCard
@@ -335,7 +352,7 @@ const [topCourses, setTopCourses] = useState([]);
         </div>
  
         <div className={styles.topIns}>
-          <p>Top #5 Instructor</p>
+          <p>{t('home.topInstructors')}</p>
           <div className={styles.topInsCardParent}>
             {instructors.map((t) => (
               <TopInstructor
@@ -354,7 +371,7 @@ const [topCourses, setTopCourses] = useState([]);
       </div>
  
       <div className={styles.cusRev}>
-        <p>What customer say about us</p>
+        <p>{t('home.customerReviews')}</p>
         <div className={styles.lowerRev}>
           {Mainreviews.map((data) => 
             <div className={styles.cusBox}>
@@ -376,22 +393,20 @@ const [topCourses, setTopCourses] = useState([]);
         <div className={styles.ci}>
           <img src={bkImg1} alt="become instructor" />
           <div className={styles.ciDes}>
-            <p>Become an Instructor</p>
-            <p>
-              Instructors from around the world teach millions of students on
-              Byway. We provide the tools and skills to teach what you love.
-            </p>
-            <button>Start Your Instructor Journey</button>
+            <p>{t('home.becomeInstructor')}</p>
+            <p>{t('home.instructorDescription')}</p>
+            <button type="button" onClick={() => navigate('/signup')}>
+              {t('home.startInstructorJourney')}
+            </button>
           </div>
         </div>
         <div className={styles.cc}>
           <div className={styles.ccDes}>
-            <p>Transform your life through education</p>
-            <p>
-              Learners around the world are launching new careers, advancing in
-              their fields, and enriching their lives.
-            </p>
-            <button>Checkout Courses</button>
+            <p>{t('home.transformLife')}</p>
+            <p>{t('home.learnerDescription')}</p>
+            <button type="button" onClick={() => navigate('/course-page')}>
+              {t('home.checkoutCourses')}
+            </button>
           </div>
           <img src={bkImg2} alt="checkout courses" />
         </div>

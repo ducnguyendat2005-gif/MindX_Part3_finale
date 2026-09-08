@@ -1,15 +1,18 @@
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import styles from "./CoursePage.module.scss";
 import CourseCard from "../../components/CourseCard/CourseCard.jsx";
 import { API } from '../../config/api.js'
 import star from '../../assets/icon-1star.png'
 import defaultAvatar from '../../assets/Screenshot 2026-03-30 212131.png'
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 const TopCourses = (data) =>{
   let x = [...data].sort((a,b) => b.rating - a.rating)
   return x.slice(0,4)
 }
 const TopInstructor = ({name,role,rating,students,thumbnail}) => {
+  const { t } = useLanguage();
   return(
       <div className={styles.TopInsCard}>
         <img src={thumbnail} alt="instructor" />
@@ -20,7 +23,7 @@ const TopInstructor = ({name,role,rating,students,thumbnail}) => {
           <img src={star} alt="star" />
           <p>{rating}</p>
         </div>
-        <p>{students} students</p>
+        <p>{students} {t('admin.studentsLabel')}</p>
       </div>
     
   )
@@ -113,6 +116,9 @@ function InstructorCard({ instructor }) {
 }
 
 export default function CoursesPage() {
+  const { t } = useLanguage();
+  const [searchParams] = useSearchParams();
+  const categoryFromUrl = searchParams.get("category");
   const [coursesData, setCoursesData] = useState([]);
   const [topInstructors, setTopInstructors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -159,6 +165,18 @@ export default function CoursesPage() {
     () => [...new Set(coursesData.map((c) => c.category))],
     [coursesData]
   );
+
+  useEffect(() => {
+    if (!categoryFromUrl || !categoryList.length) return;
+
+    const selectedCategory = categoryList.find(
+      (category) =>
+        category?.trim().toLowerCase() === categoryFromUrl.trim().toLowerCase()
+    );
+
+    setCategories(selectedCategory ? [selectedCategory] : []);
+    setCurrentPage(1);
+  }, [categoryFromUrl, categoryList]);
 
   const toggleItem = (list, setList, value) => {
     setList((prev) =>
@@ -216,22 +234,22 @@ export default function CoursesPage() {
   );
 
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p>{t('home.loading')}</p>;
   if (error) return <p>Lỗi: {error}</p>;
 
   return (
     <section className={styles.mainPage}>
       <div className={styles.container}>
-        <h1>Design Courses</h1>
-        <p className={styles.subtitle}>All Development Courses</p>
+        <h1>{categories.length === 1 ? `${categories[0]} ${t('course.courses')}` : t('course.courses')}</h1>
+        <p className={styles.subtitle}>{t('course.courses')}</p>
 
         <div className={styles.controls}>
           <button className={styles.filterBtn}>
             <span>☰</span>
-            <span>Filter</span>
+            <span>{t('course.filter')}</span>
           </button>
           <div className={styles.sortControl}>
-            <label>Sort By</label>
+            <label>{t('course.sortBy')}</label>
             <select
               value={sortBy}
               onChange={(e) => {
@@ -239,18 +257,18 @@ export default function CoursesPage() {
                 setCurrentPage(1);
               }}
             >
-              <option value="relevance">Relevance</option>
-              <option value="rating">Highest Rated</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="newest">Newest</option>
+              <option value="relevance">{t('course.relevance')}</option>
+              <option value="rating">{t('course.highestRated')}</option>
+              <option value="price-low">{t('course.priceLow')}</option>
+              <option value="price-high">{t('course.priceHigh')}</option>
+              <option value="newest">{t('course.newest')}</option>
             </select>
           </div>
         </div>
 
         <div className={styles.mainContent}>
           <aside className={styles.sidebar}>
-            <FilterSection title="Rating">
+            <FilterSection title={t('course.rating')}>
               {[5, 4, 3, 2, 1].map((r) => (
                 <FilterOption
                   key={r}
@@ -262,7 +280,7 @@ export default function CoursesPage() {
               ))}
             </FilterSection>
 
-            <FilterSection title="Number of Chapters">
+            <FilterSection title={t('course.chapters')}>
               {Object.keys(CHAPTER_RANGES).map((range) => (
                 <FilterOption
                   key={range}
@@ -272,12 +290,12 @@ export default function CoursesPage() {
                   label={range}
                 />
               ))}
-              <span className={styles.seeMore}>See More ▼</span>
+              <span className={styles.seeMore}>{t('course.seeMore')} ▼</span>
             </FilterSection>
 
-            <FilterSection title="Price">
+            <FilterSection title={t('course.price')}>
               {[
-                { value: "0-50", label: "Under $50" },
+                { value: "0-50", label: t('course.under50') },
                 { value: "50-150", label: "$50 – $150" },
                 { value: "150-300", label: "$150 – $300" },
               ].map((p) => (
@@ -291,7 +309,7 @@ export default function CoursesPage() {
               ))}
             </FilterSection>
 
-            <FilterSection title="Category">
+            <FilterSection title={t('course.category')}>
               {categoryList.map((cat) => (
                 <FilterOption
                   key={cat}
@@ -308,7 +326,7 @@ export default function CoursesPage() {
           <div className={styles.coursesGrid}>
             {paginated.length === 0 ? (
               <div className={styles.emptyState}>
-                No courses match your filters.
+                {t('course.noMatch')}
               </div>
             ) : (
               <div className={styles.grid}>
@@ -320,7 +338,7 @@ export default function CoursesPage() {
                     instructor={course.instructorId?.name}
                     rating={course.rating}
                     ratingCount={course.reviews?.length ?? 0}
-                    duration={`${course.hours} Total Hours. ${course.lectures} Lectures. ${course.level}`}
+                    duration={`${course.hours} ${t('course.totalHours')}. ${course.lectures} ${t('course.lectures')}. ${course.level}`}
                     category={course.category}
                     promotionalPrice={course.promotionalPrice}
                     originalPrice={course.price}
@@ -359,7 +377,7 @@ export default function CoursesPage() {
 
       {/* ── Top Instructors ── */}
       <div className={styles.topIns}>
-          <p>Top Instructor</p>
+          <p>{t('course.topInstructor')}</p>
           <div className={styles.topInsCardParent}>
             {topInstructors.map((t) => (
               <TopInstructor
@@ -377,7 +395,7 @@ export default function CoursesPage() {
 
       {/* ── Top Courses — dùng CourseCard gốc ── */}
       <div className={styles.topCour}>
-        <p>Top Courses</p>
+        <p>{t('home.topCourses')}</p>
         <div className={styles.topCourList}>
           {TopCourses(coursesData).map((course) => (
               <CourseCard
@@ -387,7 +405,7 @@ export default function CoursesPage() {
                 instructor={course.instructorId?.name}
                 rating={course.rating}
                 ratingCount={course.reviews?.length ?? 0}
-                duration={`${course.hours} Total Hours. ${course.lectures} Lectures. ${course.level}`}
+                duration={`${course.hours} ${t('course.totalHours')}. ${course.lectures} ${t('course.lectures')}. ${course.level}`}
                 category={course.category}
                 promotionalPrice={course.promotionalPrice}
                 originalPrice={course.price}

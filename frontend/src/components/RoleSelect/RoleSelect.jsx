@@ -2,8 +2,10 @@
 import { GraduationCap, Presentation } from 'lucide-react';
 import { motion } from 'motion/react';
 import './RoleSelect.scss';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 export default function RoleSelect({ onSelect }) {
+  const { t } = useLanguage();
   return (
     <motion.div
       initial={{ opacity: 0, x: 100 }}
@@ -13,8 +15,8 @@ export default function RoleSelect({ onSelect }) {
       className="role-select-inner"
     >
       <div className="role-select-heading">
-        <h1>You are ?...</h1>
-        <p>Dont worry, you can change this later in the setting</p>
+        <h1>{t('auth.roleQuestion')}</h1>
+        <p>{t('auth.roleHint')}</p>
       </div>
 
       <div className="role-select-grid">
@@ -28,8 +30,8 @@ export default function RoleSelect({ onSelect }) {
           <div className="role-card__icon">
             <GraduationCap size={32} />
           </div>
-          <h3>Students</h3>
-          <p>Explore and learn courses from various fields</p>
+          <h3>{t('auth.student')}</h3>
+          <p>{t('auth.studentDescription')}</p>
         </motion.button>
 
         <motion.button
@@ -42,8 +44,8 @@ export default function RoleSelect({ onSelect }) {
           <div className="role-card__icon">
             <Presentation size={32} />
           </div>
-          <h3>Teacher</h3>
-          <p>Create, manage, and sell your own courses</p>
+          <h3>{t('auth.teacher')}</h3>
+          <p>{t('auth.teacherDescription')}</p>
         </motion.button>
       </div>
     </motion.div>

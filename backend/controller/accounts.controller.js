@@ -12,6 +12,8 @@ import { uploadBufferToCloudinary } from '../src/utils/uploadToCloudinary.js';
 import dotenv from "dotenv";
 dotenv.config();
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const accountController = {
     getAllStudents: async (req, res, next) => {
         try {
@@ -117,7 +119,9 @@ const accountController = {
         const courseIds = enrollments.map(e => e.courseId);
 
         const Mycourses = await CourseModel.aggregate([
-            { $match: { _id: { $in: courseIds } } },
+            // Hidden courses remain unavailable to learners, even if they were
+            // enrolled before the course was hidden by an admin.
+            { $match: { _id: { $in: courseIds }, status: 'approved' } },
             {
                 $lookup: {
                     from: "instructors",
@@ -228,6 +232,51 @@ const accountController = {
             await account.save();
             res.status(200).json({ success: true, data: account, message: 'Account status updated successfully' });
         } catch (error) {
+            next(error);
+        }
+    },
+    updateAccountUsername: async (req, res, next) => {
+        try {
+            const rawUsername = req.body.Username ?? req.body.username;
+            const Username = String(rawUsername ?? '').replace(/^@+/, '').trim();
+
+            if (!Username) {
+                return res.status(400).json({ success: false, message: 'Username cannot be empty' });
+            }
+            if (Username.length > 50) {
+                return res.status(400).json({ success: false, message: 'Username must be 50 characters or fewer' });
+            }
+
+            const account = await AccountModel.findById(req.params.id);
+            if (!account) {
+                return res.status(404).json({ success: false, message: 'Account not found' });
+            }
+
+            const normalizedCurrentUsername = String(account.Username || '').replace(/^@+/, '').toLowerCase();
+            if (normalizedCurrentUsername === 'hoado') {
+                return res.status(403).json({ success: false, message: 'The administrator account username cannot be changed' });
+            }
+
+            const duplicate = await AccountModel.findOne({
+                _id: { $ne: account._id },
+                Username: { $regex: `^${escapeRegex(Username)}$`, $options: 'i' },
+            });
+            if (duplicate) {
+                return res.status(409).json({ success: false, message: 'Username already exists' });
+            }
+
+            account.Username = Username;
+            await account.save();
+
+            return res.status(200).json({
+                success: true,
+                data: account,
+                message: 'Username updated successfully',
+            });
+        } catch (error) {
+            if (error?.code === 11000) {
+                return res.status(409).json({ success: false, message: 'Username already exists' });
+            }
             next(error);
         }
     },
