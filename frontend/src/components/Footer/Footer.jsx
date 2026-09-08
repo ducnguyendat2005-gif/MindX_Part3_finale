@@ -6,9 +6,12 @@ import google from '../../assets/google.jpg';
 import microsoft from '../../assets/microsoft.png';
 import twitter from '../../assets/twitter.png';
 import logo from '../../assets/logo (1).png';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 
 const Footer = () => {
+  const { t } = useLanguage();
+
   return (
     <footer>
         <div className={styles.footerInfo}>
@@ -17,19 +20,19 @@ const Footer = () => {
                 <img src={logo} alt="Byway Logo" style={{ width: '31px', height: '40px' }} />
                 <span>Byway</span>
             </div>
-                <p>Empowering learners through accessible and engaging online education.</p>
-                <p>Byway is a leading online learning platform dedicated to providing high-quality, flexible, and affordable educational experiences.</p>
+                <p>{t('footer.tagline')}</p>
+                <p>{t('footer.description')}</p>
             </div>
 
             <div className={styles.getHelp}>
-                <p className={styles.upperP}>Get Help</p>
-                <p>Contact Us</p>
-                <p>Latest Articles</p>
-                <p>FAQ</p>
+                <p className={styles.upperP}>{t('footer.getHelp')}</p>
+                <p>{t('footer.contactUs')}</p>
+                <p>{t('footer.latestArticles')}</p>
+                <p>{t('footer.faq')}</p>
             </div>
 
             <div className={styles.programs}>
-                <p className={styles.upperP}>Programs</p>
+                <p className={styles.upperP}>{t('footer.programs')}</p>
                 <p>Art & Design</p>
                 <p>Business</p>
                 <p>IT & Software</p>
@@ -39,10 +42,10 @@ const Footer = () => {
 
             <div className={styles.contact}>
             <div className={styles.contactUs}>
-                <p className={styles.upperP}>Contact Us</p>
-                <p>Address: 123 Main Street, Anytown, CA 12345</p>
-                <p>Tel: +(123) 456-7890</p>
-                <p>Mail: bywayellu@webkul.in</p>
+                <p className={styles.upperP}>{t('footer.contactUs')}</p>
+                <p>{t('footer.address')}: 123 Main Street, Anytown, CA 12345</p>
+                <p>{t('footer.tel')}: +(123) 456-7890</p>
+                <p>{t('footer.mail')}: bywayellu@webkul.in</p>
             </div>
             <div className={styles.partnerButton}>
                 <a href="https://www.facebook.com/facebook/" className={styles.iconBtn}><img src={facebook} alt="Facebook" /></a>

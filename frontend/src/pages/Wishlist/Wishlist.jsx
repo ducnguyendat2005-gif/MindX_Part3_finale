@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CourseCard from '../../components/CourseCard/CourseCard';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 import styles from './Wishlist.module.scss';
 
 const WISHLIST_KEY = 'wishlistedCourses';
@@ -8,6 +9,7 @@ const WISHLIST_KEY = 'wishlistedCourses';
 export default function Wishlist() {
   const [wishlist, setWishlist] = useState([]);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
@@ -32,15 +34,15 @@ export default function Wishlist() {
   return (
     <div className={styles.wishlistPage}>
       <div className={styles.wishlistHeader}>
-        <h1>Your Wishlist</h1>
-        <p>{wishlist.length} favorite course{wishlist.length === 1 ? '' : 's'}</p>
+        <h1>{t('wishlist.title')}</h1>
+        <p>{t(wishlist.length === 1 ? 'wishlist.count.one' : 'wishlist.count.many', { count: wishlist.length })}</p>
       </div>
 
       {wishlist.length === 0 ? (
         <div className={styles.emptyState}>
-          <p>You haven't saved any courses yet.</p>
+          <p>{t('wishlist.empty')}</p>
           <button onClick={() => navigate('/course-page')} className={styles.browseButton}>
-            Browse Courses
+            {t('wishlist.browse')}
           </button>
         </div>
       ) : (
@@ -60,7 +62,7 @@ export default function Wishlist() {
                 originalPrice={course.price ?? course.originalPrice ?? 0}
               />
               <button className={styles.removeButton} onClick={() => handleRemove(course._id)}>
-                Remove
+                {t('wishlist.remove')}
               </button>
             </div>
           ))}

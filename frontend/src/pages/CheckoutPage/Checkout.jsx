@@ -4,15 +4,19 @@ import { Tag } from 'lucide-react';
 import { API, fetchWithAuth, tokenStorage } from '../../config/api.js';
 import './Checkout.scss';
 import { getCoursePricing, normalizeCartItem } from '../../utils/pricing.js';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [paymentMethod, setPaymentMethod] = useState('momo');
   const [momoRequestType, setMomoRequestType] = useState('payWithATM');
   const [user, setUser] = useState(null);
   const [cart, setCart] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [checkoutError, setCheckoutError] = useState(null);
+  const [country, setCountry] = useState('');
+  const [state, setState] = useState('');
 
   // ─ Coupon state ─
   const [couponCode, setCouponCode] = useState('');
@@ -87,7 +91,7 @@ export default function CheckoutPage() {
         subtotal: result.data.subtotal,
         total: result.data.total,
       });
-      setCouponToast({ type: 'success', message: `Coupon "${code}" applied` });
+      setCouponToast({ type: 'success', message: t('checkout.couponApplied', { code }) });
     } catch (err) {
       setAppliedCoupon(null);
       setCouponToast({ type: 'error', message: err.message });
@@ -105,6 +109,11 @@ export default function CheckoutPage() {
 
 
   const handleCheckout = async () => {
+    if (!country.trim() || !state.trim()) {
+      setCheckoutError(t('checkout.locationRequired'));
+      return;
+    }
+
     const sessionAT = tokenStorage.getAT();
     if (!user || !sessionAT) return navigate('/signin');
 
@@ -174,14 +183,14 @@ export default function CheckoutPage() {
     <div className="checkout-page">
       <div className="checkout-container">
         <div className="checkout-breadcrumb">
-          <Link to="/details">Details</Link>
+          <Link to="/details">{t('cart.details')}</Link>
           <span>›</span>
-          <Link to="/cart">Shopping Cart</Link>
+          <Link to="/cart">{t('cart.shoppingCart')}</Link>
           <span>›</span>
-          <span className="checkout-breadcrumb__current">Checkout</span>
+          <span className="checkout-breadcrumb__current">{t('checkout.title')}</span>
         </div>
 
-        <h1 className="checkout-title">Checkout Page</h1>
+        <h1 className="checkout-title">{t('checkout.title')}</h1>
 
         <div className="checkout-layout">
           {/* Left: Form */}
@@ -190,19 +199,39 @@ export default function CheckoutPage() {
               {/* Location */}
               <div className="checkout-location">
                 <div className="checkout-form-group">
-                  <label>Country</label>
-                  <input type="text" placeholder="Enter Country" />
+                  <label htmlFor="checkout-country">{t('checkout.country')}</label>
+                  <input
+                    id="checkout-country"
+                    type="text"
+                    value={country}
+                    onChange={(event) => {
+                      setCountry(event.target.value);
+                      setCheckoutError(null);
+                    }}
+                    placeholder={t('checkout.countryPlaceholder')}
+                    required
+                  />
                 </div>
                 <div className="checkout-form-group">
-                  <label>State/Union Territory</label>
-                  <input type="text" placeholder="Enter State" />
+                  <label htmlFor="checkout-state">{t('checkout.state')}</label>
+                  <input
+                    id="checkout-state"
+                    type="text"
+                    value={state}
+                    onChange={(event) => {
+                      setState(event.target.value);
+                      setCheckoutError(null);
+                    }}
+                    placeholder={t('checkout.statePlaceholder')}
+                    required
+                  />
                 </div>
               </div>
 
               {/* Payment */}
               {/* Payment */}
               <div className="payment-section">
-                <h2 className="payment-section__title">Payment Method</h2>
+                <h2 className="payment-section__title">{t('checkout.paymentMethod')}</h2>
 
                 {/* MoMo */}
                 {/* MoMo */}
@@ -215,16 +244,16 @@ export default function CheckoutPage() {
                     <div className={`radio ${paymentMethod === 'momo' ? 'radio--active' : ''}`}>
                       {paymentMethod === 'momo' && <div className="radio__dot" />}
                     </div>
-                    <span className="payment-option__label">MoMo wallet</span>
+                    <span className="payment-option__label">{t('checkout.momoWallet')}</span>
                   </div>
                 </div>
 
                 {paymentMethod === 'momo' && (
                   <div className="card-fields" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                     {[
-                      { value: 'payWithATM', label: 'Domestic ATM card' },
-                      { value: 'payWithCC', label: 'International card (Visa/Mastercard)' },
-                      { value: 'captureWallet', label: 'Scan QR with MoMo wallet' },
+                      { value: 'payWithATM', label: t('checkout.domesticAtm') },
+                      { value: 'payWithCC', label: t('checkout.internationalCard') },
+                      { value: 'captureWallet', label: t('checkout.scanQr') },
                     ].map((opt) => (
                       <label
                         key={opt.value}
@@ -258,7 +287,7 @@ export default function CheckoutPage() {
                       <div className={`radio ${paymentMethod === 'vnpay' ? 'radio--active' : ''}`}>
                         {paymentMethod === 'vnpay' && <div className="radio__dot" />}
                       </div>
-                      <span className="payment-option__label">VNPay</span>
+                      <span className="payment-option__label">{t('checkout.vnpay')}</span>
                     </div>
                   </div>
                 </div>
@@ -269,7 +298,7 @@ export default function CheckoutPage() {
           {/* Right: Order Summary */}
           <div className="checkout-summary">
             <div className="checkout-summary__box">
-              <h2 className="checkout-summary__title">Order Details</h2>
+              <h2 className="checkout-summary__title">{t('cart.orderDetails')}</h2>
 
               {cart.map((data) => {
                 const { salePrice } = getCoursePricing(data);
@@ -277,13 +306,13 @@ export default function CheckoutPage() {
                 <div className="checkout-summary__course" key={data._id || data.id}>
                   <img
                     src="https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&q=80&w=400"
-                    alt="Course"
+                    alt={t('checkout.courseImageAlt')}
                     referrerPolicy="no-referrer"
                   />
                   <div>
                     <span className="checkout-summary__tag">{data.category}</span>
                     <h3>{data.title}</h3>
-                    <p>{data.lectures} Lectures . {data.hours} Total Hours</p>
+                    <p>{data.lectures} {t('course.lectures')} . {data.hours} {t('course.totalHours')}</p>
                     <span className="checkout-summary__course-price">$ {salePrice}</span>
                   </div>
                 </div>
@@ -293,14 +322,14 @@ export default function CheckoutPage() {
                 <Tag className="coupon-icon" />
                 <input
                   type="text"
-                  placeholder="APPLY COUPON CODE"
+                  placeholder={t('checkout.applyCoupon')}
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
                   disabled={!!appliedCoupon || applyingCoupon}
                 />
                 {appliedCoupon ? (
                   <button type="button" onClick={handleRemoveCoupon}>
-                    Remove
+                    {t('checkout.remove')}
                   </button>
                 ) : (
                   <button
@@ -308,26 +337,26 @@ export default function CheckoutPage() {
                     onClick={handleApplyCoupon}
                     disabled={applyingCoupon || !couponCode.trim() || cart.length === 0}
                   >
-                    {applyingCoupon ? 'Applying...' : 'Apply'}
+                    {applyingCoupon ? t('checkout.applying') : t('checkout.apply')}
                   </button>
                 )}
               </div>
 
               <div className="checkout-summary__rows">
                 <div className="checkout-summary__row">
-                  <span>Price</span>
+                  <span>{t('course.price')}</span>
                   <span>${subtotal.toFixed(2)}</span>
                 </div>
                 <div className="checkout-summary__row">
-                  <span>Discount</span>
+                  <span>{t('cart.discount')}</span>
                   <span>-${discount.toFixed(2)}</span>
                 </div>
                 <div className="checkout-summary__row">
-                  <span>Tax</span>
+                  <span>{t('cart.tax')}</span>
                   <span>${tax.toFixed(2)}</span>
                 </div>
                 <div className="checkout-summary__row checkout-summary__row--total">
-                  <span>Total</span>
+                  <span>{t('cart.total')}</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
               </div>
@@ -341,7 +370,7 @@ export default function CheckoutPage() {
                 className="checkout-summary__btn"
                 disabled={submitting || cart.length === 0}
               >
-                {submitting ? 'Processing...' : 'Proceed to Checkout'}
+                {submitting ? t('checkout.processing') : t('checkout.proceed')}
               </button>
             </div>
           </div>

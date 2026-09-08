@@ -4,7 +4,7 @@ const notificationSchema = new mongoose.Schema({
     accountId: { type: mongoose.Schema.Types.ObjectId, ref: 'account', required: true },
     type: {
         type: String,
-        enum: ['event_reward'], // mở rộng thêm loại khác ở đây khi cần
+        enum: ['event_reward', 'course_hidden', 'course_unhidden', 'course_rejected'],
         required: true,
     },
     title: { type: String, required: true },

@@ -22,8 +22,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dns from 'dns';
 dns.setServers(['8.8.8.8', '8.8.4.4']);
-import cron from 'node-cron';
-import { distributeEventRewards } from './src/jobs/eventRewardJob.js';
+
 
 import dotenv from "dotenv";
 import { verifyToken } from './middleware/verifyToken.middleware.js';
@@ -111,6 +110,7 @@ app.get('/account/myprofile/teacher',verifyToken,teacherController.getAllTeacher
 
 app.get('/admin',verifyToken,isAdmin,accountController.getAllAdminInfo)
 app.put('/admin/accounts/:id/status', verifyToken, isAdmin, accountController.updateAccountStatus)
+app.put('/admin/accounts/:id/username', verifyToken, isAdmin, accountController.updateAccountUsername)
 
 app.post('/account/checkout',verifyToken,courseController.postCheckout)
 
@@ -129,6 +129,8 @@ app.get('/admin/courses/pending', verifyToken, isAdmin,adminController.getPendin
 app.put('/admin/courses/:id/approve', verifyToken, isAdmin,adminController.approvePendingCourses)
 
 app.put('/admin/courses/:id/reject', verifyToken, isAdmin,adminController.rejectPendingCourses)
+app.put('/admin/courses/:id/hide', verifyToken, isAdmin,adminController.hideApprovedCourse)
+app.put('/admin/courses/:id/unhide', verifyToken, isAdmin,adminController.unhideCourse)
 
 app.post('/account/apply-coupon', verifyToken,checkUserCoupon, couponController.applyCoupon);
 
@@ -177,12 +179,7 @@ mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/final3")
   .then(() => console.log('MongoDB connected!'))
   .catch((err) => console.log('MongoDB error:', err));
 
-cron.schedule('*/1 * * * *', () => {
-  // console.log('[cron] tick lúc', new Date().toLocaleTimeString('vi-VN')); // thêm dòng debug này
-  distributeEventRewards().catch((err) =>
-    console.error('[cron] distributeEventRewards lỗi:', err)
-  );
-});
+
 app.listen(process.env.PORT, () => {
     console.log('Server is running!');
 });

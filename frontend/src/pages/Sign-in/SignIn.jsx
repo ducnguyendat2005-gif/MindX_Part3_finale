@@ -5,8 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { API, tokenStorage, fetchWithAuth } from '../../config/api.js';
 import './SignIn.scss';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 export default function SignInPage() {
+  const { t } = useLanguage();
   const [loginError, setLoginError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [identifier, setIdentifier] = useState('');
@@ -32,7 +34,7 @@ export default function SignInPage() {
           navigate('/signin', { replace: true });
           return;
         }
-        setLoginError('Wrong username/email or password');
+        setLoginError(t('auth.invalidCredentials'));
         return;
       }
 
@@ -67,10 +69,10 @@ export default function SignInPage() {
           navigate('/signin', { replace: true });
           return;
         }
-        setLoginError('Wrong username/email or password');
+        setLoginError(t('auth.invalidCredentials'));
       }
     } catch (err) {
-      setLoginError('Wrong username/email or password');
+      setLoginError(t('auth.invalidCredentials'));
     } finally {
       setSubmitting(false);
     }
@@ -91,17 +93,17 @@ export default function SignInPage() {
       >
         <div className="signin-form-inner">
           <div className="signin-heading">
-            <h1>Sign in to your account</h1>
+            <h1>{t('auth.signInTitle')}</h1>
           </div>
 
           <form className="signin-form" onSubmit={(e) => handleSignin(e)}>
             <div className="signin-form-group">
-              <label>Username or Email</label>
+              <label>{t('auth.usernameOrEmail')}</label>
               <input
                 type="text"
                 name="identifier"
                 autoComplete="username"
-                placeholder="Username or Email ID"
+                placeholder={t('auth.usernamePlaceholder')}
                 value={identifier}
                 onChange={(e) => { setIdentifier(e.target.value); if (e.target.value) clearError(); }}
                 style={{ borderColor: loginError ? 'red' : '', outlineColor: loginError ? 'red' : '' }}
@@ -109,10 +111,10 @@ export default function SignInPage() {
             </div>
 
             <div className="signin-form-group">
-              <label>Password</label>
+              <label>{t('auth.password')}</label>
               <input
                 type="password"
-                placeholder="Enter Password"
+                placeholder={t('auth.passwordPlaceholder')}
                 onChange={(e) => { setPassword(e.target.value); if (e.target.value) clearError(); }}
                 style={{ borderColor: loginError ? 'red' : '', outlineColor: loginError ? 'red' : '' }}
               />
@@ -121,13 +123,13 @@ export default function SignInPage() {
             {loginError && <p className="signin-error">{loginError}</p>}
 
             <button type="submit" className="signin-btn" disabled={submitting}>
-              {submitting ? 'Signing in...' : 'Sign In'}
+              {submitting ? t('auth.signingIn') : t('auth.signIn')}
               <ArrowRight className="btn-icon" />
             </button>
           </form>
 
           <div className="divider">
-            <span>Sign in with</span>
+            <span>{t('auth.signInWith')}</span>
           </div>
 
           <div className="social-buttons">

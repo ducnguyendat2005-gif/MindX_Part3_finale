@@ -21,7 +21,7 @@ export default function MyCoursesTab({ myCourses }) {
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [filterCategory, setFilterCategory] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
-  // Chỉ dùng cho giáo viên: 'published' | 'draft'
+  // Chỉ dùng cho giáo viên: 'published' | 'hidden' | 'draft' | 'pending'
   const [filterStatus, setFilterStatus] = useState('published');
 
   const filterRef = useRef(null);
@@ -72,8 +72,12 @@ export default function MyCoursesTab({ myCourses }) {
         c.author?.toLowerCase().includes(searchText.toLowerCase());
 
       if (isTeacher) {
-        // Priceo viên: lọc theo status thay vì category/level
-        const matchStatus = (c.status || 'published') === filterStatus;
+        // Approved courses are the teacher-facing "published" state.
+        // Hidden courses remain visible in the teacher's own list.
+        const normalizedStatus = c.status === 'approved' ? 'published' : (c.status || 'published');
+        const matchStatus = filterStatus === 'published'
+          ? ['published', 'hidden'].includes(normalizedStatus)
+          : normalizedStatus === filterStatus;
         return matchSearch && matchStatus;
       }
 
@@ -104,7 +108,9 @@ export default function MyCoursesTab({ myCourses }) {
 
   const statusLabels = {
     published: 'Your Courses',
+    hidden: 'Hidden Courses',
     draft: 'Draft Courses',
+    pending: 'Pending Courses',
   };
 
   if (loading) return <p style={{ padding: 24 }}>Loading...</p>;

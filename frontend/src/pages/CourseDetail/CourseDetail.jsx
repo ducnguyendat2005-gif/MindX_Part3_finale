@@ -21,6 +21,7 @@ import google from "../../assets/google.jpg";
 import microsoft from "../../assets/microsoft.png";
 import twitter from "../../assets/twitter.png";
 import { normalizeCartItem } from "../../utils/pricing.js";
+import { useLanguage } from "../../context/LanguageContext.jsx";
 
 const WISHLIST_KEY = 'wishlistedCourses';
 
@@ -53,7 +54,9 @@ const PlayIcon = () => (
   </svg>
 );
 
-const SyllabusItem = ({ item, index, isOpen, onToggle }) => (
+const SyllabusItem = ({ item, index, isOpen, onToggle }) => {
+  const { t } = useLanguage();
+  return (
   <div className={`${styles.tocCard} ${isOpen ? styles.tocCardOpen : ""}`}>
     <button className={styles.tocHeader} onClick={() => onToggle(index)}>
       <div className={styles.tocLeft}>
@@ -63,7 +66,7 @@ const SyllabusItem = ({ item, index, isOpen, onToggle }) => (
         <span className={styles.tocTitle}>{item.title}</span>
       </div>
       <div className={styles.tocRight}>
-        <span className={styles.tocMeta}>{item.lessons} Lessons</span>
+        <span className={styles.tocMeta}>{item.lessons} {t('detail.lessons')}</span>
         <span className={styles.tocDot} />
         <span className={styles.tocMeta}>{item.duration}</span>
         <ChevronIcon open={isOpen} />
@@ -83,9 +86,11 @@ const SyllabusItem = ({ item, index, isOpen, onToggle }) => (
       </ul>
     </div>
   </div>
-);
+  );
+};
 
 const SyllabusSection = ({ course }) => {
+  const { t } = useLanguage();
   const [openIndexes, setOpenIndexes] = useState(new Set());
 
   const totalLessons = course.syllabus.reduce(
@@ -115,10 +120,10 @@ const SyllabusSection = ({ course }) => {
   return (
     <div className={styles.syllabusDetails}>
       <div className={styles.syllabusHeader}>
-        <p className={styles.syllabusTitle}>Syllabus</p>
+        <p className={styles.syllabusTitle}>{t('detail.syllabus')}</p>
         <p className={styles.syllabusSummary}>
-          {totalSections} sections &nbsp;·&nbsp; {totalLessons} lessons
-          &nbsp;·&nbsp; {totalHour(course)} hours total
+          {totalSections} {t('detail.sections')} &nbsp;·&nbsp; {totalLessons} {t('detail.lessons')}
+          &nbsp;·&nbsp; {totalHour(course)} {t('detail.hoursTotal')}
         </p>
       </div>
 
@@ -162,9 +167,15 @@ const buildReviewStats = (reviews = []) => {
   return { averageRating: (sum / total).toFixed(1), totalReviews: total, ratingBreakdown };
 };
 
+const formatReviewDate = (value) => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('vi-VN');
+};
+
 
 
 const CourseDetail = () => {
+  const { t } = useLanguage();
   const { id } = useParams(); 
   const [allCourse, setAllCourse] = useState([]);
   const [course, setCourse] = useState(null);
@@ -174,6 +185,7 @@ const CourseDetail = () => {
   const [added, setAdded] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
   const navigate = useNavigate();
 
 const isOwned = user?.myCourses?.some(c => c && String(c._id) === String(id)) ?? false;
@@ -263,8 +275,8 @@ useEffect(() => {
 
   
 
-  if (loading) return <p>Loading...</p>;
-  if (!course) return <p>Không tìm thấy khóa học</p>;
+  if (loading) return <p>{t('learning.loading')}</p>;
+  if (!course) return <p>{t('learning.notFound')}</p>;
   const reviewStats = buildReviewStats(course.reviews);
 
   const hasDiscount =
@@ -294,7 +306,7 @@ useEffect(() => {
             <path d="M10 6v4M10 13h.01" stroke="#fff" strokeWidth="1.8"
               strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span>Course already in cart!</span>
+          <span>{t('detail.alreadyInCart')}</span>
         </div>
       )}
 
@@ -304,9 +316,9 @@ useEffect(() => {
       <div className={styles.mainPage}>
         <div className={styles.course}>
           <div className={styles.link}>
-            <a onClick={() => navigate('/home')}>Home</a>
+            <a onClick={() => navigate('/home')}>{t('detail.home')}</a>
             <img src={sideArrow} alt="arrow" />
-            <a onClick={() => navigate('/course-page')}>Categories</a>
+            <a onClick={() => navigate('/course-page')}>{t('header.categories')}</a>
             <img src={sideArrow} alt="arrow" />
             <a>{course.title}</a>
           </div>
@@ -319,13 +331,13 @@ useEffect(() => {
             <div className={styles.ratingNDetails}>
               <p style={{ color: "#fcad03" }}>{course.rating}</p>
               <img src={yellowstar} alt="rating" />
-              <p>({course.reviews?.length ?? 0} reviews)</p>
+              <p>({t('detail.reviewCount', { count: course.reviews?.length ?? 0 })})</p>
               <div></div>
-              <p>{course.hours} Total Hours. {course.lectures} Lectures. All levels</p>
+              <p>{course.hours} {t('course.totalHours')}. {course.lectures} {t('course.lectures')}. {t('detail.allLevels')}</p>
             </div>
             <div className={styles.teacherDetails}>
               <img src={smolAva} alt="avatar" />
-              <p>Created by</p>
+              <p>{t('detail.createdBy')}</p>
               <p>{course.instructorId?.name}</p>
             </div>
             <div className={styles.availLanguage}>
@@ -358,7 +370,7 @@ useEffect(() => {
                   onClick={() => navigate(`/mycoursespage/${id}`)}
                   className={styles.learnNowButton}
                 >
-                  🎓 Learn Now
+                  🎓 {t('detail.learnNow')}
                 </button>
               ) : (
                 <>
@@ -375,23 +387,23 @@ useEffect(() => {
                               strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         </span>
-                        Added to Cart
+                        {t('detail.addedToCart')}
                       </>
-                    ) : 'Add To Cart'}
+                    ) : t('detail.addToCart')}
                   </button>
                   <button onClick={() => handleBuynow()} className={styles.buyNowButton}>
-                    Buy Now
+                    {t('detail.buyNow')}
                   </button>
                   <button onClick={handleToggleWishlist} className={`${styles.wishlistButton} ${isFavorite ? styles.favorited : ''}`}>
                     <span className={styles.heartIcon} aria-hidden="true">{isFavorite ? '♥' : '♡'}</span>
-                    {isFavorite ? 'Saved' : 'Add to Wishlist'}
+                    {isFavorite ? t('detail.saved') : t('detail.addWishlist')}
                   </button>
                 </>
               )}
 
               <div className={styles.tnbSl}></div>
               <div className={styles.shareInfo}>
-                <p>Share</p>
+                <p>{t('detail.share')}</p>
                 <div className={styles.shareGroup}>
                   <a href="#" className={styles.sharedButton1}>
                     <img src={facebook} alt="Facebook" />
@@ -420,7 +432,7 @@ useEffect(() => {
                 className={`${styles.navBtn} ${activeTab === tab ? styles.navBtnActive : ''}`}
                 onClick={() => setActiveTab(tab)}
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {t(`detail.${tab}`)}
               </button>
             ))}
           </div>
@@ -435,11 +447,11 @@ useEffect(() => {
             {/* Description Tab */}
             <div className={styles.tabSlide}>
               <div className={styles.courseDes}>
-                <p>Course Description</p>
+                <p>{t('detail.courseDescription')}</p>
                 <p>
                   {course.courseDescription}
                 </p>
-                <p>Certification</p>
+                <p>{t('detail.certification')}</p>
                 <p>
                   {course.certification}
                 </p>
@@ -453,12 +465,12 @@ useEffect(() => {
                 <p>{course.instructorId?.title}</p>
                 <div className={styles.instructorProfile}>
                   <img src={bigava} alt="instructor" />
-                  <p>{course.instructorId?.totalReviews} Reviews</p>
+                  <p>{course.instructorId?.totalReviews} {t('detail.reviews')}</p>
                   <img id="medal" src={medal} alt="medal" />
                   <img src={play} alt="play" />
                   <img src={graduation} alt="grad" />
-                  <p>{course.instructorId?.totalStudents} Students</p>
-                  <p>{course.instructorId?.totalCourses} Courses</p>
+                  <p>{course.instructorId?.totalStudents} {t('detail.students')}</p>
+                  <p>{course.instructorId?.totalCourses} {t('detail.courses')}</p>
                 </div>
                 <p>
                   {course.instructorId?.bio}
@@ -474,12 +486,12 @@ useEffect(() => {
             {/* Reviews Tab */}
             <div className={styles.tabSlide}>
               <div className={styles.reviews}>
-                <p>Learner Reviews</p>
+                <p>{t('detail.learnerReviews')}</p>
                 <div className={styles.stars}>
                   <div className={styles.starReview}>
                     <img src={yellowstar} alt="star" />
                     <p>{reviewStats.averageRating}</p>
-                    <p>{reviewStats.totalReviews.toLocaleString('vi-VN')} reviews</p>
+                    <p>{t('detail.reviewCount', { count: reviewStats.totalReviews.toLocaleString('vi-VN') })}</p>
                   </div>
                   <div className={styles.star5}>
                     <img src={yellowstar} alt="star" />
@@ -524,7 +536,7 @@ useEffect(() => {
                 </div>
 
                 <div className={styles.review}>
-                  {course.reviews.map((i) => (
+                  {(course.reviews ?? []).slice(0, showAllReviews ? undefined : 2).map((i) => (
                     <div key={i._id} className={styles.reviewCard}>
                       <div className={styles.ava}>
                         <img src={bigava} alt="avatar" />
@@ -534,13 +546,17 @@ useEffect(() => {
                         <img src={yellowstar} alt="star" />
                         <p>{i.rating}</p>
                       </div>
-                      <p>Reviewed on {new Date(i.createdAt).toLocaleDateString('vi-VN')}</p>
+                      <p>{t('learning.reviewedOn')} {formatReviewDate(i.createdAt)}</p>
                       <p>{i.comment}</p>
                     </div>
                   ))}
                 </div>
 
-                <button id="more-reviews">View more Reviews</button>
+                {(course.reviews ?? []).length > 2 && (
+                  <button id="more-reviews" onClick={() => setShowAllReviews((current) => !current)}>
+                    {showAllReviews ? t('detail.viewLessReviews') : t('detail.viewMoreReviews')}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -549,7 +565,7 @@ useEffect(() => {
       </div>
 
         <div className={styles.courses}>
-          <h2 className={styles.divTitle}>More Courses Like This</h2>
+          <h2 className={styles.divTitle}>{t('detail.moreCourses')}</h2>
           <div className={styles.courseList}>
             {sameCourse({ data: allCourse, course: course }).map((data) =>
             <div key={data._id} onClick={() => window.location.reload()}> 
@@ -560,7 +576,7 @@ useEffect(() => {
                 instructor={course.instructorId?.name}
                 rating={course.rating}
                 ratingCount={course.reviews?.length ?? 0}
-                duration={`${course.hours} Total Hours. ${course.lectures} Lectures. ${course.level}`}
+                duration={`${course.hours} ${t('course.totalHours')}. ${course.lectures} ${course.level}`}
                 category={course.category}
                 promotionalPrice={course.promotionalPrice}
                 originalPrice={course.price}

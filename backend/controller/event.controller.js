@@ -1,6 +1,7 @@
 import EventModel from '../model/event.js';
 import EventScoreModel from '../model/eventScore.js';
 import { badRequest, notFound, conflict } from '../middleware/appError.middleware.js';
+import { checkAndDistributeEndedEvents } from '../src/jobs/lazyEventRewardTrigger.js';
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
@@ -258,6 +259,24 @@ export default {
                       }
                     : { hasPlayed: false },
             });
+        } catch (err) {
+            next(err);
+        }
+    },
+    getActiveEvents: async (req, res, next) => {
+        try {
+            // Fire-and-forget: KHÔNG await, không được làm chậm response của user.
+            // Lỗi bên trong đã tự bắt và log ở lazyEventRewardTrigger.js.
+            checkAndDistributeEndedEvents().catch((err) =>
+                console.error('[lazyTrigger] unexpected top-level error:', err)
+            );
+
+            const now = new Date();
+            const events = await EventModel.find({
+                startDate: { $lte: now },
+                endDate: { $gte: now },
+            }).select('-questions.correctIndex -questions.word');
+            res.json({ success: true, data: events });
         } catch (err) {
             next(err);
         }

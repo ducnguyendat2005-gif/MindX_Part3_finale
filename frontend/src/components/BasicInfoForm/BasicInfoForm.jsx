@@ -3,8 +3,10 @@ import { motion } from 'motion/react';
 import { useState } from 'react';
 import { API } from '../../config/api.js';
 import './BasicInfoForm.module.scss';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 export default function BasicInfoForm({ onNext }) {
+  const { t } = useLanguage();
   const [Fname, setFname] = useState('');
   const [Lname, setLname] = useState('');
   const [Username, setUsername] = useState('');
@@ -20,13 +22,13 @@ export default function BasicInfoForm({ onNext }) {
 
   const handleContinue = async () => {
     const newErrors = {};
-    if (!Fname) newErrors.Fname = 'Please fill this field';
-    if (!Lname) newErrors.Lname = 'Please fill this field';
-    if (!Username) newErrors.Username = 'Please fill this field';
-    if (!Email) newErrors.Email = 'Please fill this field';
-    if (!pass) newErrors.pass = 'Please fill this field';
-    if (!Repass) newErrors.Repass = 'Please fill this field';
-    else if (pass !== Repass) newErrors.Repass = 'Passwords do not match';
+    if (!Fname) newErrors.Fname = t('auth.required');
+    if (!Lname) newErrors.Lname = t('auth.required');
+    if (!Username) newErrors.Username = t('auth.required');
+    if (!Email) newErrors.Email = t('auth.required');
+    if (!pass) newErrors.pass = t('auth.required');
+    if (!Repass) newErrors.Repass = t('auth.required');
+    else if (pass !== Repass) newErrors.Repass = t('auth.passwordMismatch');
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -89,7 +91,7 @@ export default function BasicInfoForm({ onNext }) {
       className="signup-form-inner"
     >
       <div className="signup-heading">
-        <h1>Create Your Account</h1>
+        <h1>{t('auth.createAccount')}</h1>
       </div>
 
       <form
@@ -99,7 +101,7 @@ export default function BasicInfoForm({ onNext }) {
       >
         <div className="form-row">
           <div className="signup-field">
-            <label>Full Name</label>
+            <label>{t('auth.fullName')}</label>
             <input
               style={inputStyle('Fname')}
               value={Fname}
@@ -107,7 +109,7 @@ export default function BasicInfoForm({ onNext }) {
               type="text"
               name="firstName"
               autoComplete="given-name"
-              placeholder="First Name"
+              placeholder={t('auth.firstName')}
             />
             {errors.Fname && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Fname}</p>}
           </div>
@@ -120,14 +122,14 @@ export default function BasicInfoForm({ onNext }) {
               type="text"
               name="lastName"
               autoComplete="family-name"
-              placeholder="Last Name"
+              placeholder={t('auth.lastName')}
             />
             {errors.Lname && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Lname}</p>}
           </div>
         </div>
 
         <div className="signup-field">
-          <label>Username</label>
+          <label>{t('auth.username')}</label>
           <input
             style={inputStyle('Username')}
             value={Username}
@@ -135,7 +137,7 @@ export default function BasicInfoForm({ onNext }) {
             type="text"
             name="signup-username"
             autoComplete="off"
-            placeholder="Username"
+            placeholder={t('auth.username')}
           />
           {errors.Username && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Username}</p>}
         </div>
@@ -149,14 +151,14 @@ export default function BasicInfoForm({ onNext }) {
             type="email"
             name="signup-email"
             autoComplete="email"
-            placeholder="Email ID"
+            placeholder={t('auth.emailId')}
           />
           {errors.Email && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Email}</p>}
         </div>
 
         <div className="form-row">
           <div className="signup-field">
-            <label>Password</label>
+            <label>{t('auth.password')}</label>
             <input
               style={inputStyle('pass')}
               value={pass}
@@ -164,13 +166,13 @@ export default function BasicInfoForm({ onNext }) {
               type="password"
               name="new-password"
               autoComplete="new-password"
-              placeholder="Enter Password"
+              placeholder={t('auth.passwordPlaceholder')}
             />
             {errors.pass && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.pass}</p>}
           </div>
 
           <div className="signup-field">
-            <label>Confirm Password</label>
+            <label>{t('auth.confirmPassword')}</label>
             <input
               style={inputStyle('Repass')}
               value={Repass}
@@ -178,20 +180,20 @@ export default function BasicInfoForm({ onNext }) {
               type="password"
               name="confirm-password"
               autoComplete="new-password"
-              placeholder="Confirm Password"
+              placeholder={t('auth.confirmPassword')}
             />
             {errors.Repass && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Repass}</p>}
           </div>
         </div>
 
         <button type="submit" className="signup-btn" disabled={checkingEmail}>
-          {checkingEmail ? 'Checking...' : 'Continue'}
+          {checkingEmail ? t('auth.checking') : t('auth.continue')}
           {!checkingEmail && <ArrowRight className="btn-icon" />}
         </button>
       </form>
 
       <div className="divider">
-        <span>Sign up with</span>
+        <span>{t('auth.signUpWith')}</span>
       </div>
 
       <div className="social-buttons">

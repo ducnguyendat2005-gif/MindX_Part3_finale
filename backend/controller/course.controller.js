@@ -37,6 +37,15 @@ const publicCourseFilter = {
     status: 'approved',
 };
 
+const syncCourseRating = async (courseId) => {
+    const reviews = await ReviewModel.find({ courseId }).select('rating').lean();
+    const rating = reviews.length
+        ? Number((reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length).toFixed(1))
+        : 0;
+
+    await CourseModel.findByIdAndUpdate(courseId, { rating });
+};
+
 const buildQuizFromInput = (quizInput, existingQuiz = null) => {
     if (!quizInput || !Array.isArray(quizInput.questions)) return null;
 
@@ -326,7 +335,9 @@ const courseController = {
     },
     getAllCourse: async(req ,res ,next) =>{
         try{
-            const data = await CourseModel.find(publicCourseFilter).populate('instructorId', 'name title').populate('reviews')
+            const data = await CourseModel.find(publicCourseFilter)
+                .populate('instructorId', 'name title')
+                .populate({ path: 'reviews', options: { sort: { createdAt: -1 } } });
             res.status(201).send({ data: data, message: 'data retrieve successful!', success: true });
         }
         catch(error){
@@ -335,7 +346,11 @@ const courseController = {
     },
     getTopCourse: async(req,res,next) =>{
         try{
-            const data = await CourseModel.find(publicCourseFilter).populate('instructorId', 'name title').populate('reviews').sort({ rating: -1 }).limit(4);
+            const data = await CourseModel.find(publicCourseFilter)
+                .populate('instructorId', 'name title')
+                .populate({ path: 'reviews', options: { sort: { createdAt: -1 } } })
+                .sort({ rating: -1 })
+                .limit(4);
             res.status(201).send({ data: data, message: 'data retrieve successful!', success: true });}
         catch(error){
             next(error)
@@ -347,7 +362,7 @@ const courseController = {
             
             const Mycourse = await CourseModel.findOne({ _id: id, ...publicCourseFilter })
                 .populate('instructorId', 'name title bio totalStudents totalCourses totalReviews thumbnail')
-                .populate('reviews');
+                .populate({ path: 'reviews', options: { sort: { createdAt: -1 } } });
             res.status(201).send({ data: Mycourse, message: 'data retrieve successful!', success: true });
         }
         catch(error){
@@ -364,7 +379,7 @@ const courseController = {
                 instructorId: instructor._id,
             })
                 .populate('instructorId', 'name title bio totalStudents totalCourses totalReviews thumbnail')
-                .populate('reviews');
+                .populate({ path: 'reviews', options: { sort: { createdAt: -1 } } });
 
             if (!course) return res.status(404).json({ message: 'Course not found', success: false });
             res.status(200).json({ data: course, message: 'Course retrieved', success: true });
@@ -408,6 +423,7 @@ const courseController = {
             const displayName = account.Username;
 
             const review = await ReviewModel.create({ courseId, accountId, name: displayName, rating, comment });
+            await syncCourseRating(courseId);
             res.status(201).json({ data: review, message: 'Review created', success: true });
         }
         catch(error){
@@ -433,13 +449,15 @@ const courseController = {
                 { _id: id, accountId: user._id },
                 { $set: { rating, comment } },
                 { new: true, runValidators: true }
-            ).populate('courseId', 'title -_id');;
+            );
 
             if (!updated) {
                 const err = new Error('Review not found or not yours to edit');
                 err.status = 404; 
                 throw err;
             }
+            await syncCourseRating(updated.courseId);
+            await updated.populate('courseId', 'title -_id');
             res.status(200).json({data:updated,message: 'Review updated', success: true })
         }
         catch(error){
@@ -454,13 +472,15 @@ const courseController = {
 
             const deleted = await ReviewModel.findOneAndDelete(
                 { _id: id, accountId: user._id }
-            ).populate('courseId', 'title -_id');;
+            );
 
             if (!deleted) {
                 const err = new Error('Review not found or not yours to edit');
                 err.status = 404; 
                 throw err;
             }
+            await syncCourseRating(deleted.courseId);
+            await deleted.populate('courseId', 'title -_id');
             res.status(200).json({data:deleted,message: 'Review updated', success: true })
         }
         catch(error){
