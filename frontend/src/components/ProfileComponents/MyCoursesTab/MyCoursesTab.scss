@@ -54,56 +54,6 @@ $transition-scale: 300ms ease;
   }
 }
 
-[data-theme="dark"] {
-  .courses-header {
-    &__title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: $color-white;
-    }
-  }
-  .search-box__input {
-    background-color: #0f172a;
-    color: #f8fafc;
-    border-color: #334155;
-  }
-
-  .search-box__input::placeholder {
-    color: #94a3b8;
-  }
-
-  .search-box__icon {
-    color: #f8fafc;
-  }
-
-  .search-box {
-    background-color: #0f172a;
-  }
-
-  // ----- Course Card (dark) -----
-  .course-card {
-    background-color: #111827;
-    border: 1px solid #334155;
-    box-shadow: 0 8px 24px rgba(2, 6, 23, 0.28);
-
-    &:hover {
-      border-color: #475569;
-      box-shadow: 0 12px 28px rgba(2, 6, 23, 0.42);
-    }
-  }
-
-  .course-card__title {
-    color: #f8fafc;
-  }
-
-  .course-card__instructor {
-    color: #94a3b8;
-  }
-
-  .course-card__reviews {
-    color: #94a3b8;
-  }
-}
 
 // ----- Courses Header -----
 .courses-header {
@@ -345,6 +295,21 @@ $transition-scale: 300ms ease;
     }
   }
 }
+.course-card-btn {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+
+    &:focus {
+      outline: none; // hoặc thay bằng outline tùy chỉnh nếu muốn giữ accessibility
+    }
+  }
 
 // ----- Pagination -----
 .pagination {
@@ -475,4 +440,94 @@ $transition-scale: 300ms ease;
   align-items: center;
   justify-content: center;
   margin-left: 4px;
+}
+
+[data-theme="dark"] {
+  .courses-header {
+    &__title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: $color-white;
+    }
+  }
+  .search-box__input {
+    background-color: #0f172a;
+    color: #f8fafc;
+    border-color: #334155;
+  }
+
+  .search-box__input::placeholder {
+    color: #94a3b8;
+  }
+
+  .search-box__icon {
+    color: #f8fafc;
+  }
+
+  .search-box {
+    background-color: #0f172a;
+  }
+
+  // ----- Course Card (dark) -----
+  .course-card {
+    background-color: #111827;
+    border-color: #334155 !important;
+    box-shadow: 0 8px 24px rgba(2, 6, 23, 0.28);
+
+    &:hover {
+      border-color: #475569;
+      box-shadow: 0 12px 28px rgba(2, 6, 23, 0.42);
+    }
+  }
+
+  .course-card__title {
+    color: #f8fafc;
+  }
+
+  .course-card__instructor {
+    color: #94a3b8;
+  }
+
+  .course-card__reviews {
+    color: #94a3b8;
+  }
+    .sort-control {
+    &__label {
+      color: #94a3b8;
+    }
+    &__btn {
+      border-color: #334155;
+      color: #f8fafc;
+      background: transparent;
+
+      &:hover {
+        background-color: #1e293b;
+      }
+    }
+  }
+
+  .filter-btn {
+    border-color: #334155;
+    color: #f8fafc;
+    background: transparent;
+
+    &:hover {
+      background-color: #1e293b;
+    }
+  }
+
+  .dropdown-menu {
+    background: #111827;
+    border-color: #334155;
+
+    &__item {
+      color: #f8fafc;
+      &:hover { background: #1e293b; }
+      &--active { background: #1e3a5f; color: #60a5fa; }
+    }
+
+    &__section-title {
+      color: #64748b;
+    }
+  }
 }

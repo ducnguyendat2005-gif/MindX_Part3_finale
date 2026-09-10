@@ -19,6 +19,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const [myCourses, setMyCourses] = useState([]);
   const [instructorInfo, setInstructorInfo] = useState(null); 
+  const [editCourseId, setEditCourseId] = useState(null);
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(location.state?.tab || 'profile');
 
@@ -231,6 +232,10 @@ export default function ProfilePage() {
   const handleCreateCourse = () => {
     setActiveTab('create-course');
   };
+  const handleEditCourse = (id) => {
+  setEditCourseId(id);
+  setActiveTab('edit-course');
+};
 
   const handleCreatedCourse = (newCourse) => {
     if (newCourse?.status === 'published') {
@@ -339,7 +344,18 @@ export default function ProfilePage() {
       case 'teacherInfo':
         return isTeacher ? renderTeacherInfo() : renderStudentInfo();
       case 'courses':
-        return <MyCoursesTab myCourses={myCourses} />;
+        return <MyCoursesTab myCourses={myCourses} onEditCourse={handleEditCourse} />;
+      case 'edit-course':
+        return (
+          <CreateCourseTab
+            editCourseId={editCourseId}
+            onCancel={() => setActiveTab('courses')}
+            onCreated={(updated) => {
+              setMyCourses((prev) => prev.map((c) => (c._id === updated._id ? updated : c)));
+              setActiveTab('courses');
+            }}
+          />
+        );
       case 'teachers':
         return <TeachersTab />;
       case 'students':

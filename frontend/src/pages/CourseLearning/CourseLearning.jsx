@@ -8,7 +8,6 @@ import medal from "../../assets/CourseDetail/Icon (2).png";
 import play from "../../assets/CourseDetail/play.png";
 import graduation from "../../assets/CourseDetail/graduation-hat-02.png";
 import CourseCard from '../../components/CourseCard/CourseCard.jsx'
-import vid from '../../assets/Java GUI intro ⭐【5 minutes】 - (1080p).mp4'
 import vidrecord from '../../assets/video-recorder.png'
 import { API, fetchWithAuth } from '../../config/api.js'
 import { useLanguage } from '../../context/LanguageContext.jsx';

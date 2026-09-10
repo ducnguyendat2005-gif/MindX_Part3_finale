@@ -1,0 +1,84 @@
+.status-tracker {
+  margin: 0 0 20px;
+  padding: 16px 20px;
+  border-radius: 10px;
+  background: #f6f8fb;
+  border: 1px solid #e5e9f0;
+
+  &__steps {
+    display: flex;
+    align-items: center;
+  }
+
+  &__step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  &__dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #cfd6e2;
+  }
+
+  &__label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #8a93a3;
+    white-space: nowrap;
+  }
+
+  &__line {
+    flex: 1;
+    height: 2px;
+    background: #e0e4eb;
+    margin: 0 10px;
+  }
+
+  &__step.is-done &__dot,
+  &__step.is-done .status-tracker__dot {
+    background: #22c55e;
+  }
+  &__step.is-done &__label,
+  &__step.is-done .status-tracker__label {
+    color: #22c55e;
+  }
+
+  &__step.is-active .status-tracker__dot {
+    background: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+  }
+  &__step.is-active .status-tracker__label {
+    color: #3b82f6;
+    font-weight: 600;
+  }
+
+  &--rejected &__step.is-active .status-tracker__dot {
+    background: #ef4444;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+  }
+  &--rejected &__step.is-active .status-tracker__label {
+    color: #ef4444;
+  }
+
+  &__note {
+    margin: 12px 0 0;
+    font-size: 13px;
+
+    &--pending { color: #b8860b; }
+    &--approved { color: #22c55e; }
+    &--rejected { color: #ef4444; }
+  }
+}
+
+[data-theme='dark'] .status-tracker {
+  background: #1e2330;
+  border-color: #2c3242;
+
+  &__dot { background: #3a4152; }
+  &__label { color: #7c8494; }
+  &__line { background: #2c3242; }
+}

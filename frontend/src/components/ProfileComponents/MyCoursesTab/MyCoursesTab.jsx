@@ -6,7 +6,7 @@ import './MyCoursesTab.scss';
 
 const img = "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=400";
 
-export default function MyCoursesTab({ myCourses }) {
+export default function MyCoursesTab({ myCourses, onEditCourse }) {
   const [course, setCourse] = useState(myCourses || []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -74,10 +74,9 @@ export default function MyCoursesTab({ myCourses }) {
       if (isTeacher) {
         // Approved courses are the teacher-facing "published" state.
         // Hidden courses remain visible in the teacher's own list.
-        const normalizedStatus = c.status === 'approved' ? 'published' : (c.status || 'published');
         const matchStatus = filterStatus === 'published'
-          ? ['published', 'hidden'].includes(normalizedStatus)
-          : normalizedStatus === filterStatus;
+          ? c.status === 'approved'
+          : c.status === filterStatus;
         return matchSearch && matchStatus;
       }
 
@@ -111,6 +110,7 @@ export default function MyCoursesTab({ myCourses }) {
     hidden: 'Hidden Courses',
     draft: 'Draft Courses',
     pending: 'Pending Courses',
+    rejected: 'Rejected Courses',
   };
 
   if (loading) return <p style={{ padding: 24 }}>Loading...</p>;
@@ -236,40 +236,64 @@ export default function MyCoursesTab({ myCourses }) {
         {displayedCourses.length === 0 ? (
           <p style={{ color: '#94a3b8', gridColumn: '1/-1' }}>No courses found.</p>
         ) : (
-          displayedCourses.map((data) => (
-            <Link
-              key={data._id || data.id}
-              to={`/mycoursespage/${data._id || data.id}`}
-              state={{ course: data }}
-            >
+          displayedCourses.map((data) => {
+            const cardInner = (
               <div className="course-card">
                 <div className="course-card__thumbnail">
                   <img src={img} alt={data.title} className="course-card__image" referrerPolicy="no-referrer" />
                 </div>
                 <div className="course-card__body">
                   <h3 className="course-card__title">{data.title}</h3>
-                  <p className="course-card__instructor">By {data.author}</p>
-                  <div className="course-card__rating">
-                    {[...Array(5)].map((_, i) => {
-                      const full = i < Math.floor(data.rating);
-                      const half = !full && i + 0.5 <= data.rating;
-                      return (
-                        <span key={i} style={{ position: 'relative', display: 'inline-block' }}>
-                          <Star size={14} fill="#D1D5DB" stroke="#D1D5DB" />
-                          {(full || half) && (
-                            <span style={{ position: 'absolute', top: 0, left: 0, width: full ? '100%' : '50%', overflow: 'hidden', display: 'inline-block' }}>
-                              <Star size={14} fill="#FBBF24" stroke="#FBBF24" />
-                            </span>
-                          )}
+                  {isTeacher ? (
+                    <p className="course-card__price">
+                      {data.status === 'approved' && `${data.price ? `$${data.price}` : 'Free'}`}
+                      {data.status !== 'approved' && (
+                        <span className={`course-card__status-badge course-card__status-badge--${data.status}`}>
+                          {data.status}
                         </span>
-                      );
-                    })}
-                    <span className="course-card__reviews">({data.reviews} Ratings)</span>
-                  </div>
+                      )}
+                    </p>
+                  ) : (
+                    <>
+                      <p className="course-card__instructor">By {data.author}</p>
+                      <div className="course-card__rating">
+                        {[...Array(5)].map((_, i) => {
+                          const full = i < Math.floor(data.rating);
+                          const half = !full && i + 0.5 <= data.rating;
+                          return (
+                            <span key={i} style={{ position: 'relative', display: 'inline-block' }}>
+                              <Star size={14} fill="#D1D5DB" stroke="#D1D5DB" />
+                              {(full || half) && (
+                                <span style={{ position: 'absolute', top: 0, left: 0, width: full ? '100%' : '50%', overflow: 'hidden', display: 'inline-block' }}>
+                                  <Star size={14} fill="#FBBF24" stroke="#FBBF24" />
+                                </span>
+                              )}
+                            </span>
+                          );
+                        })}
+                        <span className="course-card__reviews">({data.reviews} Ratings)</span>
+                      </div>
+                    </>
+                  )}
                 </div>
-              </div>
-            </Link>
-          ))
+                          </div>
+          );
+
+            return isTeacher ? (
+              <button
+                key={data._id || data.id}
+                type="button"
+                className="course-card-btn"
+                onClick={() => onEditCourse?.(data._id || data.id)}
+              >
+                {cardInner}
+              </button>
+            ) : (
+              <Link key={data._id || data.id} to={`/mycoursespage/${data._id || data.id}`} state={{ course: data }}>
+                {cardInner}
+              </Link>
+            );
+          })
         )}
       </div>
 
