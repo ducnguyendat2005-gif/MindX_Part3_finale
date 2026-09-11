@@ -369,6 +369,31 @@ const courseController = {
             next(error)
         }
     },
+    getEnrolledCoursebyId: async (req, res, next) => {
+        try {
+            const { id } = req.params;
+            const enrolled = await EnrollmentModel.exists({
+                accountId: req.user._id,
+                courseId: id,
+            });
+
+            if (!enrolled) {
+                return res.status(403).json({ message: 'You have not purchased this course', success: false });
+            }
+
+            const course = await CourseModel.findById(id)
+                .populate('instructorId', 'name title bio totalStudents totalCourses totalReviews thumbnail')
+                .populate({ path: 'reviews', options: { sort: { createdAt: -1 } } });
+
+            if (!course || !['approved', 'hidden'].includes(course.status)) {
+                return res.status(404).json({ message: 'Course not found', success: false });
+            }
+
+            return res.status(200).json({ data: course, message: 'Enrolled course retrieved', success: true });
+        } catch (error) {
+            next(error);
+        }
+    },
     getTeachingCoursebyId: async (req, res, next) => {
         try {
             const instructor = await InstructorModel.findOne({ accountId: req.user._id });

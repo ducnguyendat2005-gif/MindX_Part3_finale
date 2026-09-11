@@ -288,3 +288,124 @@
     }
   }
 }
+
+.saved-for-later {
+  margin-top: 3rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    h2 {
+      margin: 0;
+      color: var(--text-color);
+      font-size: 1.35rem;
+    }
+
+    span {
+      min-width: 1.5rem;
+      padding: 0.2rem 0.45rem;
+      border-radius: 999px;
+      color: var(--primary-color);
+      background: var(--surface-alt);
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    background: var(--surface-color);
+  }
+
+  &__item > img {
+    width: 7rem;
+    height: 4.5rem;
+    flex-shrink: 0;
+    border-radius: 0.5rem;
+    object-fit: cover;
+  }
+
+  &__info {
+    min-width: 0;
+    flex: 1;
+
+    h3 {
+      overflow: hidden;
+      margin: 0 0 0.25rem;
+      color: var(--text-color);
+      font-size: 1rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    p {
+      margin: 0 0 0.35rem;
+      color: var(--muted-text);
+      font-size: 0.85rem;
+    }
+
+    strong {
+      color: var(--text-color);
+    }
+
+    del {
+      margin-left: 0.5rem;
+      color: var(--muted-text);
+      font-size: 0.8rem;
+      font-weight: 400;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.75rem;
+
+    button {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      background: transparent;
+      color: var(--primary-color);
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--surface-alt);
+      }
+
+      &:last-child {
+        color: #ef4444;
+      }
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .saved-for-later__item {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .saved-for-later__actions {
+    width: 100%;
+    margin-left: 8rem;
+  }
+}

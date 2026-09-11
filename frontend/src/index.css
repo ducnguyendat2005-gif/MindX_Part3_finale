@@ -27,6 +27,7 @@
   --addtocart-btn-text: #ffffff;
   --addtocart-btn-hover-bg: #1e293b;
   --footer-bg: #1e293b;
+  --footer-divider: #cbd5e1;
 }
 
 [data-theme="dark"] {
@@ -57,6 +58,7 @@
   --addtocart-btn-text: #111827;
   --addtocart-btn-hover-bg: #f3f4f6;
   --footer-bg: #0f172a;
+  --footer-divider: #475569;
 }
 
 body {

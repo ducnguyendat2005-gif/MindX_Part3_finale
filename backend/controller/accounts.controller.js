@@ -119,9 +119,9 @@ const accountController = {
         const courseIds = enrollments.map(e => e.courseId);
 
         const Mycourses = await CourseModel.aggregate([
-            // Hidden courses remain unavailable to learners, even if they were
-            // enrolled before the course was hidden by an admin.
-            { $match: { _id: { $in: courseIds }, status: 'approved' } },
+            // Learners keep access to courses they already purchased, even when
+            // an admin later hides those courses from the public catalog.
+            { $match: { _id: { $in: courseIds }, status: { $in: ['approved', 'hidden'] } } },
             {
                 $lookup: {
                     from: "instructors",
@@ -185,6 +185,53 @@ const accountController = {
         }
         catch (error) {
             next(error)
+        }
+    },
+    // Public profile endpoint: deliberately return an allowlist only.
+    // Never expose account ids, email addresses, password hashes, or tokens here.
+    getPublicProfile: async (req, res, next) => {
+        try {
+            const username = String(req.params.username || '').trim();
+            if (!username) {
+                return res.status(400).json({ success: false, message: 'Username is required' });
+            }
+
+            const account = await AccountModel.findOne({
+                Username: { $regex: `^${escapeRegex(username)}$`, $options: 'i' },
+                isActive: { $ne: false },
+                role: { $in: ['user', 'teacher'] },
+            })
+                .select('Fname Lname Username role avatar description learningGoal level interests')
+                .lean();
+
+            if (!account) {
+                return res.status(404).json({ success: false, message: 'Public profile not found' });
+            }
+
+            const publicProfile = {
+                name: [account.Fname, account.Lname].filter(Boolean).join(' ').trim() || account.Username,
+                username: account.Username,
+                role: account.role,
+                avatar: account.avatar,
+                description: account.description || '',
+                learningGoal: account.learningGoal || '',
+                level: account.level || '',
+                interests: Array.isArray(account.interests) ? account.interests : [],
+            };
+
+            if (account.role === 'teacher') {
+                const instructor = await InstructorModel.findOne({ accountId: account._id })
+                    .select('title bio thumbnail yearsOfExperience totalStudents totalCourses totalReviews rating -_id')
+                    .lean();
+
+                if (instructor) {
+                    publicProfile.instructor = instructor;
+                }
+            }
+
+            return res.status(200).json({ success: true, data: publicProfile });
+        } catch (error) {
+            next(error);
         }
     },
     getAllAdminInfo: async (req, res, next) => {

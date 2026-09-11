@@ -4,7 +4,7 @@ import { Tag } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 import './BuyNPage.scss';
-import { getCoursePricing } from '../../utils/pricing.js';
+import { getCoursePricing, TAX_PER_COURSE } from '../../utils/pricing.js';
 
 export default function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState('card');
@@ -14,7 +14,7 @@ const course = location.state?.course ?? [];
     const coursePricing = course.map(getCoursePricing);
     const subtotal = coursePricing.reduce((acc, item) => acc + item.originalPrice, 0);
     const discount = coursePricing.reduce((acc, item) => acc + item.discountAmount, 0);
-    const tax = 20.00;
+    const tax = course.length * TAX_PER_COURSE;
     const total = Math.max(subtotal - discount + tax, 0);
 
   

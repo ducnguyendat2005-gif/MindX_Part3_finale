@@ -130,6 +130,7 @@ export default function CoursesPage() {
   const [categories, setCategories] = useState([]);
   const [sortBy, setSortBy] = useState("relevance");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showFilters, setShowFilters] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -149,8 +150,10 @@ export default function CoursesPage() {
         const teacherJson = await teacherRes.json();
 
         // Tùy backend trả { data: [...] } hay trả thẳng mảng, xử lý cả 2 trường hợp
-        setCoursesData(coursesJson.data ?? coursesJson);
-        setTopInstructors(teacherJson.data ?? teacherJson);
+        const nextCourses = coursesJson.data ?? coursesJson;
+        const nextInstructors = teacherJson.data ?? teacherJson;
+        setCoursesData(Array.isArray(nextCourses) ? nextCourses : []);
+        setTopInstructors(Array.isArray(nextInstructors) ? nextInstructors : []);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -162,7 +165,7 @@ export default function CoursesPage() {
 
 
   const categoryList = useMemo(
-    () => [...new Set(coursesData.map((c) => c.category))],
+    () => [...new Set(coursesData.map((c) => c.category).filter(Boolean))],
     [coursesData]
   );
 
@@ -244,7 +247,12 @@ export default function CoursesPage() {
         <p className={styles.subtitle}>{t('course.courses')}</p>
 
         <div className={styles.controls}>
-          <button className={styles.filterBtn}>
+          <button
+            className={styles.filterBtn}
+            type="button"
+            aria-expanded={showFilters}
+            onClick={() => setShowFilters((visible) => !visible)}
+          >
             <span>☰</span>
             <span>{t('course.filter')}</span>
           </button>
@@ -267,7 +275,7 @@ export default function CoursesPage() {
         </div>
 
         <div className={styles.mainContent}>
-          <aside className={styles.sidebar}>
+          <aside className={`${styles.sidebar} ${!showFilters ? styles.sidebarHidden : ""}`}>
             <FilterSection title={t('course.rating')}>
               {[5, 4, 3, 2, 1].map((r) => (
                 <FilterOption
@@ -290,7 +298,6 @@ export default function CoursesPage() {
                   label={range}
                 />
               ))}
-              <span className={styles.seeMore}>{t('course.seeMore')} ▼</span>
             </FilterSection>
 
             <FilterSection title={t('course.price')}>

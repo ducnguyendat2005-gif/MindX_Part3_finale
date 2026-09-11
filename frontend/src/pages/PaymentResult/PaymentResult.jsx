@@ -18,8 +18,46 @@ export default function PaymentResult() {
 
   const [refreshed, setRefreshed] = useState(false);
 
+  const removePurchasedCoursesFromWishlist = () => {
+    try {
+      const pendingCourseIds = JSON.parse(localStorage.getItem('pendingOrderCourseIds') || '[]');
+      const cart = JSON.parse(localStorage.getItem('insideCarts') || '[]');
+      const fallbackCourseIds = Array.isArray(cart)
+        ? cart.map((course) => course?._id || course?.id).filter(Boolean)
+        : [];
+      const purchasedIds = (Array.isArray(pendingCourseIds) && pendingCourseIds.length > 0
+        ? pendingCourseIds
+        : fallbackCourseIds
+      ).map(String);
+
+      if (purchasedIds.length === 0) return;
+
+      const wishlist = JSON.parse(localStorage.getItem('wishlistedCourses') || '[]');
+      if (!Array.isArray(wishlist)) return;
+
+      const updatedWishlist = wishlist.filter(
+        (course) => !purchasedIds.includes(String(course?._id || course?.id)),
+      );
+
+      if (updatedWishlist.length !== wishlist.length) {
+        localStorage.setItem('wishlistedCourses', JSON.stringify(updatedWishlist));
+        window.dispatchEvent(new Event('wishlistUpdated'));
+      }
+    } catch (error) {
+      console.error('Could not update wishlist after payment:', error);
+    } finally {
+      localStorage.removeItem('pendingOrderCourseIds');
+    }
+  };
+
   useEffect(() => {
-    if (status !== 'success') return;
+    if (status !== 'success') {
+      if (status) {
+        localStorage.removeItem('pendingOrderCourseIds');
+        localStorage.removeItem('pendingOrderId');
+      }
+      return;
+    }
 
     const refreshProfile = async () => {
       try {
@@ -31,11 +69,12 @@ export default function PaymentResult() {
         };
         localStorage.setItem('loggedInUser', JSON.stringify(mergedUser));
         window.dispatchEvent(new Event('userUpdated'));
-        localStorage.removeItem('insideCarts');
-        localStorage.removeItem('pendingOrderId');
       } catch (err) {
         console.error('Refresh profile failed:', err);
       } finally {
+        removePurchasedCoursesFromWishlist();
+        localStorage.removeItem('insideCarts');
+        localStorage.removeItem('pendingOrderId');
         setRefreshed(true);
       }
     };
@@ -66,7 +105,7 @@ export default function PaymentResult() {
       {!status && <h1>Đang xử lý...</h1>}
 
       <div style={{ marginTop: 24 }}>
-        <Link to="/mycoursespage">Xem khóa học của tôi</Link>
+        <Link to="/profile" state={{ tab: 'courses' }}>Xem khóa học của tôi</Link>
         {' · '}
         <Link to="/">Back to home</Link>
       </div>

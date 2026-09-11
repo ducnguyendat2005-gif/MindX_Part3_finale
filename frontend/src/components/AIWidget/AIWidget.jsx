@@ -1,10 +1,42 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import './AIWidget.scss';
-
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
+import { API } from '../../config/api.js';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 const RATE_LIMIT_MS = 3000;
+
+const COPY = {
+  VIE: {
+    greeting: 'Xin chào! 👋 Mình là trợ lý AI của Byway. Bạn cần mình hướng dẫn gì?',
+    subtitle: 'Trợ lý thông minh',
+    placeholder: 'Nhắn tin với AI...',
+    footer: 'Powered by Gemini · Byway AI',
+    wait: (seconds) => `⏳ Vui lòng chờ ${seconds}s trước khi gửi tiếp nhé!`,
+    rateLimit: '⚠️ Byway AI đang quá tải. Bạn hãy thử lại sau khoảng 30 giây nhé.',
+    fallback: 'Có lỗi xảy ra, vui lòng thử lại sau! 😅',
+    emptyReply: 'Mình chưa có câu trả lời phù hợp.',
+    quickPrompts: [
+      'Làm sao để tìm và đăng ký một khóa học?',
+      'Hướng dẫn thanh toán khóa học',
+      'Làm sao xem tiến độ học tập?',
+    ],
+  },
+  ENG: {
+    greeting: 'Hello! 👋 I am Byway AI. What would you like help with?',
+    subtitle: 'Smart assistant',
+    placeholder: 'Message AI...',
+    footer: 'Powered by Gemini · Byway AI',
+    wait: (seconds) => `⏳ Please wait ${seconds}s before sending another message.`,
+    rateLimit: '⚠️ Byway AI is busy right now. Please try again in about 30 seconds.',
+    fallback: 'Something went wrong. Please try again later! 😅',
+    emptyReply: 'I do not have a suitable answer yet.',
+    quickPrompts: [
+      'How do I find and enroll in a course?',
+      'How can I pay for a course?',
+      'How do I view my learning progress?',
+    ],
+  },
+};
 
 const BotIcon = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
@@ -29,6 +61,8 @@ const SparkleIcon = () => (
 );
 
 export default function AIWidget() {
+  const { language } = useLanguage();
+  const copy = COPY[language] || COPY.ENG;
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -37,6 +71,7 @@ export default function AIWidget() {
   const [pulse, setPulse] = useState(true);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const messagesRef = useRef([]);
 
   const lastCallTime = useRef(0);
   const isRequesting = useRef(false);
@@ -49,6 +84,7 @@ export default function AIWidget() {
 
   // Auto scroll
   useEffect(() => {
+    messagesRef.current = messages;
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
@@ -59,12 +95,20 @@ export default function AIWidget() {
       if (!hasGreeted) {
         setMessages([{
           role: 'bot',
-          text: 'Xin chào! 👋 Mình là trợ lý AI. Bạn cần mình giúp gì nào?',
+          text: copy.greeting,
         }]);
         setHasGreeted(true);
       }
     }
-  }, [open]);
+  }, [open, hasGreeted, copy.greeting]);
+
+  // Keep the initial greeting in sync when the site language changes while open.
+  useEffect(() => {
+    const onlyGreeting = messagesRef.current.length === 1 && messagesRef.current[0];
+    if (open && onlyGreeting?.role === 'bot' && !onlyGreeting.includeInHistory) {
+      setMessages([{ ...onlyGreeting, text: copy.greeting }]);
+    }
+  }, [open, copy.greeting]);
 
   const sendMessageWithText = useCallback(async (text) => {
     if (!text || isRequesting.current) return;
@@ -76,63 +120,57 @@ export default function AIWidget() {
       setMessages(prev => [
         ...prev,
         { role: 'user', text },
-        { role: 'bot', text: `⏳ Vui lòng chờ ${Math.ceil(wait / 1000)}s trước khi gửi tiếp nhé!` },
+        { role: 'bot', text: copy.wait(Math.ceil(wait / 1000)) },
       ]);
       return;
     }
 
     isRequesting.current = true;
     lastCallTime.current = Date.now();
+    setLoading(true);
 
-    setMessages(prev => {
-      const newMessages = [...prev, { role: 'user', text }];
+    const userMessage = { role: 'user', text };
+    const newMessages = [...messagesRef.current, userMessage];
+    setMessages(newMessages);
 
-      (async () => {
-        setLoading(true);
-        try {
-          // Build conversation history for context (last 10 messages)
-          const contents = newMessages.slice(-10).map(m => ({
-            role: m.role === 'user' ? 'user' : 'model',
-            parts: [{ text: m.text }],
-          }));
+    try {
+      // Chỉ gửi các lượt hội thoại thật; lời chào giao diện không gửi lên AI.
+      const history = newMessages
+        .filter(message => message.role === 'user' || message.includeInHistory)
+        .slice(-10)
+        .map(message => ({
+          role: message.role === 'user' ? 'user' : 'model',
+          text: message.text,
+        }));
 
-          const res = await fetch(GEMINI_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents }),
-          });
+      const res = await fetch(API.aiChat, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history, language }),
+      });
 
-          if (res.status === 429) {
-            setMessages(prev => [
-              ...prev,
-              { role: 'bot', text: '⚠️ Mình đang quá tải! Bạn hãy đợi khoảng 30 giây rồi hỏi lại nhé 🙏' },
-            ]);
-            lastCallTime.current = Date.now() + 20_000;
-            return;
-          }
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 429) {
+        throw new Error('RATE_LIMIT');
+      }
+      if (!res.ok) {
+        throw new Error(data.message || 'AI_UNAVAILABLE');
+      }
 
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-          const data = await res.json();
-          const botText =
-            data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-            'Xin lỗi, mình không hiểu. Bạn thử hỏi lại nhé!';
-
-          setMessages(prev => [...prev, { role: 'bot', text: botText }]);
-        } catch {
-          setMessages(prev => [
-            ...prev,
-            { role: 'bot', text: 'Có lỗi xảy ra, vui lòng thử lại sau! 😅' },
-          ]);
-        } finally {
-          setLoading(false);
-          isRequesting.current = false;
-        }
-      })();
-
-      return newMessages;
-    });
-  }, []);
+      setMessages(prev => [
+        ...prev,
+        { role: 'bot', text: data.reply || copy.emptyReply, includeInHistory: true },
+      ]);
+    } catch (error) {
+      const errorText = error.message === 'RATE_LIMIT'
+        ? copy.rateLimit
+        : error.message || copy.fallback;
+      setMessages(prev => [...prev, { role: 'bot', text: errorText }]);
+    } finally {
+      setLoading(false);
+      isRequesting.current = false;
+    }
+  }, [copy, language]);
 
   const sendMessage = useCallback(() => {
     const text = input.trim();
@@ -146,6 +184,10 @@ export default function AIWidget() {
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const handleQuickPrompt = (prompt) => {
+    if (!loading) sendMessageWithText(prompt);
   };
 
   // Render simple markdown (bold)
@@ -189,7 +231,7 @@ export default function AIWidget() {
             <div>
               <p className="ai-widget__header-title">Byway AI</p>
               <p className="ai-widget__header-sub">
-                <SparkleIcon /> Trợ lý thông minh
+                <SparkleIcon /> {copy.subtitle}
               </p>
             </div>
           </div>
@@ -220,6 +262,21 @@ export default function AIWidget() {
             </div>
           ))}
 
+          {messages.length === 1 && !loading && (
+            <div className="ai-widget__quick-prompts">
+              {copy.quickPrompts.map(prompt => (
+                <button
+                  key={prompt}
+                  type="button"
+                  className="ai-widget__quick-btn"
+                  onClick={() => handleQuickPrompt(prompt)}
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          )}
+
           {loading && (
             <div className="ai-widget__msg ai-widget__msg--bot">
               <div className="ai-widget__msg-avatar">
@@ -243,7 +300,7 @@ export default function AIWidget() {
           <textarea
             ref={inputRef}
             className="ai-widget__input"
-            placeholder="Nhắn tin với AI..."
+            placeholder={copy.placeholder}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKey}
@@ -257,7 +314,7 @@ export default function AIWidget() {
             <SendIcon />
           </button>
         </div>
-        <p className="ai-widget__footer">Powered by Gemini · Byway AI</p>
+        <p className="ai-widget__footer">{copy.footer}</p>
       </div>
     </div>
   );

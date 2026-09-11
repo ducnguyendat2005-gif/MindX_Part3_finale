@@ -77,6 +77,31 @@
   color: #991b1b;
 }
 
+.admin-course-inline-action {
+  border: 0;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+}
+
+.admin-course-inline-action--manage {
+  background: #eaf8ee;
+  color: #19874a;
+}
+
+.admin-course-inline-action--unhide {
+  background: #eef5ff;
+  color: #1947d6;
+}
+
 .admin-account-filters {
   display: flex;
   align-items: center;

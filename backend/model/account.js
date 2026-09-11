@@ -6,6 +6,12 @@ const accountSchema = new mongoose.Schema({
     Username: { type: String, required: true, unique: true, trim: true },
     Email: { type: String, required: true, unique: true },
     pass: { type: String, required: true },
+    authProvider: {
+        type: String,
+        enum: ['local', 'google', 'facebook', 'microsoft'],
+        default: 'local',
+    },
+    providerId: { type: String, default: '' },
     role: { type: String, enum: ['admin', 'user', 'teacher'], default: 'user' },
     isActive: { type: Boolean, default: true },
     avatar: { 

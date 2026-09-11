@@ -3,8 +3,10 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import './TeacherExtraForm.scss';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 export default function TeacherExtraForm({ onSubmit, onBack }) {
+  const { t } = useLanguage();
   const [expertise, setExpertise] = useState('');
   const [experienceYears, setExperienceYears] = useState('');
   const [bio, setBio] = useState('');
@@ -18,14 +20,14 @@ export default function TeacherExtraForm({ onSubmit, onBack }) {
     const files = Array.from(e.target.files);
 
     if (files.length > 3) {
-      setErrors((prev) => ({ ...prev, portfolioFiles: 'Can only choose 3 files' }));
+      setErrors((prev) => ({ ...prev, portfolioFiles: 'auth.fileLimit' }));
       return;
     }
 
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
     const invalid = files.find((f) => !allowedTypes.includes(f.type));
     if (invalid) {
-      setErrors((prev) => ({ ...prev, portfolioFiles: 'Accept only PDF, JPG or PNG' }));
+      setErrors((prev) => ({ ...prev, portfolioFiles: 'auth.fileTypes' }));
       return;
     }
 
@@ -39,13 +41,13 @@ export default function TeacherExtraForm({ onSubmit, onBack }) {
 
   const handleSubmit = async () => {
     const newErrors = {};
-    if (!expertise.trim()) newErrors.expertise = 'Please enter your expertise';
+    if (!expertise.trim()) newErrors.expertise = 'auth.expertiseRequired';
     if (experienceYears === '') {
-      newErrors.experienceYears = 'Please enter your years of experience';
+      newErrors.experienceYears = 'auth.experienceRequired';
     } else if (Number.isNaN(Number(experienceYears)) || Number(experienceYears) < 0) {
-      newErrors.experienceYears = 'Years of experience must be 0 or greater';
+      newErrors.experienceYears = 'auth.experienceInvalid';
     }
-    if (!bio.trim()) newErrors.bio = 'Please provide a brief introduction';
+    if (!bio.trim()) newErrors.bio = 'auth.bioRequired';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -79,7 +81,7 @@ export default function TeacherExtraForm({ onSubmit, onBack }) {
           type="text"
           placeholder="EX: Frontend Development, UI/UX Design..."
         />
-        {errors.expertise && <p className="teacher-form-error">{errors.expertise}</p>}
+        {errors.expertise && <p className="teacher-form-error">{t(errors.expertise)}</p>}
       </div>
 
       <div className="teacher-form-field">
@@ -92,7 +94,7 @@ export default function TeacherExtraForm({ onSubmit, onBack }) {
           min="0"
           placeholder="EX: 5"
         />
-        {errors.experienceYears && <p className="teacher-form-error">{errors.experienceYears}</p>}
+        {errors.experienceYears && <p className="teacher-form-error">{t(errors.experienceYears)}</p>}
       </div>
 
       <div className="teacher-form-field">
@@ -104,7 +106,7 @@ export default function TeacherExtraForm({ onSubmit, onBack }) {
           placeholder="Share your teaching experience, outstanding achievements..."
           rows={4}
         />
-        {errors.bio && <p className="teacher-form-error">{errors.bio}</p>}
+        {errors.bio && <p className="teacher-form-error">{t(errors.bio)}</p>}
       </div>
 
       <div className="teacher-form-field">
@@ -124,7 +126,7 @@ export default function TeacherExtraForm({ onSubmit, onBack }) {
           {portfolioFiles.length > 0 ? `${portfolioFiles.length} file(s) selected` : 'No file chosen'}
         </span>
 
-        {errors.portfolioFiles && <p className="teacher-form-error">{errors.portfolioFiles}</p>}
+        {errors.portfolioFiles && <p className="teacher-form-error">{t(errors.portfolioFiles)}</p>}
 
         {portfolioFiles.length > 0 && (
           <ul className="teacher-form-filelist">

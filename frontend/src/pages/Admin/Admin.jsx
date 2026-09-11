@@ -206,9 +206,18 @@ function Overview({ courses, accounts, testimonials,instructors, onSelectCourse 
   );
 }
 
-function Courses({ courses, query, onSelectCourse }) {
+const COURSE_ACTION_PRIORITY = {
+  hidden: 0,
+  approved: 1,
+  pending: 2,
+  rejected: 3,
+  draft: 4,
+};
+
+function Courses({ courses, query, onSelectCourse, onManage, onUnhide, unhiding }) {
   const [category, setCategory] = useState('all');
   const [level, setLevel] = useState('all');
+  const [status, setStatus] = useState('all');
   const categories = useMemo(() => ['all', ...Array.from(new Set(courses.map((c) => c.category)))], [courses]);
 
   const filtered = useMemo(() => {
@@ -216,9 +225,18 @@ function Courses({ courses, query, onSelectCourse }) {
       const q = !query || c.title.toLowerCase().includes(query.toLowerCase()) || c.author.toLowerCase().includes(query.toLowerCase());
       const cat = category === 'all' || c.category === category;
       const lv = level === 'all' || levelLabel(c.level) === level;
-      return q && cat && lv;
-    }).sort((a, b) => b.rating - a.rating);
-  }, [courses, query, category, level]);
+      const statusMatches = status === 'all'
+        || (status === 'needs-action' && ['approved', 'hidden'].includes(c.status))
+        || c.status === status;
+      return q && cat && lv && statusMatches;
+    }).sort((a, b) => {
+      if (status === 'all') {
+        const priorityDifference = (COURSE_ACTION_PRIORITY[a.status] ?? 99) - (COURSE_ACTION_PRIORITY[b.status] ?? 99);
+        if (priorityDifference !== 0) return priorityDifference;
+      }
+      return (b.rating || 0) - (a.rating || 0);
+    });
+  }, [courses, query, category, level, status]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -229,6 +247,15 @@ function Courses({ courses, query, onSelectCourse }) {
         <select className="admin-course-filter" value={level} onChange={(e) => setLevel(e.target.value)} style={{ padding: '8px 10px', fontSize: 13, borderRadius: 10, border: '1px solid #dde1ec', background: '#fff' }}>
           <option value="all">All levels</option>
           {['Beginner', 'Intermediate', 'Advanced', 'Expert'].map((l) => <option key={l} value={l}>{l}</option>)}
+        </select>
+        <select className="admin-course-filter" value={status} onChange={(e) => setStatus(e.target.value)} style={{ padding: '8px 10px', fontSize: 13, borderRadius: 10, border: '1px solid #dde1ec', background: '#fff' }}>
+          <option value="all">All statuses</option>
+          <option value="needs-action">Manage / Unhide</option>
+          <option value="approved">Approved</option>
+          <option value="hidden">Hidden</option>
+          <option value="pending">Pending</option>
+          <option value="rejected">Rejected</option>
+          <option value="draft">Draft</option>
         </select>
         <div style={{ flex: 1 }} />
         <span style={{ fontSize: 12, color: '#8893ab', fontWeight: 500 }}>{filtered.length} results</span>
@@ -242,8 +269,10 @@ function Courses({ courses, query, onSelectCourse }) {
                 <th style={{ textAlign: 'left', padding: '10px 16px', fontWeight: 600 }}>Course</th>
                 <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Category</th>
                 <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Level</th>
+                <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Status</th>
                 <th style={{ textAlign: 'left', padding: '10px 10px', fontWeight: 600 }}>Rating</th>
                 <th style={{ textAlign: 'right', padding: '10px 16px', fontWeight: 600 }}>Price</th>
+                <th style={{ textAlign: 'right', padding: '10px 16px', fontWeight: 600 }}>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -265,11 +294,29 @@ function Courses({ courses, query, onSelectCourse }) {
                     <span className="admin-course-badge" style={{ fontSize: 11, fontWeight: 500, padding: '3px 8px', borderRadius: 999, background: LEVEL_BG[levelLabel(c.level)] || '#eef1f7', color: LEVEL_FG[levelLabel(c.level)] || '#5c6884' }}>{levelLabel(c.level)}</span>
                   </td>
                   <td style={{ padding: '10px' }}>
+                    <span className="admin-course-badge" style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 999, background: STATUS_BADGE[c.status]?.bg || '#eef1f7', color: STATUS_BADGE[c.status]?.fg || '#5c6884' }}>
+                      {STATUS_BADGE[c.status]?.label || c.status || 'Unknown'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 3, color: '#f59e0b', fontWeight: 600, fontSize: 12 }}>
                       <Star size={12} /> {c.rating} <span style={{ color: '#8893ab', fontWeight: 400 }}>({c.reviews})</span>
                     </div>
                   </td>
                   <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 600, color: '#0d1321' }}>{fmtMoney(c.price)}</td>
+                  <td style={{ padding: '10px 16px', textAlign: 'right' }} onClick={(event) => event.stopPropagation()}>
+                    {c.status === 'approved' && onManage && (
+                      <button type="button" className="admin-course-inline-action admin-course-inline-action--manage" onClick={() => onManage(c)}>
+                        Manage
+                      </button>
+                    )}
+                    {c.status === 'hidden' && onUnhide && (
+                      <button type="button" className="admin-course-inline-action admin-course-inline-action--unhide" disabled={unhiding} onClick={() => onUnhide(c)}>
+                        {unhiding ? 'Unhiding...' : 'Unhide'}
+                      </button>
+                    )}
+                    {!['approved', 'hidden'].includes(c.status) && <span style={{ color: '#a0a8b8' }}>—</span>}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -1231,7 +1278,16 @@ export default function AdminPage() {
         <main style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
           <div style={{ maxWidth: 1100, margin: '0 auto' }}>
             {active === 'overview' && <Overview courses={courses} accounts={accounts} instructors={instructors} testimonials={testimonials} onSelectCourse={setSelectedCourse} />}
-            {active === 'courses' && <Courses courses={courses} query={query} onSelectCourse={setSelectedCourse} />}
+            {active === 'courses' && (
+              <Courses
+                courses={courses}
+                query={query}
+                onSelectCourse={setSelectedCourse}
+                onManage={setManagedCourse}
+                onUnhide={handleUnhideCourse}
+                unhiding={unhidingCourse}
+              />
+            )}
             {active === 'instructors' && <Instructors courses={courses} instructors={instructors} />}
             {active === 'approvals' && <CourseApprovals />}
             {active === 'events' && <AdminEvents />}   
