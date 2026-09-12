@@ -123,6 +123,7 @@ export default function MyCoursesTab({ myCourses }) {
     hidden: 'Hidden Courses',
     draft: 'Draft Courses',
     pending: 'Pending Courses',
+    rejected: 'Rejected Courses',
   };
 
   if (loading) return <p style={{ padding: 24 }}>Loading...</p>;
