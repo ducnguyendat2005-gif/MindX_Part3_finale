@@ -34,7 +34,15 @@ const adminController = {
     approvePendingCourses: async(req,res,next) => {
         try {
             const {id} = req.params;
-            const updated = await CourseModel.findByIdAndUpdate(id, { status: "approved" }, { new: true, runValidators: true })
+            const updated = await CourseModel.findOneAndUpdate(
+                { _id: id, status: 'pending' },
+                { $set: { status: 'approved', publishedAt: new Date() } },
+                { new: true, runValidators: true },
+            );
+            if (!updated) {
+                return res.status(404).json({ message: 'Pending course not found', success: false });
+            }
+            await InstructorModel.findByIdAndUpdate(updated.instructorId, { $inc: { totalCourses: 1 } });
             res.status(201).send({ data: updated, message: 'data updated successful!', success: true });
         }
         catch (error){

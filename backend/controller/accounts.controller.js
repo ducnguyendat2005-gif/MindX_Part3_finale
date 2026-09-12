@@ -162,8 +162,10 @@ const accountController = {
             }
 
             const courseFilter = { instructorId: instructor._id };
-            if (['draft', 'published'].includes(req.query.status)) {
-                courseFilter.status = req.query.status;
+            if (req.query.status === 'published') {
+                courseFilter.status = 'approved';
+            } else if (req.query.status === 'draft') {
+                courseFilter.status = 'draft';
             }
 
             const courses = await CourseModel.find(courseFilter)
