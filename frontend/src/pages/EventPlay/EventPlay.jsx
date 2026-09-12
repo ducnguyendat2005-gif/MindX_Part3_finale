@@ -368,7 +368,8 @@ function EventPlay() {
             <div className={styles.matchGrid}>
               <div className={styles.matchCol}>
                 {matchLeft.map((item) => {
-                  const matched = matchedPairs.some((mp) => mp.leftKey === item.key);
+                  const pairIndex = matchedPairs.findIndex((mp) => mp.leftKey === item.key);
+                  const matched = pairIndex !== -1;
                   return (
                     <button
                       key={item.key}
@@ -378,6 +379,7 @@ function EventPlay() {
                       data-matched={matched}
                       onClick={() => (matched ? unmatchPair(item.key) : handleLeftClick(item.key))}
                     >
+                      {matched && <span className={styles.pairBadge}>{pairIndex + 1}</span>}
                       {item.text}
                     </button>
                   );
@@ -385,7 +387,8 @@ function EventPlay() {
               </div>
               <div className={styles.matchCol}>
                 {matchRight.map((item) => {
-                  const matched = matchedPairs.some((mp) => mp.rightKey === item.key);
+                  const pairIndex = matchedPairs.findIndex((mp) => mp.rightKey === item.key);
+                  const matched = pairIndex !== -1;
                   return (
                     <button
                       key={item.key}
@@ -395,6 +398,7 @@ function EventPlay() {
                       disabled={matched || !selectedLeftKey}
                       onClick={() => handleRightClick(item.key)}
                     >
+                      {matched && <span className={styles.pairBadge}>{pairIndex + 1}</span>}
                       {item.text}
                     </button>
                   );

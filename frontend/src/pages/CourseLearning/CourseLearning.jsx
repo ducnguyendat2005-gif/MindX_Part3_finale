@@ -875,6 +875,18 @@ export default function CourseLearning() {
 
       setCompletedLessons(prev => new Set(prev).add(activeLesson.storageId));
 
+            const currentSection = learningSections.find(sec =>
+        sec.lessons.some(l => l.storageId === activeLesson.storageId)
+      );
+      const isLastLessonInSection =
+        currentSection?.lessons[currentSection.lessons.length - 1]?.storageId === activeLesson.storageId;
+
+      // Nếu vừa xong lesson cuối của section, và section đó có quiz chưa pass → mở quiz, không auto-advance
+      if (isLastLessonInSection && currentSection?.quiz && !passedSectionIds.has(String(currentSection.sectionId))) {
+        setActiveQuiz({ section: currentSection });
+        return;
+      }
+
       const currentIndex = flatLessonsForAutoAdvance.findIndex(
         l => l.storageId === activeLesson.storageId
       );

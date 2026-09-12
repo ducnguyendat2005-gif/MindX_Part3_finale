@@ -507,6 +507,20 @@
     cursor: not-allowed;
   }
 }
+.pairBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
 
 :global([data-theme="dark"]) {
   .hintText { color: #94a3b8; }
@@ -534,5 +548,8 @@
 
     &[data-selected="true"] { background: #422006; border-color: #f59e0b; }
     &[data-matched="true"] { background: #052e16; border-color: #16a34a; color: #4ade80; }
+    &[data-matched="true"] { .pairBadge {
+    background: #16a34a; // giữ nguyên, đã đủ tương phản trên nền tối
+        }}
   }
 }
