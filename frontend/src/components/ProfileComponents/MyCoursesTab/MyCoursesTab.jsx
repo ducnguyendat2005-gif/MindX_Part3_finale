@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { API, fetchWithAuth } from '../../../config/api.js';
 import './CreateCourseTab.scss';
-import StatusTracker from './StatusTracker.jsx';
+import StatusTracker from '../CreateCourseTab/StatusTracker.jsx';
 
 let uid = 0;
 const nextId = () => `id-${Date.now()}-${uid++}`;
