@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { API, fetchWithAuth } from '../../../config/api.js';
 import './CreateCourseTab.scss';
+import StatusTracker from './StatusTracker.jsx';
 
 let uid = 0;
 const nextId = () => `id-${Date.now()}-${uid++}`;
@@ -39,7 +40,7 @@ const makeSection = (title = '') => ({
   questions: [],
 });
 
-export default function CreateCourseTab({ onCancel, onCreated }) {
+export default function CreateCourseTab({ onCancel, onCreated, editCourseId  }) {
   const [courseId, setCourseId] = useState(null);
   const [availableDraft, setAvailableDraft] = useState(null);
   const [resumeDraft, setResumeDraft] = useState(false);
@@ -73,17 +74,22 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [courseStatus, setCourseStatus] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
-  useEffect(() => {
-    const loadLatestDraft = async () => {
-      try {
-        const res = await fetchWithAuth(API.teachingDrafts);
-        if (!res.ok) return;
-        const body = await res.json();
-        const draft = (body.data || [])
-          .filter((course) => course.status === 'draft')
-          .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))[0];
-        if (!draft) return;
+useEffect(() => {
+  const loadLatestDraft = async () => {
+    try {
+      const res = editCourseId
+        ? await fetchWithAuth(API.teachingCourseById(editCourseId))
+        : await fetchWithAuth(API.teachingDrafts);
+      if (!res.ok) return;
+      const body = await res.json();
+      const draft = editCourseId
+        ? body.data
+        : (body.data || [])
+            .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))[0];
+      if (!draft) return;
 
         if (!resumeDraft) {
           setAvailableDraft(draft);
@@ -91,6 +97,8 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
         }
 
         setCourseId(draft._id);
+        setCourseStatus(draft.status || 'draft');
+        setRejectionReason(draft.rejectionReason || '');
         setTitle(draft.title || '');
         setOverview(draft.overview || draft.shortDescription || draft.courseDescription || '');
         setObjectives((draft.objectives || []).join('\n'));
@@ -468,6 +476,7 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
       if (!res.ok) throw new Error(body.message || 'Tạo khóa học thất bại');
 
       setCourseId(body.data?._id || courseId);
+      setCourseStatus(body.data?.status || status);
       if (status === 'draft') {
         setSuccessMessage('Draft đã được lưu. Bạn có thể rời trang và tiếp tục chỉnh sửa sau.');
         return;
@@ -498,7 +507,7 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
     <div className="cc">
       {/* Header */}
       <div className="cc__header">
-        <h1 className="cc__heading">Create New Course</h1>
+        <h1 className="cc__heading">{editCourseId ? 'Edit Course' : 'Create New Course'}</h1>
         <div className="cc__header-actions">
           <button
             type="button"
@@ -538,6 +547,7 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
 
       {error && <p className="cc__error">{error}</p>}
       {successMessage && <p className="cc__success">{successMessage}</p>}
+      <StatusTracker status={courseStatus} rejectionReason={rejectionReason} />
 
       <div className="cc__grid">
         {/* ---------- Left column ---------- */}

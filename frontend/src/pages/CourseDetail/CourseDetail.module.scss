@@ -28,13 +28,13 @@
   display: grid;
   padding: 77px;
   grid-template-columns: 2fr 1fr;
-  grid-template-rows: 40px 347px 50px 30px 1fr;
+  grid-template-rows: 40px 347px 50px 30px auto;
   grid-template-areas:
     "LK   TnB"
     "MT   TnB"
     "CN   TnB"
     "SL1  TnB"
-    "content TnB";
+    "content .";
 }
 
 // ─── Breadcrumb Link ─────────────────────────────────────────────

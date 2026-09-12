@@ -2,6 +2,7 @@ import CourseModel from '../model/courses.js';
 import EnrollmentModel from '../model/enrollment.js';
 import ReviewModel from '../model/review.js';
 import AccountModel from '../model/account.js';
+import mongoose from 'mongoose';
 import InstructorModel from '../model/instructor.js';
 import { uploadBufferToCloudinary } from '../src/utils/uploadToCloudinary.js';
 import { badRequest, notFound } from '../middleware/appError.middleware.js';
@@ -92,6 +93,7 @@ const buildQuizFromInput = (quizInput, existingQuiz = null) => {
     if (existingQuiz?._id) quizDoc._id = existingQuiz._id;
     return quizDoc;
 };
+
 
 const courseController = {
     createCourse: async (req, res, next) => {
@@ -448,7 +450,8 @@ const courseController = {
             const { rating, comment } = req.body;
             const accountId = req.user._id; // lấy từ JWT middleware
 
-            // (optional) kiểm tra user đã enroll course này chưa mới cho review
+            // // (optional) kiểm tra user đã enroll course này chưa mới cho review
+            
             
             const enrolled = await EnrollmentModel.findOne({ accountId, courseId });
             if (!enrolled) return res.status(403).json({ message: 'You need to purchase this course before reviewing it', success: false });
@@ -457,8 +460,9 @@ const courseController = {
             const displayName = account.Username;
 
             const review = await ReviewModel.create({ courseId, accountId, name: displayName, rating, comment });
+            
             await syncCourseRating(courseId);
-            res.status(201).json({ data: review, message: 'Review created', success: true });
+            res.status(201).json({data:review, message: 'Review created', success: true });
         }
         catch(error){
             next(error)
