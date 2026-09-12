@@ -7,7 +7,7 @@ import './MyCoursesTab.scss';
 const img = "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=400";
 const ITEMS_PER_PAGE = 8;
 
-export default function MyCoursesTab({ myCourses }) {
+export default function MyCoursesTab({ myCourses, onEditCourse }) {
   const [course, setCourse] = useState(myCourses || []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -249,13 +249,10 @@ export default function MyCoursesTab({ myCourses }) {
         {displayedCourses.length === 0 ? (
           <p style={{ color: '#94a3b8', gridColumn: '1/-1' }}>No courses found.</p>
         ) : (
-          paginatedCourses.map((data) => (
-            <Link
-              key={data._id || data.id}
-              to={`/mycoursespage/${data._id || data.id}`}
-              state={{ course: data }}
-            >
-              <div className="course-card">
+          paginatedCourses.map((data) => {
+           const courseId = data._id || data.id;
+           const cardBody = (
+             <div className="course-card">
                 <div className="course-card__thumbnail">
                   <img src={data.thumbnail || img} alt={data.title} className="course-card__image" referrerPolicy="no-referrer" />
                 </div>
@@ -281,8 +278,30 @@ export default function MyCoursesTab({ myCourses }) {
                   </div>
                 </div>
               </div>
-            </Link>
-          ))
+            );
+
+            // Teacher: mọi course (draft/pending/hidden/rejected/approved) đều
+            // đi vào flow edit qua CreateCourseTab — KHÔNG bao giờ vào trang học của student
+            if (isTeacher) {
+              return (
+                <div
+                  key={courseId}
+                  className="course-card-link"
+                  onClick={() => onEditCourse?.(courseId)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {cardBody}
+                </div>
+              );
+            }
+
+            // Student: giữ nguyên hành vi cũ — vào trang học
+            return (
+              <Link key={courseId} to={`/mycoursespage/${courseId}`} state={{ course: data }}>
+                {cardBody}
+              </Link>
+            );
+          })
         )}
       </div>
 
