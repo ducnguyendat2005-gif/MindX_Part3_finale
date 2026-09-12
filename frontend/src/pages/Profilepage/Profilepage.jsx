@@ -233,10 +233,21 @@ export default function ProfilePage() {
   };
 
   const handleCreatedCourse = (newCourse) => {
-    if (newCourse?.status === 'published') {
-      setMyCourses((prev) => [newCourse, ...prev]);
-      setActiveTab('courses');
-    }
+    if (!newCourse) return;
+
+    setMyCourses((prev) => {
+      const courseId = String(newCourse._id || newCourse.id || '');
+      const alreadyExists = courseId && prev.some((course) => String(course._id || course.id) === courseId);
+
+      if (alreadyExists) {
+        return prev.map((course) => (
+          String(course._id || course.id) === courseId ? newCourse : course
+        ));
+      }
+
+      return [newCourse, ...prev];
+    });
+    setActiveTab('courses');
   };
 
   const handleSavePassword = async () => {

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Tag } from 'lucide-react';
 import { API, fetchWithAuth, tokenStorage } from '../../config/api.js';
 import './Checkout.scss';
-import { getCoursePricing, normalizeCartItem } from '../../utils/pricing.js';
+import { getCoursePricing, normalizeCartItem, TAX_PER_COURSE } from '../../utils/pricing.js';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 
 export default function CheckoutPage() {
@@ -29,7 +29,7 @@ export default function CheckoutPage() {
   const saleDiscount = cartPricing.reduce((acc, item) => acc + item.discountAmount, 0);
   const couponDiscount = appliedCoupon ? appliedCoupon.discountAmount : 0;
   const discount = saleDiscount + couponDiscount;
-  const tax = 20.00;
+  const tax = cart.length * TAX_PER_COURSE;
   const total = Math.max(subtotal - discount + tax, 0);
 
   useEffect(() => {
@@ -110,7 +110,7 @@ export default function CheckoutPage() {
 
   const handleCheckout = async () => {
     if (!country.trim() || !state.trim()) {
-      setCheckoutError(t('checkout.locationRequired'));
+      setCheckoutError({ key: 'checkout.locationRequired' });
       return;
     }
 
@@ -140,11 +140,15 @@ export default function CheckoutPage() {
 
       // Lưu lại giỏ hàng hiện tại để sau khi thanh toán xong (redirect quay về) còn biết mà xóa/refresh
       localStorage.setItem('pendingOrderId', result.data.orderId);
+      localStorage.setItem(
+        'pendingOrderCourseIds',
+        JSON.stringify(cart.map((item) => item._id || item.id).filter(Boolean)),
+      );
 
       // Redirect sang trang thanh toán MoMo/VNPay
       window.location.href = result.data.payUrl;
     } catch (err) {
-      setCheckoutError(err.message);
+      setCheckoutError({ message: err.message });
       setSubmitting(false);
     }
   };
@@ -362,7 +366,9 @@ export default function CheckoutPage() {
               </div>
 
               {checkoutError && (
-                <p style={{ color: 'red', fontSize: '14px' }}>{checkoutError}</p>
+                <p className="checkout-summary__error">
+                  {checkoutError.key ? t(checkoutError.key) : checkoutError.message}
+                </p>
               )}
 
               <button

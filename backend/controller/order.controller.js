@@ -7,6 +7,7 @@ import { createVnpayUrl, verifyVnpaySignature } from '../src/utils/vnpay.js';
 
 // Tỷ giá tạm để demo — DB đang lưu giá USD, MoMo/VNPay chỉ nhận VND
 const USD_TO_VND = 25000;
+const TAX_PER_COURSE = 10;
 
 const getSalePrice = (course) => {
   const originalPrice = Number(course.price) || 0;
@@ -37,7 +38,7 @@ const buildOrderData = async (courseIds, couponCode) => {
     title: c.title,  
   }));
   const subtotal = items.reduce((sum, i) => sum + i.price, 0);
-  const tax = 20;
+  const tax = courses.length * TAX_PER_COURSE;
 
   let discount = 0;
   let appliedCoupon = null;

@@ -213,10 +213,29 @@ const messageController = {
                 });
             }
 
-            // THÊM MỚI — gộp thông báo hệ thống (VD: trúng thưởng event) chưa đọc
+            // Notification phần thưởng cũ chưa có expiresAt thì dùng createdAt + 7 ngày
+            // để tránh giữ lại các thông báo đã hết hạn trước khi có trường mới.
+            const now = new Date();
+            const legacyRewardCutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            await NotificationModel.deleteMany({
+                accountId: req.user._id,
+                type: 'event_reward',
+                $or: [
+                    { expiresAt: { $lte: now } },
+                    { expiresAt: null, createdAt: { $lte: legacyRewardCutoff } },
+                ],
+            });
+
+            // Gộp thông báo hệ thống (VD: trúng thưởng event) chưa đọc.
             const systemNotifications = await NotificationModel.find({
                 accountId: req.user._id,
                 read: false,
+                $or: [
+                    { type: { $ne: 'event_reward' } },
+                    { type: 'event_reward', expiresAt: { $gt: now } },
+                    // Tương thích với reward được tạo trước khi có expiresAt.
+                    { type: 'event_reward', expiresAt: null, createdAt: { $gt: legacyRewardCutoff } },
+                ],
             }).sort({ createdAt: -1 }).lean();
 
             for (const notification of systemNotifications) {
@@ -230,6 +249,7 @@ const messageController = {
                     createdAt: notification.createdAt,
                     type: notification.type, // 'event_reward'
                     meta: notification.meta, // THÊM — chứa couponCode để FE hiển thị nút copy
+                    expiresAt: notification.expiresAt,
                 });
             }
 
@@ -245,6 +265,27 @@ const messageController = {
                 $set: { welcomeNotificationRead: true },
             });
             res.status(200).json({ success: true });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    markNotificationRead: async (req, res, next) => {
+        try {
+            const notification = await NotificationModel.findOneAndUpdate(
+                {
+                    _id: req.params.id,
+                    accountId: req.user._id,
+                },
+                { $set: { read: true } },
+                { new: true },
+            ).lean();
+
+            if (!notification) {
+                return res.status(404).json({ success: false, message: 'Notification not found' });
+            }
+
+            return res.status(200).json({ success: true });
         } catch (error) {
             next(error);
         }

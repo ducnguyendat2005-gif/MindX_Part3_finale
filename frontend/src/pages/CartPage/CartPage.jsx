@@ -4,7 +4,7 @@ import { Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import img from '../../assets/photo-1542744094-3a31f272c490.avif'
 import './CartPage.scss';
-import { getCoursePricing, normalizeCartItem } from '../../utils/pricing.js';
+import { getCoursePricing, normalizeCartItem, TAX_PER_COURSE } from '../../utils/pricing.js';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 
 
@@ -56,14 +56,26 @@ const readCart = () => {
   }
 };
 
+const readSavedItems = () => {
+  try {
+    const stored = JSON.parse(localStorage.getItem('savedForLaterItems') || '[]');
+    return Array.isArray(stored) ? stored.map(normalizeCartItem) : [];
+  } catch {
+    return [];
+  }
+};
+
+const getItemId = (item) => String(item?._id || item?.id);
+
 export default function CartPage() {
   const { t } = useLanguage();
   const [cart, setCart] = useState(readCart);
+  const [savedItems, setSavedItems] = useState(readSavedItems);
 
   const cartPricing = cart.map(getCoursePricing);
   const subtotal = cartPricing.reduce((acc, item) => acc + item.originalPrice, 0);
   const discount = cartPricing.reduce((acc, item) => acc + item.discountAmount, 0);
-  const tax = 20.00;
+  const tax = cart.length * TAX_PER_COURSE;
   const total = Math.max(subtotal - discount + tax, 0);
   const navigate = useNavigate();
   
@@ -73,6 +85,77 @@ export default function CartPage() {
     localStorage.setItem('insideCarts', JSON.stringify(updated));
     window.dispatchEvent(new Event('cartUpdated'));
   };
+
+  const handleSaveForLater = (item) => {
+    const itemId = getItemId(item);
+    const updatedCart = cart.filter((cartItem) => getItemId(cartItem) !== itemId);
+    const alreadySaved = savedItems.some((savedItem) => getItemId(savedItem) === itemId);
+    const updatedSavedItems = alreadySaved
+      ? savedItems
+      : [...savedItems, normalizeCartItem(item)];
+
+    setCart(updatedCart);
+    setSavedItems(updatedSavedItems);
+    localStorage.setItem('insideCarts', JSON.stringify(updatedCart));
+    localStorage.setItem('savedForLaterItems', JSON.stringify(updatedSavedItems));
+    window.dispatchEvent(new Event('cartUpdated'));
+  };
+
+  const handleMoveToCart = (item) => {
+    const itemId = getItemId(item);
+    const alreadyInCart = cart.some((cartItem) => getItemId(cartItem) === itemId);
+    const updatedCart = alreadyInCart ? cart : [...cart, normalizeCartItem(item)];
+    const updatedSavedItems = savedItems.filter((savedItem) => getItemId(savedItem) !== itemId);
+
+    setCart(updatedCart);
+    setSavedItems(updatedSavedItems);
+    localStorage.setItem('insideCarts', JSON.stringify(updatedCart));
+    localStorage.setItem('savedForLaterItems', JSON.stringify(updatedSavedItems));
+    window.dispatchEvent(new Event('cartUpdated'));
+  };
+
+  const handleRemoveSavedItem = (id) => {
+    const updatedSavedItems = savedItems.filter((item) => getItemId(item) !== String(id));
+    setSavedItems(updatedSavedItems);
+    localStorage.setItem('savedForLaterItems', JSON.stringify(updatedSavedItems));
+  };
+
+  const savedForLaterSection = savedItems.length > 0 && (
+    <section className="saved-for-later">
+      <div className="saved-for-later__header">
+        <h2>{t('cart.savedForLater')}</h2>
+        <span>{savedItems.length}</span>
+      </div>
+      <div className="saved-for-later__list">
+        {savedItems.map((item) => {
+          const { salePrice, originalPrice } = getCoursePricing(item);
+          const itemId = getItemId(item);
+
+          return (
+            <div className="saved-for-later__item" key={itemId}>
+              <img src={img} alt={item.title} />
+              <div className="saved-for-later__info">
+                <h3>{item.title}</h3>
+                <p>{t('course.by')} {item.instructor || item.instructorId?.name || item.author || '—'}</p>
+                <strong>
+                  ${salePrice.toFixed(2)}
+                  {salePrice < originalPrice && <del>${originalPrice.toFixed(2)}</del>}
+                </strong>
+              </div>
+              <div className="saved-for-later__actions">
+                <button type="button" onClick={() => handleMoveToCart(item)}>
+                  {t('cart.moveToCart')}
+                </button>
+                <button type="button" onClick={() => handleRemoveSavedItem(itemId)}>
+                  {t('cart.remove')}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
   
     return (
     <div className="cart-page">
@@ -87,7 +170,7 @@ export default function CartPage() {
 
         <h1 className="cart-title">{t('cart.shoppingCart')}</h1>
 
-        {cart.length === 0 ? (
+        {cart.length === 0 && savedItems.length === 0 ? (
           <div className="cart-empty">
             <p className="cart-empty__text">{t('cart.empty')}</p>
             <button
@@ -99,9 +182,10 @@ export default function CartPage() {
           </div>
         ) : (
           <>
-            <p className="cart-subtitle">{cart.length} {cart.length !== 1 ? t('cart.coursesInCart') : t('cart.courseInCart')}</p>
+            {cart.length > 0 && <>
+              <p className="cart-subtitle">{cart.length} {cart.length !== 1 ? t('cart.coursesInCart') : t('cart.courseInCart')}</p>
 
-            <div className="cart-layout">
+              <div className="cart-layout">
               {/* Items */}
               <div className="cart-items">
                 {cart.map((item) => {
@@ -145,7 +229,13 @@ export default function CartPage() {
                         <span>{item.level}</span>
                       </div>
                       <div className="cart-item__actions">
-                        <button className="cart-item__action cart-item__action--save">{t('cart.save')}</button>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveForLater(item)}
+                          className="cart-item__action cart-item__action--save"
+                        >
+                          {t('cart.save')}
+                        </button>
                         <button onClick={() => handleRemove(itemId)} className="cart-item__action cart-item__action--remove">{t('cart.remove')}</button>
                       </div>
                     </div>
@@ -181,7 +271,9 @@ export default function CartPage() {
                   </button>
                 </div>
               </div>
-            </div>
+              </div>
+            </>}
+            {savedForLaterSection}
           </>
         )}
       </div>

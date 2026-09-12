@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import './StudentExtraForm.scss';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 const CATEGORIES = [
   'development', 'design', 'marketing', 'data-science',
@@ -12,6 +13,7 @@ const CATEGORIES = [
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
 
 export default function StudentExtraForm({ onSubmit, onBack }) {
+  const { t } = useLanguage();
   const [interests, setInterests] = useState([]);
   const [level, setLevel] = useState('');
   const [learningGoal, setLearningGoal] = useState('');
@@ -26,11 +28,11 @@ export default function StudentExtraForm({ onSubmit, onBack }) {
 
   const handleSubmit = async () => {
     if (interests.length === 0) {
-      setError('Chọn ít nhất 1 lĩnh vực bạn quan tâm');
+      setError('auth.interestRequired');
       return;
     }
     if (!level) {
-      setError('Chọn trình độ hiện tại của bạn');
+      setError('auth.levelRequired');
       return;
     }
     setError('');
@@ -94,7 +96,7 @@ export default function StudentExtraForm({ onSubmit, onBack }) {
         />
       </div>
 
-      {error && <p className="extra-form-error">{error}</p>}
+      {error && <p className="extra-form-error">{t(error)}</p>}
 
       <div className="extra-form-actions">
         <button type="button" className="back-btn" onClick={onBack}>

@@ -16,6 +16,8 @@ import Wishlist from './pages/Wishlist/Wishlist.jsx';
 import ProfilePage from './pages/Profilepage/Profilepage.jsx';
 import AdminPage from './pages/Admin/Admin.jsx'
 import PaymentResult from './pages/PaymentResult/PaymentResult.jsx';
+import PublicProfile from './pages/PublicProfile/PublicProfile.jsx';
+import OAuthCallback from './pages/OAuthCallback/OAuthCallback.jsx';
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import EventsList from './pages/Events/EventList.jsx';
 import EventPlay from './pages/EventPlay/EventPlay.jsx';
@@ -43,6 +45,8 @@ function App() {
         <Route path="/home/cartpage/checkout" element={<Checkout/>}/>
         <Route path='/home/course-page/:id/buynow' element={<BuyNPage/>}></Route>
         <Route path="/payment-result" element={<PaymentResult />} />
+        <Route path="/public-profile/:username" element={<PublicProfile />} />
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
 
         <Route
           path="/mycoursespage/:id"

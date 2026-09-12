@@ -16,19 +16,25 @@ export default function BasicInfoForm({ onNext }) {
   const [Repass, setRepass] = useState('');
   const [errors, setErrors] = useState({});
 
+  const handleSocialSignup = (provider) => {
+    window.location.assign(API.oauthStart(provider));
+  };
+
   const clearError = (field) => {
     setErrors((prev) => ({ ...prev, [field]: false }));
   };
 
+  const errorMessage = (error) => (error?.startsWith('auth.') ? t(error) : error);
+
   const handleContinue = async () => {
     const newErrors = {};
-    if (!Fname) newErrors.Fname = t('auth.required');
-    if (!Lname) newErrors.Lname = t('auth.required');
-    if (!Username) newErrors.Username = t('auth.required');
-    if (!Email) newErrors.Email = t('auth.required');
-    if (!pass) newErrors.pass = t('auth.required');
-    if (!Repass) newErrors.Repass = t('auth.required');
-    else if (pass !== Repass) newErrors.Repass = t('auth.passwordMismatch');
+    if (!Fname) newErrors.Fname = 'auth.required';
+    if (!Lname) newErrors.Lname = 'auth.required';
+    if (!Username) newErrors.Username = 'auth.required';
+    if (!Email) newErrors.Email = 'auth.required';
+    if (!pass) newErrors.pass = 'auth.required';
+    if (!Repass) newErrors.Repass = 'auth.required';
+    else if (pass !== Repass) newErrors.Repass = 'auth.passwordMismatch';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -50,15 +56,15 @@ export default function BasicInfoForm({ onNext }) {
         const result = await res.json();
         const duplicateErrors = {};
         if (result.duplicateUsername || result.errors?.Username) {
-          duplicateErrors.Username = 'User đã nhập trùng';
+          duplicateErrors.Username = 'auth.usernameTaken';
         }
         if (result.duplicateEmail || result.errors?.Email) {
-          duplicateErrors.Email = 'Email đã nhập trùng';
+          duplicateErrors.Email = 'auth.emailTaken';
         }
         setErrors(
           Object.keys(duplicateErrors).length > 0
             ? duplicateErrors
-            : { Email: result.message || 'Không thể kiểm tra thông tin đăng ký' },
+            : { Email: 'auth.registrationCheckFailed' },
         );
         return;
       }
@@ -71,7 +77,7 @@ export default function BasicInfoForm({ onNext }) {
         pass,
       });
     } catch {
-      setErrors({ Email: 'Không thể kiểm tra thông tin đăng ký' });
+      setErrors({ Email: 'auth.registrationCheckFailed' });
     } finally {
       setCheckingEmail(false);
     }
@@ -111,7 +117,7 @@ export default function BasicInfoForm({ onNext }) {
               autoComplete="given-name"
               placeholder={t('auth.firstName')}
             />
-            {errors.Fname && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Fname}</p>}
+            {errors.Fname && <p className="signup-field-error">{errorMessage(errors.Fname)}</p>}
           </div>
 
           <div className="signup-field signup-field--no-label">
@@ -124,7 +130,7 @@ export default function BasicInfoForm({ onNext }) {
               autoComplete="family-name"
               placeholder={t('auth.lastName')}
             />
-            {errors.Lname && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Lname}</p>}
+            {errors.Lname && <p className="signup-field-error">{errorMessage(errors.Lname)}</p>}
           </div>
         </div>
 
@@ -139,7 +145,7 @@ export default function BasicInfoForm({ onNext }) {
             autoComplete="off"
             placeholder={t('auth.username')}
           />
-          {errors.Username && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Username}</p>}
+          {errors.Username && <p className="signup-field-error">{errorMessage(errors.Username)}</p>}
         </div>
 
         <div className="signup-field">
@@ -153,7 +159,7 @@ export default function BasicInfoForm({ onNext }) {
             autoComplete="email"
             placeholder={t('auth.emailId')}
           />
-          {errors.Email && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Email}</p>}
+          {errors.Email && <p className="signup-field-error">{errorMessage(errors.Email)}</p>}
         </div>
 
         <div className="form-row">
@@ -168,7 +174,7 @@ export default function BasicInfoForm({ onNext }) {
               autoComplete="new-password"
               placeholder={t('auth.passwordPlaceholder')}
             />
-            {errors.pass && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.pass}</p>}
+            {errors.pass && <p className="signup-field-error">{errorMessage(errors.pass)}</p>}
           </div>
 
           <div className="signup-field">
@@ -182,7 +188,7 @@ export default function BasicInfoForm({ onNext }) {
               autoComplete="new-password"
               placeholder={t('auth.confirmPassword')}
             />
-            {errors.Repass && <p style={{ color: 'red', fontSize: '12px', margin: 0 }}>{errors.Repass}</p>}
+            {errors.Repass && <p className="signup-field-error">{errorMessage(errors.Repass)}</p>}
           </div>
         </div>
 
@@ -197,15 +203,15 @@ export default function BasicInfoForm({ onNext }) {
       </div>
 
       <div className="social-buttons">
-        <button className="social-btn" type="button">
+        <button className="social-btn" type="button" onClick={() => handleSocialSignup('facebook')}>
           <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" alt="Facebook" />
           <span className="social-btn__label social-btn__label--facebook">Facebook</span>
         </button>
-        <button className="social-btn" type="button">
+        <button className="social-btn" type="button" onClick={() => handleSocialSignup('google')}>
           <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
           <span className="social-btn__label social-btn__label--google">Google</span>
         </button>
-        <button className="social-btn" type="button">
+        <button className="social-btn" type="button" onClick={() => handleSocialSignup('microsoft')}>
           <img src="https://www.svgrepo.com/show/448239/microsoft.svg" alt="Microsoft" />
           <span className="social-btn__label social-btn__label--microsoft">Microsoft</span>
         </button>

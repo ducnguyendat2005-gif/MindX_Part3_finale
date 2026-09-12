@@ -2,6 +2,7 @@ footer {
   width: 100%;
   height: 350px;
   background-color: var(--footer-bg);
+  border-top: 2px solid var(--footer-divider);
   position: relative;
 
   .footerInfo {           // ← footer-info

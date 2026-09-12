@@ -4,6 +4,42 @@ import { buildEventQuestions } from '../src/utils/buildEventQuetions.js';
 
 const GAME_TYPES = ['quiz', 'unscramble', 'matching'];
 
+const validateQuestions = (questions, gameType) => {
+    if (!Array.isArray(questions) || questions.length === 0) {
+        throw badRequest('At least one question is required');
+    }
+
+    questions.forEach((question, index) => {
+        const number = index + 1;
+        if (!Number.isFinite(Number(question.basePoints)) || Number(question.basePoints) < 0) {
+            throw badRequest(`Question ${number}: base score must be a non-negative number`);
+        }
+        if (!Number.isFinite(Number(question.timeLimitSeconds)) || Number(question.timeLimitSeconds) < 5) {
+            throw badRequest(`Question ${number}: time limit must be at least 5 seconds`);
+        }
+
+        if (gameType === 'quiz') {
+            if (!question.questionText?.trim()) {
+                throw badRequest(`Question ${number}: question content is required`);
+            }
+            if (!Array.isArray(question.options) || question.options.length < 2 || question.options.some((option) => !option?.trim())) {
+                throw badRequest(`Question ${number}: at least two non-empty options are required`);
+            }
+            if (!Number.isInteger(Number(question.correctIndex)) || Number(question.correctIndex) < 0 || Number(question.correctIndex) >= question.options.length) {
+                throw badRequest(`Question ${number}: correct answer is invalid`);
+            }
+        }
+
+        if (gameType === 'unscramble' && (!question.word?.trim() || question.word.trim().length < 2)) {
+            throw badRequest(`Question ${number}: a word of at least two characters is required`);
+        }
+
+        if (gameType === 'matching' && (!Array.isArray(question.pairs) || question.pairs.length < 2 || question.pairs.some((pair) => !pair.left?.trim() || !pair.right?.trim()))) {
+            throw badRequest(`Question ${number}: at least two non-empty matching pairs are required`);
+        }
+    });
+};
+
 export default {
     createEvent: async (req, res, next) => {
         try {
@@ -20,6 +56,7 @@ export default {
             }
 
             const resolvedGameType = gameType || 'quiz';
+            validateQuestions(questions, resolvedGameType);
 
             const event = await EventModel.create({
                 title,
@@ -72,6 +109,9 @@ export default {
 
             const existingEvent = await EventModel.findById(id);
             if (!existingEvent) throw notFound('Event not found');
+            if (questions !== undefined) {
+                validateQuestions(questions, existingEvent.gameType);
+            }
 
             const event = await EventModel.findByIdAndUpdate(
                 id,

@@ -25,10 +25,22 @@ export default function NotificationPanel({ user, isOpen, onOpenMessage, onUnrea
   const [copiedCode, setCopiedCode] = useState(null);
   const [dismissedKeys, setDismissedKeys] = useState(() => new Set());
 
-  const dismissNotification = (event, notification) => {
+  const dismissNotification = async (event, notification) => {
     event.stopPropagation();
     const key = notification.notificationType + '-' + notification.id;
     setDismissedKeys((current) => new Set(current).add(key));
+
+    // Notification hệ thống được lưu ở backend; đánh dấu đã đọc để không xuất hiện lại
+    // sau khi tải lại trang. Friend request/message vẫn dùng flow riêng của chúng.
+    if (notification.notificationType === 'reward' || notification.notificationType === 'system') {
+      try {
+        const res = await fetchWithAuth(API.markNotificationRead(notification.id), { method: 'PUT' });
+        if (!res.ok) throw new Error('Không thể cập nhật thông báo');
+        setMessageNotifications((current) => current.filter((item) => String(item.id) !== String(notification.id)));
+      } catch (error) {
+        console.error('Could not mark notification as read:', error);
+      }
+    }
   };
 
   const loadNotifications = useCallback(async () => {

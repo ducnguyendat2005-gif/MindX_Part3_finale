@@ -41,6 +41,8 @@ const makeSection = (title = '') => ({
 
 export default function CreateCourseTab({ onCancel, onCreated }) {
   const [courseId, setCourseId] = useState(null);
+  const [availableDraft, setAvailableDraft] = useState(null);
+  const [resumeDraft, setResumeDraft] = useState(false);
   // ----- Basic information -----
   const [title, setTitle] = useState('');
   const [overview, setOverview] = useState('');
@@ -83,6 +85,11 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
           .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))[0];
         if (!draft) return;
 
+        if (!resumeDraft) {
+          setAvailableDraft(draft);
+          return;
+        }
+
         setCourseId(draft._id);
         setTitle(draft.title || '');
         setOverview(draft.overview || draft.shortDescription || draft.courseDescription || '');
@@ -123,13 +130,14 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
             explanation: q.explanation || '',
           })),
         })));
+        setAvailableDraft(null);
       } catch {
         // A missing draft should leave the blank create form usable.
       }
     };
 
     loadLatestDraft();
-  }, []);
+  }, [resumeDraft]);
 
   // ----- Curriculum handlers -----
   const handleAddSection = () => {
@@ -256,15 +264,40 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
   const onPickThumbnail = () => thumbInputRef.current?.click();
   const onPickVideo = () => videoInputRef.current?.click();
 
+  const setThumbnailFile = (file) => {
+    if (!file || !['image/png', 'image/jpeg', 'image/gif'].includes(file.type)) {
+      setError('Thumbnail phải là file PNG, JPG hoặc GIF.');
+      return false;
+    }
+
+    setError(null);
+    setThumbFile(file);
+    setThumbPreview(URL.createObjectURL(file));
+    return true;
+  };
+
   const onThumbnailSelected = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!['image/png', 'image/jpeg', 'image/gif'].includes(file.type)) {
-      setError('Thumbnail phải là file PNG, JPG hoặc GIF.');
-      return;
-    }
-    setThumbFile(file);
-    setThumbPreview(URL.createObjectURL(file));
+    setThumbnailFile(file);
+  };
+
+  const onThumbnailPaste = (e) => {
+    const imageItem = [...(e.clipboardData?.items || [])]
+      .find((item) => item.type.startsWith('image/'));
+    if (!imageItem) return;
+
+    e.preventDefault();
+    const clipboardFile = imageItem.getAsFile();
+    if (!clipboardFile) return;
+
+    const extension = clipboardFile.type.split('/')[1] || 'png';
+    const file = new File(
+      [clipboardFile],
+      `course-thumbnail-${Date.now()}.${extension}`,
+      { type: clipboardFile.type },
+    );
+    setThumbnailFile(file);
   };
 
   const onVideoSelected = (e) => {
@@ -305,17 +338,21 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
   const onThumbnailDrop = (e) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (!file || !['image/png', 'image/jpeg', 'image/gif'].includes(file.type)) {
-      setError('Thumbnail phải là file PNG, JPG hoặc GIF.');
-      return;
-    }
-    setThumbFile(file);
-    setThumbPreview(URL.createObjectURL(file));
+    setThumbnailFile(file);
   };
 
   const validate = (status) => {
     if (!title.trim()) return 'Vui lòng nhập tên khóa học.';
-    if (Number(price) < 0) return 'Price khóa học không được âm.';
+    if (price !== '' && (!Number.isFinite(Number(price)) || Number(price) < 0)) {
+      return 'Price khóa học không hợp lệ.';
+    }
+    if (promotionalPrice !== '') {
+      const originalPrice = Number(price || 0);
+      const salePrice = Number(promotionalPrice);
+      if (!Number.isFinite(salePrice) || salePrice < 0 || salePrice >= originalPrice) {
+        return 'Promotional Price phải nhỏ hơn giá gốc và không được âm.';
+      }
+    }
     if (status === 'published') {
       if (!overview.trim()) return 'Vui lòng nhập phần giới thiệu khóa học.';
       if (!sections.length) return 'Course phải có ít nhất một phần.';
@@ -489,6 +526,15 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
           </button>
         </div>
       </div>
+
+      {availableDraft && !courseId && (
+        <div className="cc__draft-resume">
+          <span>You have an unfinished draft: <strong>{availableDraft.title || 'Untitled course'}</strong></span>
+          <button type="button" className="cc-btn cc-btn--outline" onClick={() => setResumeDraft(true)}>
+            Resume Draft
+          </button>
+        </div>
+      )}
 
       {error && <p className="cc__error">{error}</p>}
       {successMessage && <p className="cc__success">{successMessage}</p>}
@@ -754,6 +800,10 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
                 onClick={onPickThumbnail}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={onThumbnailDrop}
+                onPaste={onThumbnailPaste}
+                tabIndex={0}
+                role="button"
+                aria-label="Upload or paste course thumbnail"
               >
                 <input
                   ref={thumbInputRef}
@@ -772,7 +822,7 @@ export default function CreateCourseTab({ onCancel, onCreated }) {
                   <>
                     <UploadCloud className="cc-upload-icon" />
                     <p className="cc-upload-text">
-                      <span>Click to upload</span> or drag and drop
+                      <span>Click to upload</span>, drag and drop, or press Ctrl+V
                     </p>
                     <p className="cc-upload-text cc-upload-text--sm">
                       PNG, JPG or GIF (max. 800x400px)

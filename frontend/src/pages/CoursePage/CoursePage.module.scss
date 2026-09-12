@@ -136,6 +136,10 @@ $tablet: 768px;
   flex-shrink: 0;
 }
 
+.sidebarHidden {
+  display: none;
+}
+
 .filterSection {
   background: var(--card-bg);
   color: var(--text-color);

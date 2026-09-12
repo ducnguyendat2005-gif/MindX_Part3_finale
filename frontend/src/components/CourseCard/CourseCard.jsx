@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from './CourseCard.module.scss'
 import image from '../../assets/Rectangle 1080.png'
 import { Link } from "react-router-dom";
@@ -43,6 +43,16 @@ const CourseCard = ({
   id
 }) => {
   const { t } = useLanguage();
+  const [imageSrc, setImageSrc] = useState(thumbnail || image);
+
+  useEffect(() => {
+    setImageSrc(thumbnail || image);
+  }, [thumbnail]);
+
+  const handleImageError = () => {
+    setImageSrc((currentSrc) => (currentSrc === image ? currentSrc : image));
+  };
+
   const hasDiscount =
     promotionalPrice != null &&
     originalPrice != null &&
@@ -55,7 +65,7 @@ const CourseCard = ({
   return (
     <Link to={`/home/course-page/${id}`} style={{ textDecoration: "none", color: "inherit" }}>
       <div className={styles.CourCard}>
-        <img src={thumbnail} alt="course thumbnail" />
+        <img src={imageSrc} onError={handleImageError} alt="course thumbnail" />
         <p className={styles.title}>{title}</p>
         <p className={styles.instructor}>{t('course.by')} {instructor}</p>
         <div className={styles.rtin}>

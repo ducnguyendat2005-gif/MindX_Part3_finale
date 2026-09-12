@@ -1,3 +1,5 @@
+export const TAX_PER_COURSE = 10;
+
 export function getCoursePricing(course = {}) {
   const originalPrice = Number(course.originalPrice ?? course.price) || 0;
   const promotionalPrice = Number(course.promotionalPrice);
