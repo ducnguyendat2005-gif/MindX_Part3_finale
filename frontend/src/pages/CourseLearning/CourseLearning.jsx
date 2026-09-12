@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import styles from "./CourseLearning.module.scss";
-import { useLocation,useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import greystar from "../../assets/CourseDetail/Star 3 (1).png";
 import yellowstar from "../../assets/CourseDetail/Star 3.png";
 import bigava from "../../assets/CourseDetail/Ellipse 4 (1).png";
@@ -754,12 +754,16 @@ export default function CourseLearning() {
   const [activeTab, setActiveTab] = useState('description');
   const videoRef = useRef(null);
   const furthestTime = useRef(0); 
-  const location = useLocation();
-
   useEffect(() => {
     fetch(API.courses)
-      .then(res => res.json())
-      .then(result => setAllCourse(result.data))
+      .then((res) => {
+        if (!res.ok) throw new Error(`Failed to load courses: ${res.status}`);
+        return res.json();
+      })
+      .then((result) => {
+        const courses = result.data ?? result;
+        setAllCourse(Array.isArray(courses) ? courses : []);
+      })
       .catch(err => console.error(err))
   }, [])
 
@@ -785,10 +789,8 @@ export default function CourseLearning() {
         const storedUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
         const courseEndpoint = storedUser.role === 'teacher'
           ? API.teachingCourseById(id)
-          : API.courseById(id);
-        const res = storedUser.role === 'teacher'
-          ? await fetchWithAuth(courseEndpoint)
-          : await fetch(courseEndpoint);
+          : API.myCourseById(id);
+        const res = await fetchWithAuth(courseEndpoint);
         const result = await res.json();
         setCourse(result.data);
       } catch (err) {
@@ -802,6 +804,11 @@ export default function CourseLearning() {
 
   useEffect(() => {
     if (!course?._id) return;
+
+    const sections = buildSections(course.syllabus ?? [], String(course._id));
+    const firstLesson = sections[0]?.lessons[0] ?? null;
+    setActiveLesson(firstLesson);
+
     const loadProgress = async () => {
       try {
         const res = await fetchWithAuth(API.getProgress(course._id));
@@ -809,6 +816,15 @@ export default function CourseLearning() {
         const result = await res.json();
         setCompletedLessons(new Set(result.data.completedLessons.map(String)));
         setQuizAttempts(result.data.quizAttempts ?? []);
+
+        const lastAccessedId = result.data.lastAccessedLessonId
+          ? String(result.data.lastAccessedLessonId)
+          : null;
+        const resumedLesson = lastAccessedId
+          ? sections.flatMap((section) => section.lessons)
+              .find((lesson) => String(lesson.storageId) === lastAccessedId)
+          : null;
+        setActiveLesson(resumedLesson ?? firstLesson);
       } catch (err) {
         console.error('Không tải được tiến trình:', err);
       }
@@ -933,7 +949,7 @@ export default function CourseLearning() {
               onEnded={handleEnded}
             >
               <source
-                src={activeLesson?.videoUrl || course.promotionalVideo || vid}
+                src={activeLesson?.videoUrl || course.promotionalVideo || ''}
                 type={activeLesson?.videoUrl?.endsWith('.webm') ? 'video/webm' : 'video/mp4'}
               />
               Your browser does not support the video tag.
@@ -1007,17 +1023,19 @@ export default function CourseLearning() {
           <h2 className={styles.divTitle}>{t('learning.moreCourses')}</h2>
           <div className={styles.courseList}>
             {sameCourse({ data: allCourse, course: course }).map((data) =>
-            <div key={data.id} onClick={() => window.location.reload()}> 
+            <div key={data._id ?? data.id}>
             <CourseCard
-              key={data._id}
-              id={data._id}
+              key={data._id ?? data.id}
+              id={data._id ?? data.id}
               title={data.title}
               instructor={data.instructorId?.name}
               rating={data.rating}
               ratingCount={data.reviews?.length ?? 0}
               duration={`${data.hours} ${t('course.totalHours')}. ${data.lectures} ${t('course.lectures')}. ${data.level}`}
               category={data.category}
-              price={`$${data.price}`}
+              thumbnail={data.thumbnail}
+              promotionalPrice={data.promotionalPrice}
+              originalPrice={data.price}
               >
 
             </CourseCard>

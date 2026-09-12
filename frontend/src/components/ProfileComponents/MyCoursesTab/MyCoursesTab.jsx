@@ -5,6 +5,7 @@ import { API, fetchWithAuth } from '../../../config/api.js';
 import './MyCoursesTab.scss';
 
 const img = "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=400";
+const ITEMS_PER_PAGE = 8;
 
 export default function MyCoursesTab({ myCourses, onEditCourse }) {
   const [course, setCourse] = useState(myCourses || []);
@@ -23,6 +24,7 @@ export default function MyCoursesTab({ myCourses, onEditCourse }) {
   const [filterLevel, setFilterLevel] = useState('');
   // Chỉ dùng cho giáo viên: 'published' | 'hidden' | 'draft' | 'pending'
   const [filterStatus, setFilterStatus] = useState('published');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filterRef = useRef(null);
   const sortRef = useRef(null);
@@ -54,6 +56,10 @@ export default function MyCoursesTab({ myCourses, onEditCourse }) {
     fetchMyCourses();
   }, [myCourses]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchText, sortBy, filterCategory, filterLevel, filterStatus, isTeacher, course]);
+
   // Đóng dropdown khi click ra ngoài
   useEffect(() => {
     const handler = (e) => {
@@ -72,11 +78,12 @@ export default function MyCoursesTab({ myCourses, onEditCourse }) {
         c.author?.toLowerCase().includes(searchText.toLowerCase());
 
       if (isTeacher) {
-        // Approved courses are the teacher-facing "published" state.
-        // Hidden courses remain visible in the teacher's own list.
+        // The backend stores a submitted course as "pending" until admin approval.
+        // Keep approved, hidden, and pending courses visible in the default teacher list.
+        const normalizedStatus = c.status === 'approved' ? 'published' : (c.status || 'published');
         const matchStatus = filterStatus === 'published'
-          ? c.status === 'approved'
-          : c.status === filterStatus;
+          ? ['published', 'hidden', 'pending'].includes(normalizedStatus)
+          : normalizedStatus === filterStatus;
         return matchSearch && matchStatus;
       }
 
@@ -90,6 +97,12 @@ export default function MyCoursesTab({ myCourses, onEditCourse }) {
       if (sortBy === 'price_desc') return (b.price || 0) - (a.price || 0);
       return 0; // relevance
     });
+
+  const totalPages = Math.ceil(displayedCourses.length / ITEMS_PER_PAGE);
+  const paginatedCourses = displayedCourses.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
   const sortLabels = {
     relevance: 'Relevance',
@@ -236,11 +249,15 @@ export default function MyCoursesTab({ myCourses, onEditCourse }) {
         {displayedCourses.length === 0 ? (
           <p style={{ color: '#94a3b8', gridColumn: '1/-1' }}>No courses found.</p>
         ) : (
-          displayedCourses.map((data) => {
-            const cardInner = (
+          paginatedCourses.map((data) => (
+            <Link
+              key={data._id || data.id}
+              to={`/mycoursespage/${data._id || data.id}`}
+              state={{ course: data }}
+            >
               <div className="course-card">
                 <div className="course-card__thumbnail">
-                  <img src={img} alt={data.title} className="course-card__image" referrerPolicy="no-referrer" />
+                  <img src={data.thumbnail || img} alt={data.title} className="course-card__image" referrerPolicy="no-referrer" />
                 </div>
                 <div className="course-card__body">
                   <h3 className="course-card__title">{data.title}</h3>
@@ -298,13 +315,33 @@ export default function MyCoursesTab({ myCourses, onEditCourse }) {
       </div>
 
       {/* Pagination */}
-      <div className="pagination">
-        <button className="pagination__arrow"><ChevronLeft className="pagination__arrow-icon" /></button>
-        <button className="pagination__page pagination__page--active">1</button>
-        <button className="pagination__page">2</button>
-        <button className="pagination__page">3</button>
-        <button className="pagination__arrow"><ChevronRight className="pagination__arrow-icon" /></button>
-      </div>
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            className="pagination__arrow"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((page) => page - 1)}
+          >
+            <ChevronLeft className="pagination__arrow-icon" />
+          </button>
+          {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+            <button
+              key={page}
+              className={`pagination__page ${page === currentPage ? 'pagination__page--active' : ''}`}
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            className="pagination__arrow"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((page) => page + 1)}
+          >
+            <ChevronRight className="pagination__arrow-icon" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

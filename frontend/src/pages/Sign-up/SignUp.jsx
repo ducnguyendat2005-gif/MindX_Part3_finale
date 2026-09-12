@@ -7,17 +7,19 @@ import RoleSelect from '../../components/RoleSelect/RoleSelect.jsx';
 import ExtraForm from '../../components/ExtraForm.jsx';
 import { API } from '../../config/api.js';
 import './SignUp.scss';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 export default function SignUpPage() {
+  const { t } = useLanguage();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({});
-  const [submitError, setSubmitError] = useState('');
+  const [submitError, setSubmitError] = useState(null);
   const navigate = useNavigate();
 
   const updateData = (data) => setFormData((prev) => ({ ...prev, ...data }));
 
   const handleFinalSubmit = async (extraData) => {
-    setSubmitError('');
+    setSubmitError(null);
     const fullData = { ...formData, ...extraData };
     const isTeacher = fullData.role === 'teacher';
     const endpoint = isTeacher ? API.registerTeacher : API.register;
@@ -60,7 +62,16 @@ export default function SignUpPage() {
       const result = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setSubmitError(result.message || 'Registration failed');
+        const duplicateUsername = Boolean(result.duplicateUsername || result.errors?.Username);
+        const duplicateEmail = Boolean(result.duplicateEmail || result.errors?.Email);
+        const errorKey = duplicateUsername && duplicateEmail
+          ? 'auth.usernameEmailTaken'
+          : duplicateUsername
+            ? 'auth.usernameTaken'
+            : duplicateEmail
+              ? 'auth.emailTaken'
+              : 'auth.registrationFailed';
+        setSubmitError({ key: errorKey });
         // Giữ nguyên form Instructor Profile để người dùng chỉ cần sửa lỗi.
         setStep(3);
         return;
@@ -68,7 +79,7 @@ export default function SignUpPage() {
 
       navigate('/signin');
     } catch {
-      setSubmitError('Could not connect to the server');
+      setSubmitError({ key: 'auth.connectionFailed' });
     }
   };
 
@@ -94,14 +105,14 @@ export default function SignUpPage() {
             {step === 1 && (
               <BasicInfoForm
                 key="basic"
-                onNext={(data) => { setSubmitError(''); updateData(data); setStep(2); }}
+                onNext={(data) => { setSubmitError(null); updateData(data); setStep(2); }}
               />
             )}
             {step === 2 && (
               <RoleSelect
                 key="role"
                 onSelect={(role) => {
-                  setSubmitError('');
+                  setSubmitError(null);
                   updateData({ role });
                   setStep(3);
                 }}
@@ -116,7 +127,11 @@ export default function SignUpPage() {
               />
             )}
           </AnimatePresence>
-          {submitError && <p className="signup-error">{submitError}</p>}
+          {submitError && (
+            <p className="signup-error">
+              {submitError.key ? t(submitError.key) : submitError.message}
+            </p>
+          )}
         </div>
       </div>
     </div>

@@ -14,6 +14,8 @@ import orderController from './controller/order.controller.js';
 import adminController from './controller/admin.controller.js'
 import eventController from './controller/event.controller.js';
 import eventAdminController from './controller/eventAdmin.controller.js';
+import aiController from './controller/ai.controller.js';
+import { exchangeOAuthHandoff, oauthCallback, startOAuth } from './controller/oauth.controller.js';
 import { isStudent, hasAnyEnrollment } from './middleware/event.middleware.js';
 import { uploadPortfolio, uploadCourseMedia } from './src/middleware/upload.middleware.js';
 import cors from 'cors'
@@ -36,6 +38,12 @@ const currentDir = path.dirname(fileURLToPath(import.meta.url));
 app.get('/health', (_req, res) => {
   res.status(200).json({ success: true, service: 'backend' });
 });
+
+app.post('/ai/chat', aiController.chat);
+
+app.get('/auth/:provider', startOAuth);
+app.get('/auth/:provider/callback', oauthCallback);
+app.post('/auth/oauth/exchange', exchangeOAuthHandoff);
 
 console.log(process.env.PORT);
 console.log(process.env.MONGO_URI);
@@ -61,6 +69,7 @@ app.put('/account/friend-requests/:id', verifyToken, friendController.respondToR
 app.get('/account/conversations', verifyToken, messageController.getConversations)
 app.get('/account/messages/notifications', verifyToken, messageController.getUnreadNotifications)
 app.put('/account/messages/notifications/welcome/read', verifyToken, messageController.markWelcomeNotificationRead)
+app.put('/account/messages/notifications/:id/read', verifyToken, messageController.markNotificationRead)
 app.get('/account/messages/:userId', verifyToken, messageController.getConversation)
 app.post('/account/messages/:userId', verifyToken, messageController.sendMessage)
 
@@ -84,6 +93,7 @@ app.post('/account/check-duplicate',checkDuplicateEmail)
 app.post('/login',validateLogin,accountController.accLogin)
 
 app.get('/account/mycourses',verifyToken,accountController.getMycourses)
+app.get('/account/enrolled-courses/:id', verifyToken, courseController.getEnrolledCoursebyId)
 
 app.get('/account/teaching-courses', verifyToken, isTeacher, accountController.getTeachingCourses)
 app.get('/account/teaching-courses/:id', verifyToken, isTeacher, courseController.getTeachingCoursebyId)
@@ -107,6 +117,10 @@ app.put(
 app.get('/account/myprofile',verifyToken,accountController.getAllUserInfo)
 
 app.get('/account/myprofile/teacher',verifyToken,teacherController.getAllTeacherInfo)
+
+// Public profile data is intentionally served without authentication, but the
+// controller returns only an explicit safe allowlist (no email, id, or password).
+app.get('/public-profiles/:username', accountController.getPublicProfile)
 
 app.get('/admin',verifyToken,isAdmin,accountController.getAllAdminInfo)
 app.put('/admin/accounts/:id/status', verifyToken, isAdmin, accountController.updateAccountStatus)
@@ -150,12 +164,12 @@ app.put('/account/enrollments/:courseId/progress', verifyToken, courseController
 
 app.post('/account/enrollments/:courseId/quiz-attempt', verifyToken, courseController.submitQuizAttempt); // THÊM MỚI
 
-app.get('/events', verifyToken, isStudent, eventController.getActiveEvents);
-app.get('/events/:eventId', verifyToken, isStudent, eventController.getEventById);
+app.get('/events', verifyToken, isStudent, hasAnyEnrollment, eventController.getActiveEvents);
+app.get('/events/:eventId', verifyToken, isStudent, hasAnyEnrollment, eventController.getEventById);
 app.post('/events/:eventId/submit-answer', verifyToken, isStudent, hasAnyEnrollment, eventController.submitAnswer);
 app.post('/events/:eventId/display-mode', verifyToken, isStudent, hasAnyEnrollment, eventController.setDisplayMode);
-app.get('/events/:eventId/leaderboard', verifyToken, isStudent, eventController.getLeaderboard);
-app.get('/events/:eventId/my-score', verifyToken, isStudent, eventController.getMyScore);
+app.get('/events/:eventId/leaderboard', verifyToken, isStudent, hasAnyEnrollment, eventController.getLeaderboard);
+app.get('/events/:eventId/my-score', verifyToken, isStudent, hasAnyEnrollment, eventController.getMyScore);
 
 app.post('/admin/events', verifyToken, isAdmin, eventAdminController.createEvent);
 app.get('/admin/events', verifyToken, isAdmin, eventAdminController.getAllEventsAdmin);

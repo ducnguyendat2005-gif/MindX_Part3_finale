@@ -1,7 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import { motion } from "framer-motion";
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { API, tokenStorage, fetchWithAuth } from '../../config/api.js';
 import './SignIn.scss';
@@ -9,11 +9,31 @@ import { useLanguage } from '../../context/LanguageContext.jsx';
 
 export default function SignInPage() {
   const { t } = useLanguage();
-  const [loginError, setLoginError] = useState('');
+  const [loginError, setLoginError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  const getOAuthError = (message) => {
+    const normalized = String(message || '').toLowerCase();
+    if (normalized.includes('session expired')) return { key: 'auth.oauthSessionExpired' };
+    if (normalized.includes('cancelled')) return { key: 'auth.oauthCancelled' };
+    if (normalized.includes('not configured')) return { key: 'auth.oauthUnavailable' };
+    return { key: 'auth.oauthFailed' };
+  };
+
+  const getErrorMessage = (error) => (error?.key ? t(error.key) : error?.message || '');
+
+  useEffect(() => {
+    const oauthError = searchParams.get('oauthError');
+    if (oauthError) setLoginError(getOAuthError(oauthError));
+  }, [searchParams]);
+
+  const handleSocialLogin = (provider) => {
+    window.location.assign(API.oauthStart(provider));
+  };
 
   const handleSignin = async (e) => {
     e.preventDefault();
@@ -30,11 +50,10 @@ export default function SignInPage() {
         const errorResult = await res.json().catch(() => ({}));
         if (errorResult.code === 'ACCOUNT_SUSPENDED') {
           tokenStorage.clear();
-          window.alert('không thể đăng nhập vì tài khoản này đang tạm khoá');
-          navigate('/signin', { replace: true });
+          setLoginError({ key: 'auth.accountSuspended' });
           return;
         }
-        setLoginError(t('auth.invalidCredentials'));
+        setLoginError({ key: 'auth.invalidCredentials' });
         return;
       }
 
@@ -65,21 +84,20 @@ export default function SignInPage() {
         const profileError = await profileRes.clone().json().catch(() => ({}));
         tokenStorage.clear();
         if (profileError.code === 'ACCOUNT_SUSPENDED') {
-          window.alert('không thể đăng nhập vì tài khoản này đang tạm khoá');
-          navigate('/signin', { replace: true });
+          setLoginError({ key: 'auth.accountSuspended' });
           return;
         }
-        setLoginError(t('auth.invalidCredentials'));
+        setLoginError({ key: 'auth.invalidCredentials' });
       }
     } catch (err) {
-      setLoginError(t('auth.invalidCredentials'));
+      setLoginError({ key: 'auth.invalidCredentials' });
     } finally {
       setSubmitting(false);
     }
   };
 
   const clearError = () => {
-    setLoginError('');
+    setLoginError(null);
   };
 
 
@@ -120,7 +138,7 @@ export default function SignInPage() {
               />
             </div>
 
-            {loginError && <p className="signin-error">{loginError}</p>}
+            {loginError && <p className="signin-error">{getErrorMessage(loginError)}</p>}
 
             <button type="submit" className="signin-btn" disabled={submitting}>
               {submitting ? t('auth.signingIn') : t('auth.signIn')}
@@ -133,15 +151,15 @@ export default function SignInPage() {
           </div>
 
           <div className="social-buttons">
-            <button className="social-btn">
+            <button type="button" className="social-btn" onClick={() => handleSocialLogin('facebook')}>
               <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" alt="Facebook" />
               <span className="social-btn__label social-btn__label--facebook">Facebook</span>
             </button>
-            <button className="social-btn">
+            <button type="button" className="social-btn" onClick={() => handleSocialLogin('google')}>
               <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
               <span className="social-btn__label social-btn__label--google">Google</span>
             </button>
-            <button className="social-btn">
+            <button type="button" className="social-btn" onClick={() => handleSocialLogin('microsoft')}>
               <img src="https://www.svgrepo.com/show/448239/microsoft.svg" alt="Microsoft" />
               <span className="social-btn__label social-btn__label--microsoft">Microsoft</span>
             </button>

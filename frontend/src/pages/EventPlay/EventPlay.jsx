@@ -53,7 +53,7 @@ function EventPlay() {
   const submittedRef = useRef(false); // chặn double-submit (vd: auto-submit matching + bấm nút cùng lúc)
   const [myScore, setMyScore] = useState(null); // THÊM MỚI
 
-useEffect(() => {
+  useEffect(() => {
     (async () => {
       try {
         const res = await fetchWithAuth(API.eventById(eventId));
@@ -70,21 +70,6 @@ useEffect(() => {
           return;
         }
 
-        setPhase(PHASE.DISPLAY_MODE);
-      } catch (err) {
-        setErrorMsg(err.message);
-        setPhase(PHASE.ERROR);
-      }
-    })();
-  }, [eventId]);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetchWithAuth(API.eventById(eventId));
-        const body = await res.json();
-        if (!res.ok) throw new Error(body.message || 'Could not load event');
-        setEvent(body.data);
         setPhase(PHASE.DISPLAY_MODE);
       } catch (err) {
         setErrorMsg(err.message);
@@ -123,7 +108,7 @@ useEffect(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timerRef.current);
-          submitCurrentAnswer(); // hết giờ — nộp bất kỳ đáp án nào đang có (có thể rỗng)
+          submitCurrentAnswer(undefined, index); // submit the answer for this timer's question
           return 0;
         }
         return prev - 1;
@@ -138,7 +123,7 @@ useEffect(() => {
         body: JSON.stringify({ displayMode, nickname }),
       });
       const body = await res.json();
-      if (!res.ok && body.code !== undefined && res.status !== 409) {
+      if (!res.ok) {
         throw new Error(body.message || 'Could not save display preference');
       }
       startQuestion(0);
@@ -150,12 +135,12 @@ useEffect(() => {
 
   // payloadOverride cho phép quiz nộp NGAY khi bấm 1 lựa chọn, thay vì đọc từ state
   // (vì setState là async, đọc state ngay sau khi click có thể chưa kịp cập nhật).
-  const submitCurrentAnswer = async (payloadOverride) => {
+  const submitCurrentAnswer = async (payloadOverride, questionIndexOverride = qIndex) => {
     if (submittedRef.current) return;
     submittedRef.current = true;
     clearInterval(timerRef.current);
 
-    const question = event.questions[qIndex];
+    const question = event.questions[questionIndexOverride];
     const timeTakenMs = Date.now() - startedAtRef.current;
     const body = { questionId: question._id, timeTakenMs };
 
@@ -391,7 +376,6 @@ useEffect(() => {
                       className={styles.matchItem}
                       data-selected={selectedLeftKey === item.key}
                       data-matched={matched}
-                      disabled={matched}
                       onClick={() => (matched ? unmatchPair(item.key) : handleLeftClick(item.key))}
                     >
                       {item.text}

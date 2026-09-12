@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Share2, Plus } from 'lucide-react';
 import './Sidebar.scss';
 import { useLanguage } from '../../../context/LanguageContext.jsx';
@@ -14,10 +14,50 @@ const BASE_NAV_ITEMS = [
 
 export default function Sidebar({ user, activeTab, setActiveTab, onCreateCourse }) {
   const { t } = useLanguage();
+  const [shareState, setShareState] = useState('idle');
   const isTeacher = user?.role === 'teacher' || user?.Role === 'teacher';
   const navItems = isTeacher
     ? [{ key: 'teacherInfo', labelKey: 'profile.profile' }, ...BASE_NAV_ITEMS.slice(1)]
     : BASE_NAV_ITEMS;
+
+  const handleShare = async () => {
+    const username = String(user?.Username || '').replace(/^@+/, '').trim();
+    if (!username || shareState === 'sharing') return;
+
+    const shareUrl = `${window.location.origin}/public-profile/${encodeURIComponent(username)}`;
+    const shareTitle = `${user?.Fname || ''} ${user?.Lname || ''}`.trim() || `@${username}`;
+
+    setShareState('sharing');
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${shareTitle} | Byway`,
+          text: t('profile.shareText', { username }),
+          url: shareUrl,
+        });
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl;
+        textArea.setAttribute('readonly', '');
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+
+      setShareState('success');
+      window.setTimeout(() => setShareState('idle'), 2500);
+    } catch (error) {
+      // Closing the native share dialog is not an error for the user.
+      if (error?.name !== 'AbortError') setShareState('error');
+      else setShareState('idle');
+      if (error?.name !== 'AbortError') window.setTimeout(() => setShareState('idle'), 2500);
+    }
+  };
 
   return (
     <aside className="profile-page__sidebar">
@@ -31,8 +71,13 @@ export default function Sidebar({ user, activeTab, setActiveTab, onCreateCourse 
           />
         </div>
         <h2 className="sidebar__name">{user?.Username ?? 'John Doe'}</h2>
-        <button className="sidebar__share-btn">
-          {t('profile.share')} <Share2 className="sidebar__share-icon" />
+        <button className="sidebar__share-btn" type="button" onClick={handleShare} disabled={shareState === 'sharing'}>
+          {shareState === 'success'
+            ? t('profile.shareSuccess')
+            : shareState === 'error'
+              ? t('profile.shareError')
+              : t('profile.share')}
+          <Share2 className="sidebar__share-icon" />
         </button>
       </div>
 

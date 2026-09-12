@@ -1,29 +1,48 @@
 import CouponModel from "../model/coupon.js";
-import CourseModel from "../model/courses.js";
 
-export const checkUserCoupon = async (req,res,next) => {
+export const checkUserCoupon = async (req, res, next) => {
     try {
-        const {code,courseId} = req.body;
-
-        const courseCode = await CouponModel.findOne({ code: code })
-            .select("applicableCourses maxUses isActive expiresAt -_id") // chỉ giữ applicableCourses, ẩn cả _id
-    
-
-        if (!courseCode) throw new Error ("Code not existed, try another")
-
-        
-        const now = new Date();
-        if (courseCode.expiresAt && courseCode.expiresAt < now) {
-            const err = new Error("Code expired!");
-            err.statusCode = 400;
+        const code = String(req.body?.code || '').trim().toUpperCase();
+        if (!code) {
+            const err = new Error('Coupon code is required');
+            err.status = 400;
             throw err;
         }
-        if (courseCode.maxUses === 0) throw new Error ("There is no code left")
 
-        if (courseCode.isActive === false) throw new Error ("Code has been deactivated by backend")
-        next()
+        const coupon = await CouponModel.findOne({ code })
+            .select('maxUses usedCount isActive expiresAt -_id')
+            .lean();
+
+        if (!coupon) {
+            const err = new Error('Code not existed, try another');
+            err.status = 400;
+            throw err;
+        }
+
+        if (coupon.isActive === false) {
+            const err = new Error('Code has been deactivated by backend');
+            err.status = 400;
+            throw err;
+        }
+
+        const now = new Date();
+        if (coupon.expiresAt && coupon.expiresAt <= now) {
+            const err = new Error('Code expired!');
+            err.status = 400;
+            throw err;
+        }
+
+        const usedCount = Number(coupon.usedCount) || 0;
+        if (coupon.maxUses != null && usedCount >= Number(coupon.maxUses)) {
+            const err = new Error('There is no code left');
+            err.status = 400;
+            throw err;
+        }
+
+        // Dùng cùng mã đã chuẩn hoá ở controller và bước tạo order.
+        req.body.code = code;
+        next();
+    } catch (error) {
+        next(error);
     }
-    catch(error){
-        next(error)
-    }
-}
+};

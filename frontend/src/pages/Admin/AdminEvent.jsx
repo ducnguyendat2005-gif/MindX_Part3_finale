@@ -226,6 +226,15 @@ function AdminEvents() {
     if (new Date(form.startDate) >= new Date(form.endDate)) return 'The start time must be before the end time';
     if (form.questions.length === 0) return 'At least one question is required';
 
+    for (const [i, q] of form.questions.entries()) {
+      if (!Number.isFinite(Number(q.basePoints)) || Number(q.basePoints) < 0) {
+        return `Question ${i + 1}: base score must be a non-negative number`;
+      }
+      if (!Number.isFinite(Number(q.timeLimitSeconds)) || Number(q.timeLimitSeconds) < 5) {
+        return `Question ${i + 1}: time limit must be at least 5 seconds`;
+      }
+    }
+
     if (form.gameType === 'unscramble') {
       for (const [i, q] of form.questions.entries()) {
         if (!q.word.trim()) return `Question ${i + 1}: thiếu từ khóa (word)`;

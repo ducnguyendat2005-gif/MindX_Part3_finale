@@ -155,9 +155,19 @@ const saleCount = (promotionalPrice,originalPrice) => {
 const buildReviewStats = (reviews = []) => {
   const total = reviews.length;
   if (total === 0) {
-    return { averageRating: 0, totalReviews: 0, ratingBreakdown: { 5:0,4:0,3:0,2:0,1:0 } };
+    return {
+      averageRating: '0.0',
+      totalReviews: 0,
+      ratingBreakdown: {
+        '5_star': '0%',
+        '4_star': '0%',
+        '3_star': '0%',
+        '2_star': '0%',
+        '1_star': '0%',
+      },
+    };
   }
-  const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+  const sum = reviews.reduce((acc, r) => acc + Number(r.rating || 0), 0);
   const counts = { 5:0,4:0,3:0,2:0,1:0 };
   reviews.forEach(r => { counts[r.rating] = (counts[r.rating] || 0) + 1; });
   const ratingBreakdown = {};
@@ -277,7 +287,8 @@ useEffect(() => {
 
   if (loading) return <p>{t('learning.loading')}</p>;
   if (!course) return <p>{t('learning.notFound')}</p>;
-  const reviewStats = buildReviewStats(course.reviews);
+  const courseReviews = Array.isArray(course.reviews) ? course.reviews : [];
+  const reviewStats = buildReviewStats(courseReviews);
 
   const hasDiscount =
     course.promotionalPrice &&
@@ -329,9 +340,9 @@ useEffect(() => {
               {course.shortDescription}
             </p>
             <div className={styles.ratingNDetails}>
-              <p style={{ color: "#fcad03" }}>{course.rating}</p>
+              <p style={{ color: "#fcad03" }}>{reviewStats.averageRating}</p>
               <img src={yellowstar} alt="rating" />
-              <p>({t('detail.reviewCount', { count: course.reviews?.length ?? 0 })})</p>
+              <p>({t('detail.reviewCount', { count: reviewStats.totalReviews })})</p>
               <div></div>
               <p>{course.hours} {t('course.totalHours')}. {course.lectures} {t('course.lectures')}. {t('detail.allLevels')}</p>
             </div>
@@ -405,19 +416,19 @@ useEffect(() => {
               <div className={styles.shareInfo}>
                 <p>{t('detail.share')}</p>
                 <div className={styles.shareGroup}>
-                  <a href="#" className={styles.sharedButton1}>
+                  <a href="https://www.facebook.com/facebook/" className={styles.sharedButton1}>
                     <img src={facebook} alt="Facebook" />
                   </a>
-                  <a href="#" className={styles.sharedButton2}>
+                  <a href="https://github.com/" className={styles.sharedButton2}>
                     <img src={github} alt="GitHub" />
                   </a>
-                  <a href="#" className={styles.sharedButton3}>
+                  <a href="https://www.google.com/" className={styles.sharedButton3}>
                     <img src={google} alt="Google" />
                   </a>
-                  <a href="#" className={styles.sharedButton4}>
+                  <a href="https://x.com/?lang=vi" className={styles.sharedButton4}>
                     <img src={twitter} alt="X" />
                   </a>
-                  <a href="#" className={styles.sharedButton5}>
+                  <a href="https://www.microsoft.com/vi-vn" className={styles.sharedButton5}>
                     <img src={microsoft} alt="Windows" />
                   </a>
                 </div>
@@ -536,7 +547,7 @@ useEffect(() => {
                 </div>
 
                 <div className={styles.review}>
-                  {(course.reviews ?? []).slice(0, showAllReviews ? undefined : 2).map((i) => (
+                  {courseReviews.slice(0, showAllReviews ? undefined : 2).map((i) => (
                     <div key={i._id} className={styles.reviewCard}>
                       <div className={styles.ava}>
                         <img src={bigava} alt="avatar" />
@@ -552,8 +563,13 @@ useEffect(() => {
                   ))}
                 </div>
 
-                {(course.reviews ?? []).length > 2 && (
-                  <button id="more-reviews" onClick={() => setShowAllReviews((current) => !current)}>
+                {courseReviews.length > 2 && (
+                  <button
+                    type="button"
+                    className={styles.moreReviewsButton}
+                    onClick={() => setShowAllReviews((current) => !current)}
+                    aria-expanded={showAllReviews}
+                  >
                     {showAllReviews ? t('detail.viewLessReviews') : t('detail.viewMoreReviews')}
                   </button>
                 )}

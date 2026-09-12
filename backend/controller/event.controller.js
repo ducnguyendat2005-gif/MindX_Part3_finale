@@ -97,6 +97,9 @@ export default {
             // and chấm điểm hoàn toàn ở server — có thể làm ở bản nâng cấp sau.
             const event = await EventModel.findById(req.params.eventId).select('-questions.correctIndex');
             if (!event) throw notFound('Event not found');
+            if (event.getComputedStatus() !== 'active') {
+                throw badRequest('This event is not open');
+            }
             res.json({ success: true, data: event });
         } catch (err) {
             next(err);

@@ -729,6 +729,25 @@
   }
 
   // Shared review card style
+  .moreReviewsButton {
+    justify-self: start;
+    min-width: 150px;
+    padding: 10px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-color);
+    background: var(--card-bg);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+
+    &:hover {
+      border-color: var(--primary-color);
+      background: var(--surface-alt);
+    }
+  }
+
   .reviewCard {
     display: grid;
     width: 100%;

@@ -33,6 +33,17 @@ const durationToMinutes = (value) => {
     return Number.isFinite(minutes) && minutes >= 0 ? minutes : 0;
 };
 
+const hasPromotionalPrice = (value) => value !== undefined && value !== null && value !== '';
+
+const validatePromotionalPrice = (value, price) => {
+    if (!hasPromotionalPrice(value)) return null;
+    const promotionalPrice = Number(value);
+    if (!Number.isFinite(promotionalPrice) || promotionalPrice < 0 || promotionalPrice >= price) {
+        return 'Invalid sale price';
+    }
+    return null;
+};
+
 const formatDuration = (minutes) => `${minutes} min`;
 const publicCourseFilter = {
     status: 'approved',
@@ -117,11 +128,9 @@ const courseController = {
                     return res.status(400).json({ message: 'Each section must have a title and at least one titled lesson', success: false });
                 }
             }
-            if (data.promotionalPrice !== undefined && data.promotionalPrice !== null) {
-                const promoPrice = Number(data.promotionalPrice);
-                if (!Number.isFinite(promoPrice) || promoPrice < 0 || promoPrice >= price) {
-                    return res.status(400).json({ message: 'Invalid sale price', success: false });
-                }
+            const promotionalPriceError = validatePromotionalPrice(data.promotionalPrice, price);
+            if (promotionalPriceError) {
+                return res.status(400).json({ message: promotionalPriceError, success: false });
             }
 
             const parsedLessonVideoIndexes = parseJsonField(req.body.lessonVideoIndexes, []);
@@ -189,7 +198,7 @@ const courseController = {
                 category: String(data.category || '').trim(),
                 level: String(data.level || '').trim(),
                 price,
-                promotionalPrice: data.promotionalPrice !== undefined && data.promotionalPrice !== null
+                promotionalPrice: hasPromotionalPrice(data.promotionalPrice)
                     ? Number(data.promotionalPrice)
                     : undefined,
                 discount: String(data.discount || '').trim(),
@@ -201,11 +210,6 @@ const courseController = {
                 hours: Number((totalMinutes / 60).toFixed(2)),
                 status,
             });
-
-            await InstructorModel.updateOne(
-                { _id: instructor._id },
-                { $inc: { totalCourses: 1 } }
-            );
 
             const result = await CourseModel.findById(created._id)
                 .populate('instructorId', 'name title bio totalStudents totalCourses totalReviews thumbnail');
@@ -225,6 +229,10 @@ const courseController = {
             if (!title) return res.status(400).json({ message: 'Course title is required', success: false });
             if (!Number.isFinite(price) || price < 0) {
                 return res.status(400).json({ message: 'Invalid course price', success: false });
+            }
+            const promotionalPriceError = validatePromotionalPrice(data.promotionalPrice, price);
+            if (promotionalPriceError) {
+                return res.status(400).json({ message: promotionalPriceError, success: false });
             }
             if (status === 'pending' && (!String(data.overview || '').trim() || !curriculum.length || curriculum.some((section) => (
                 !String(section.title || '').trim() ||
@@ -289,6 +297,7 @@ const courseController = {
                 const quiz = buildQuizFromInput(section.quiz, existingSection?.quiz);
 
                 return {
+                    _id: section._id || undefined,
                     title: sectionTitle,
                     lessons: lessonDetails.length,
                     duration: formatDuration(lessonDetails.reduce((sum, lesson) => sum + durationToMinutes(lesson.duration), 0)),
@@ -320,7 +329,7 @@ const courseController = {
                 status,
             });
 
-            if (data.promotionalPrice !== undefined && data.promotionalPrice !== null) {
+            if (hasPromotionalPrice(data.promotionalPrice)) {
                 course.promotionalPrice = Number(data.promotionalPrice);
             } else {
                 course.promotionalPrice = undefined;
@@ -369,6 +378,31 @@ const courseController = {
         }
         catch(error){
             next(error)
+        }
+    },
+    getEnrolledCoursebyId: async (req, res, next) => {
+        try {
+            const { id } = req.params;
+            const enrolled = await EnrollmentModel.exists({
+                accountId: req.user._id,
+                courseId: id,
+            });
+
+            if (!enrolled) {
+                return res.status(403).json({ message: 'You have not purchased this course', success: false });
+            }
+
+            const course = await CourseModel.findById(id)
+                .populate('instructorId', 'name title bio totalStudents totalCourses totalReviews thumbnail')
+                .populate({ path: 'reviews', options: { sort: { createdAt: -1 } } });
+
+            if (!course || !['approved', 'hidden'].includes(course.status)) {
+                return res.status(404).json({ message: 'Course not found', success: false });
+            }
+
+            return res.status(200).json({ data: course, message: 'Enrolled course retrieved', success: true });
+        } catch (error) {
+            next(error);
         }
     },
     getTeachingCoursebyId: async (req, res, next) => {

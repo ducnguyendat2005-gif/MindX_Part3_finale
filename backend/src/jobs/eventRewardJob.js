@@ -50,6 +50,7 @@ async function generateRewardCoupon(accountId, event, tier) {
             rank: tier.rank,
             discountValue: tier.discountValue,
         },
+        expiresAt,
     });
 
     return code;

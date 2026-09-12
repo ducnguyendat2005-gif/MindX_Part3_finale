@@ -39,7 +39,7 @@ const couponController = {
 
             if (!Array.isArray(courseIds) || courseIds.length === 0) {
                 const err = new Error("Empty cart");
-                err.statusCode = 400;
+                err.status = 400;
                 throw err;
             }
 
@@ -48,7 +48,7 @@ const couponController = {
 
             if (!coup) {
                 const err = new Error("Code not existed, try another");
-                err.statusCode = 400;
+                err.status = 400;
                 throw err;
             }
 
