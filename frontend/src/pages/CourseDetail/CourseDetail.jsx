@@ -347,7 +347,11 @@ useEffect(() => {
               <p>{course.hours} {t('course.totalHours')}. {course.lectures} {t('course.lectures')}. {t('detail.allLevels')}</p>
             </div>
             <div className={styles.teacherDetails}>
-              <img src={smolAva} alt="avatar" />
+               <img
+                 src={course.instructorId?.thumbnail || smolAva}
+                 alt="avatar"
+                 style={{width:'40px',height:'40px', borderRadius: '50%' }}
+               />
               <p>{t('detail.createdBy')}</p>
               <p>{course.instructorId?.name}</p>
             </div>
@@ -359,7 +363,16 @@ useEffect(() => {
 
           <div className={styles.teacherNBuy}>
             <div className={styles.teacherInfo}>
-              <img src={CourseImg} alt="course thumbnail" />
+               {course.promotionalVideo ? (
+                 <video
+                   src={course.promotionalVideo}
+                   poster={course.thumbnail || CourseImg}
+                   controls
+                   style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '14px' }}
+                 />
+               ) : (
+                 <img src={course.thumbnail || CourseImg} alt="course thumbnail" />
+               )}
               <div className={styles.price}>
                 {hasDiscount ? (
                   <>
@@ -475,7 +488,11 @@ useEffect(() => {
                 <p>{course.instructorId?.name}</p>
                 <p>{course.instructorId?.title}</p>
                 <div className={styles.instructorProfile}>
-                  <img src={bigava} alt="instructor" />
+                   <img
+                     src={course.instructorId?.thumbnail || bigava}
+                     alt="instructor"
+                     style={{width:'120px',height:'120px', borderRadius: '50%' }}
+                   />
                   <p>{course.instructorId?.totalReviews} {t('detail.reviews')}</p>
                   <img id="medal" src={medal} alt="medal" />
                   <img src={play} alt="play" />
@@ -586,16 +603,17 @@ useEffect(() => {
             {sameCourse({ data: allCourse, course: course }).map((data) =>
             <div key={data._id} onClick={() => window.location.reload()}> 
             <CourseCard
-                key={course.id ?? course._id}
-                id={course.id ?? course._id}
-                title={course.title}
-                instructor={course.instructorId?.name}
-                rating={course.rating}
-                ratingCount={course.reviews?.length ?? 0}
-                duration={`${course.hours} ${t('course.totalHours')}. ${course.lectures} ${course.level}`}
-                category={course.category}
-                promotionalPrice={course.promotionalPrice}
-                originalPrice={course.price}
+              key={data.id ?? data._id}
+              id={data.id ?? data._id}
+              title={data.title}
+              instructor={data.instructorId?.name}
+              rating={data.rating}
+              ratingCount={data.reviews?.length ?? 0}
+              duration={`${data.hours} ${t('course.totalHours')}. ${data.lectures} ${data.level}`}
+              category={data.category}
+              promotionalPrice={data.promotionalPrice}
+              originalPrice={data.price}
+              thumbnail={data.thumbnail}
               />
             </div>)}
           </div>

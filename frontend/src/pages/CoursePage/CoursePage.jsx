@@ -349,6 +349,7 @@ export default function CoursesPage() {
                     category={course.category}
                     promotionalPrice={course.promotionalPrice}
                     originalPrice={course.price}
+                  thumbnail={course.thumbnail}
                   />
                 ))}
               </div>
@@ -416,6 +417,7 @@ export default function CoursesPage() {
                 category={course.category}
                 promotionalPrice={course.promotionalPrice}
                 originalPrice={course.price}
+              thumbnail={course.thumbnail}
               />
             ))}
         </div>

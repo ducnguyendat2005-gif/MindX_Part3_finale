@@ -494,6 +494,13 @@
     > img:nth-of-type(2) {
       padding-right: 4px;
     }
+     :global([data-theme="dark"]) & {
+     > img:nth-of-type(2),
+     > img:nth-of-type(3),
+     > img:nth-of-type(4) {
+       filter: invert(1) brightness(1.8);
+     }
+   }
   }
 
   // ─── Syllabus ────────────────────────────────────────────────────
@@ -836,6 +843,7 @@
   display: flex;
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
+  padding-top: 14px;
 }
 
 .courseCard {

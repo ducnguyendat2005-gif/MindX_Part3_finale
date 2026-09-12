@@ -91,7 +91,7 @@ useEffect(() => {
             .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))[0];
       if (!draft) return;
 
-        if (!resumeDraft) {
+        if (!editCourseId && !resumeDraft) {
           setAvailableDraft(draft);
           return;
         }
@@ -145,7 +145,7 @@ useEffect(() => {
     };
 
     loadLatestDraft();
-  }, [resumeDraft]);
+  }, [resumeDraft, editCourseId]);
 
   // ----- Curriculum handlers -----
   const handleAddSection = () => {
