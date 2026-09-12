@@ -280,9 +280,55 @@ function Courses({ courses, query, onSelectCourse }) {
   );
 }
 
+function InstructorPortfolioModal({ instructor, onClose }) {
+  if (!instructor) return null;
+  const files = instructor.portfolioUrl || [];
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(13,19,33,0.5)' }} />
+      <div className="admin-surface" style={{ position: 'relative', width: '100%', maxWidth: 440, maxHeight: '80vh', overflowY: 'auto', background: '#fff', borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Avatar name={instructor.name} size={44} />
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <p style={{ margin: 0, fontWeight: 700, color: '#0d1321' }}>{instructor.name}</p>
+            <p style={{ margin: 0, fontSize: 12, color: '#8893ab' }}>{instructor.title}</p>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8893ab', fontSize: 20, lineHeight: 1, padding: 4 }}>×</button>
+        </div>
+
+        <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 600, color: '#0d1321' }}>Hồ sơ chứng minh (PDF)</p>
+
+        {files.length === 0 ? (
+          <p style={{ margin: 0, fontSize: 12, color: '#8893ab' }}>Giáo viên này chưa nộp hồ sơ chứng minh nào.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {files.map((url, i) => (
+              <a
+                key={url + i}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px',
+                  borderRadius: 10, border: '1px solid #eef1f7', background: '#f6f8fb',
+                  fontSize: 13, color: '#1947D6', textDecoration: 'none', fontWeight: 500,
+                }}
+              >
+                📄 Portfolio file {i + 1}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Instructors({ courses, instructors }) {
   const { t } = useLanguage();
   const [sortBy, setSortBy] = useState('rating-desc');
+  const [viewingInstructor, setViewingInstructor] = useState(null); 
 
   const sortedInstructors = useMemo(() => {
     const getMetric = (instructor, metric) => {
@@ -324,7 +370,7 @@ function Instructors({ courses, instructors }) {
       {sortedInstructors.map((instructor) => {
         const taught = courses.filter((c) => c.instructorId === instructor._id);
         return (
-          <div key={instructor._id} className="admin-surface" style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div key={instructor._id} className="admin-surface" onClick={() => setViewingInstructor(instructor)}  style={{ background: '#fff', borderRadius: 16, border: '1px solid #eef1f7', padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Avatar name={instructor.name} size={48} />
               <div className="admin-instructor-heading" style={{ minWidth: 0 }}>
@@ -356,6 +402,7 @@ function Instructors({ courses, instructors }) {
         );
       })}
       </div>
+      <InstructorPortfolioModal instructor={viewingInstructor} onClose={() => setViewingInstructor(null)} />
     </>
   );
 }
