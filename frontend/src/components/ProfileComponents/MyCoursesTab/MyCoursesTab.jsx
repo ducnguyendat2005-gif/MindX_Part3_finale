@@ -1,347 +1,956 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, Filter, ChevronDown, Star, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { Link } from "react-router-dom";
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  GripVertical,
+  Trash2,
+  X,
+  Plus,
+  UploadCloud,
+  Video,
+} from 'lucide-react';
 import { API, fetchWithAuth } from '../../../config/api.js';
-import './MyCoursesTab.scss';
+import './CreateCourseTab.scss';
+import StatusTracker from './StatusTracker.jsx';
 
-const img = "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=400";
-const ITEMS_PER_PAGE = 8;
+let uid = 0;
+const nextId = () => `id-${Date.now()}-${uid++}`;
 
-export default function MyCoursesTab({ myCourses, onEditCourse }) {
-  const [course, setCourse] = useState(myCourses || []);
-  const [loading, setLoading] = useState(true);
+const makeLesson = (title = '', duration = '') => ({
+  id: nextId(),
+  title,
+  duration,
+  videoFile: null,
+});
+
+const makeQuestion = () => ({
+  id: nextId(),
+  _id: null,
+  question: '',
+  options: ['', '', '', ''],
+  correctIndex: 0,
+  explanation: '',
+});
+
+const makeSection = (title = '') => ({
+  id: nextId(),
+  title,
+  lessons: [makeLesson()],
+  hasQuiz: false,          // toggle hiện/ẩn form quiz cho section này
+  quizTitle: 'Kiểm tra nhanh',
+  passingScore: 70,
+  questions: [],
+});
+
+export default function CreateCourseTab({ onCancel, onCreated, editCourseId  }) {
+  const [courseId, setCourseId] = useState(null);
+  const [availableDraft, setAvailableDraft] = useState(null);
+  const [resumeDraft, setResumeDraft] = useState(false);
+  // ----- Basic information -----
+  const [title, setTitle] = useState('');
+  const [overview, setOverview] = useState('');
+  const [objectives, setObjectives] = useState('');
+
+  // ----- Curriculum -----
+  const [sections, setSections] = useState([makeSection('Introduction')]);
+
+  // ----- Media -----
+  const thumbInputRef = useRef(null);
+  const videoInputRef = useRef(null);
+  const lessonInputRef = useRef(null);
+  const lessonTargetRef = useRef(null);
+  const [thumbFile, setThumbFile] = useState(null);
+  const [thumbPreview, setThumbPreview] = useState(null);
+  const [videoFile, setVideoFile] = useState(null);
+  const [existingPromoVideo, setExistingPromoVideo] = useState('');
+
+  // ----- Settings -----
+  const [category, setCategory] = useState('Design');
+  const [level, setLevel] = useState('Beginner');
+  const [price, setPrice] = useState('');
+  const [promotionalPrice, setPromotionalPrice] = useState('');
+  const [discount, setDiscount] = useState('');
+  const [certification, setCertification] = useState('');
+  const [languages, setLanguages] = useState('');
+
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [courseStatus, setCourseStatus] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
-  const storedUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
-  const isTeacher = storedUser.role === 'teacher';
+useEffect(() => {
+  const loadLatestDraft = async () => {
+    try {
+      const res = editCourseId
+        ? await fetchWithAuth(API.teachingCourseById(editCourseId))
+        : await fetchWithAuth(API.teachingDrafts);
+      if (!res.ok) return;
+      const body = await res.json();
+      const draft = editCourseId
+        ? body.data
+        : (body.data || [])
+            .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))[0];
+      if (!draft) return;
 
-  // --- Filter states ---
-  const [searchText, setSearchText] = useState('');
-  const [sortBy, setSortBy] = useState('relevance');
-  const [showSortMenu, setShowSortMenu] = useState(false);
-  const [showFilterMenu, setShowFilterMenu] = useState(false);
-  const [filterCategory, setFilterCategory] = useState('');
-  const [filterLevel, setFilterLevel] = useState('');
-  // Chỉ dùng cho giáo viên: 'published' | 'hidden' | 'draft' | 'pending'
-  const [filterStatus, setFilterStatus] = useState('published');
-  const [currentPage, setCurrentPage] = useState(1);
+        if (!resumeDraft) {
+          setAvailableDraft(draft);
+          return;
+        }
 
-  const filterRef = useRef(null);
-  const sortRef = useRef(null);
+        setCourseId(draft._id);
+        setCourseStatus(draft.status || 'draft');
+        setRejectionReason(draft.rejectionReason || '');
+        setTitle(draft.title || '');
+        setOverview(draft.overview || draft.shortDescription || draft.courseDescription || '');
+        setObjectives((draft.objectives || []).join('\n'));
+        setCategory(draft.category || 'Design');
+        setLevel(draft.level || 'Beginner');
+        setPrice(String(draft.price ?? ''));
+        setPromotionalPrice(String(draft.promotionalPrice ?? ''));
+        setDiscount(draft.discount || '');
+        setCertification(draft.certification || '');
+        setLanguages((draft.languages || []).join(', '));
+        setThumbPreview(draft.thumbnail || null);
+        setExistingPromoVideo(draft.promotionalVideo || '');
+        setSections((draft.syllabus || []).map((section) => ({
+          id: nextId(),
+          _id: section._id || null,   // ← cần để updateCourse tìm existingSection.quiz
+          title: section.title || '',
+          lessons: (section.lessonDetails?.length
+            ? section.lessonDetails
+            : (section.items || []).map((lessonTitle) => ({ title: lessonTitle, duration: section.duration })))
+            .map((lesson) => ({
+              id: nextId(),
+              _id: lesson._id || null,
+              title: lesson.title || '',
+              duration: lesson.duration || '',
+              videoFile: null,
+              videoUrl: lesson.videoUrl || '',
+            })),
+          hasQuiz: !!section.quiz,
+          quizTitle: section.quiz?.title || 'Kiểm tra nhanh',
+          passingScore: section.quiz?.passingScore ?? 70,
+          questions: (section.quiz?.questions || []).map((q) => ({
+            id: nextId(),
+            _id: q._id || null,
+            question: q.question || '',
+            options: q.options?.length === 4 ? [...q.options] : ['', '', '', ''],
+            correctIndex: q.correctIndex ?? 0,
+            explanation: q.explanation || '',
+          })),
+        })));
+        setAvailableDraft(null);
+      } catch {
+        // A missing draft should leave the blank create form usable.
+      }
+    };
 
-  useEffect(() => {
-    if (Array.isArray(myCourses)) {
-      setCourse(myCourses);
-      setLoading(false);
-      setError(null);
+    loadLatestDraft();
+  }, [resumeDraft]);
+
+  // ----- Curriculum handlers -----
+  const handleAddSection = () => {
+    setSections((prev) => [...prev, makeSection('')]);
+  };
+
+  const handleRemoveSection = (sectionId) => {
+    setSections((prev) => prev.filter((s) => s.id !== sectionId));
+  };
+
+  const handleSectionTitleChange = (sectionId, value) => {
+    setSections((prev) =>
+      prev.map((s) => (s.id === sectionId ? { ...s, title: value } : s))
+    );
+  };
+
+  const handleAddLesson = (sectionId) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId ? { ...s, lessons: [...s.lessons, makeLesson()] } : s
+      )
+    );
+  };
+
+  const handleRemoveLesson = (sectionId, lessonId) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId
+          ? { ...s, lessons: s.lessons.filter((l) => l.id !== lessonId) }
+          : s
+      )
+    );
+  };
+    // ----- Quiz handlers -----
+  const handleToggleQuiz = (sectionId) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId
+          ? {
+              ...s,
+              hasQuiz: !s.hasQuiz,
+              questions: !s.hasQuiz && !s.questions.length ? [makeQuestion()] : s.questions,
+            }
+          : s
+      )
+    );
+  };
+
+  const handleQuizFieldChange = (sectionId, field, value) => {
+    setSections((prev) =>
+      prev.map((s) => (s.id === sectionId ? { ...s, [field]: value } : s))
+    );
+  };
+
+  const handleAddQuestion = (sectionId) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId ? { ...s, questions: [...s.questions, makeQuestion()] } : s
+      )
+    );
+  };
+
+  const handleRemoveQuestion = (sectionId, questionId) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId
+          ? { ...s, questions: s.questions.filter((q) => q.id !== questionId) }
+          : s
+      )
+    );
+  };
+
+  const handleQuestionFieldChange = (sectionId, questionId, field, value) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId
+          ? {
+              ...s,
+              questions: s.questions.map((q) =>
+                q.id === questionId ? { ...q, [field]: value } : q
+              ),
+            }
+          : s
+      )
+    );
+  };
+
+  const handleOptionChange = (sectionId, questionId, optionIndex, value) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId
+          ? {
+              ...s,
+              questions: s.questions.map((q) =>
+                q.id === questionId
+                  ? {
+                      ...q,
+                      options: q.options.map((opt, i) => (i === optionIndex ? value : opt)),
+                    }
+                  : q
+              ),
+            }
+          : s
+      )
+    );
+  };
+
+  const handleLessonFieldChange = (sectionId, lessonId, field, value) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId
+          ? {
+              ...s,
+              lessons: s.lessons.map((l) =>
+                l.id === lessonId ? { ...l, [field]: value } : l
+              ),
+            }
+          : s
+      )
+    );
+  };
+
+  // ----- Media handlers -----
+  const onPickThumbnail = () => thumbInputRef.current?.click();
+  const onPickVideo = () => videoInputRef.current?.click();
+
+  const setThumbnailFile = (file) => {
+    if (!file || !['image/png', 'image/jpeg', 'image/gif'].includes(file.type)) {
+      setError('Thumbnail phải là file PNG, JPG hoặc GIF.');
+      return false;
+    }
+
+    setError(null);
+    setThumbFile(file);
+    setThumbPreview(URL.createObjectURL(file));
+    return true;
+  };
+
+  const onThumbnailSelected = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setThumbnailFile(file);
+  };
+
+  const onThumbnailPaste = (e) => {
+    const imageItem = [...(e.clipboardData?.items || [])]
+      .find((item) => item.type.startsWith('image/'));
+    if (!imageItem) return;
+
+    e.preventDefault();
+    const clipboardFile = imageItem.getAsFile();
+    if (!clipboardFile) return;
+
+    const extension = clipboardFile.type.split('/')[1] || 'png';
+    const file = new File(
+      [clipboardFile],
+      `course-thumbnail-${Date.now()}.${extension}`,
+      { type: clipboardFile.type },
+    );
+    setThumbnailFile(file);
+  };
+
+  const onVideoSelected = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!['video/mp4', 'video/webm'].includes(file.type)) {
+      setError('Lesson video phải là file MP4 hoặc WebM.');
+      return;
+    }
+    setVideoFile(file);
+  };
+
+  const onPickLessonVideo = (sectionId, lessonId) => {
+    lessonTargetRef.current = { sectionId, lessonId };
+    lessonInputRef.current?.click();
+  };
+
+  const onLessonVideoSelected = async (e) => {
+    const file = e.target.files?.[0];
+    const target = lessonTargetRef.current;
+    if (!file || !target) return;
+    if (!['video/mp4', 'video/webm'].includes(file.type)) {
+      setError('Lesson video phải là file MP4 hoặc WebM.');
+      return;
+    }
+    handleLessonFieldChange(target.sectionId, target.lessonId, 'videoFile', file);
+    e.target.value = '';
+
+    try {
+      const seconds = await getVideoDurationSeconds(file);
+      const minutes = Math.max(1, Math.round(seconds / 60));
+      handleLessonFieldChange(target.sectionId, target.lessonId, 'duration', String(minutes));
+    } catch {
+      // Không đọc được duration thì để giáo viên tự nhập, không chặn luồng upload.
+    }
+  };
+
+  const onThumbnailDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    setThumbnailFile(file);
+  };
+
+  const validate = (status) => {
+    if (!title.trim()) return 'Vui lòng nhập tên khóa học.';
+    if (price !== '' && (!Number.isFinite(Number(price)) || Number(price) < 0)) {
+      return 'Price khóa học không hợp lệ.';
+    }
+    if (promotionalPrice !== '') {
+      const originalPrice = Number(price || 0);
+      const salePrice = Number(promotionalPrice);
+      if (!Number.isFinite(salePrice) || salePrice < 0 || salePrice >= originalPrice) {
+        return 'Promotional Price phải nhỏ hơn giá gốc và không được âm.';
+      }
+    }
+    if (status === 'published') {
+      if (!overview.trim()) return 'Vui lòng nhập phần giới thiệu khóa học.';
+      if (!sections.length) return 'Course phải có ít nhất một phần.';
+      if (sections.some((section) => !section.title.trim() || !section.lessons.length)) {
+        return 'Mỗi phần phải có tên và ít nhất một bài học.';
+      }
+      if (sections.some((section) => section.lessons.some((lesson) => !lesson.title.trim()))) {
+        return 'Vui lòng nhập tên cho tất cả bài học.';
+      }
+    
+      const invalidQuizSection = sections.find((s) => s.hasQuiz && s.questions.some((q) => (
+        !q.question.trim() ||
+        q.options.some((opt) => !opt.trim()) ||
+        q.correctIndex === null || q.correctIndex === undefined
+      )));
+      if (invalidQuizSection) {
+        return `Section "${invalidQuizSection.title || '(chưa đặt tên)'}" có câu hỏi quiz chưa đầy đủ.`;
+      }
+    }
+    return null;
+  };
+
+  // ----- Submit -----
+  const buildPayload = () => ({
+    title,
+    overview,
+    objectives: objectives
+      .split('\n')
+      .map((line) => line.replace(/^-+\s*/, '').trim())
+      .filter(Boolean),
+      curriculum: sections.map((s) => ({
+        _id: s._id || undefined,   // ← cần để backend tìm existingSection.quiz
+        title: s.title,
+        lessons: s.lessons.map((l) => ({
+          _id: l._id || undefined,
+          title: l.title,
+          duration: l.duration,
+          videoUrl: l.videoUrl || '',
+        })),
+        quiz: s.hasQuiz && s.questions.length
+          ? {
+              title: s.quizTitle,
+              passingScore: Number(s.passingScore) || 70,
+              questions: s.questions.map((q) => ({
+                _id: q._id || undefined,
+                question: q.question,
+                options: q.options,
+                correctIndex: Number(q.correctIndex),
+                explanation: q.explanation,
+              })),
+            }
+          : null,
+      })),
+    category,
+    level,
+    price: Number(price) || 0,
+    promotionalPrice: promotionalPrice ? Number(promotionalPrice) : undefined,
+    discount,
+    certification,
+    languages: languages
+      .split(',')
+      .map((lang) => lang.trim())
+      .filter(Boolean),
+    thumbnailUrl: thumbPreview && !thumbPreview.startsWith('blob:') ? thumbPreview : '',
+    promotionalVideoUrl: existingPromoVideo,
+  });
+
+  const handleSave = async (status) => {
+    setError(null);
+    setSuccessMessage(null);
+    const validationError = validate(status);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    if (!title.trim()) {
+      setError('Vui lòng nhập tên khóa học.');
       return;
     }
 
-    const fetchMyCourses = async () => {
-      try {
-        setLoading(true);
-        const endpoint = isTeacher
-          ? API.teachingCourses
-          : API.mycourses;
-        const res = await fetchWithAuth(endpoint);
-        if (!res.ok) throw new Error(`Lỗi: ${res.status}`);
-        const result = await res.json();
-        setCourse(result.data || []);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+    try {
+      setSaving(true);
+
+      const payload = buildPayload();
+      const formData = new FormData();
+      formData.append('data', JSON.stringify({ ...payload, status }));
+      if (thumbFile) formData.append('thumbnail', thumbFile);
+      if (videoFile) formData.append('promoVideo', videoFile);
+
+      const lessonVideoIndexes = [];
+      sections.forEach((section, sectionIndex) => {
+        section.lessons.forEach((lesson, lessonIndex) => {
+          if (lesson.videoFile) {
+            formData.append('lessonVideos', lesson.videoFile);
+            lessonVideoIndexes.push({ sectionIndex, lessonIndex });
+          }
+        });
+      });
+      formData.append('lessonVideoIndexes', JSON.stringify(lessonVideoIndexes));
+
+      const res = await fetchWithAuth(
+        courseId ? API.teachingCourseById(courseId) : API.createCourse,
+        {
+        method: courseId ? 'PUT' : 'POST',
+        body: formData,
+        }
+      );
+      const contentType = res.headers.get('content-type') || '';
+      const body = contentType.includes('application/json')
+        ? await res.json()
+        : { message: `Backend không trả về JSON (HTTP ${res.status}). Hãy kiểm tra backend đang chạy ở http://localhost:3001.` };
+
+      if (!res.ok) throw new Error(body.message || 'Tạo khóa học thất bại');
+
+      setCourseId(body.data?._id || courseId);
+      setCourseStatus(body.data?.status || status);
+      if (status === 'draft') {
+        setSuccessMessage('Draft đã được lưu. Bạn có thể rời trang và tiếp tục chỉnh sửa sau.');
+        return;
       }
-    };
-    fetchMyCourses();
-  }, [myCourses]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchText, sortBy, filterCategory, filterLevel, filterStatus, isTeacher, course]);
-
-  // Đóng dropdown khi click ra ngoài
-  useEffect(() => {
-    const handler = (e) => {
-      if (filterRef.current && !filterRef.current.contains(e.target)) setShowFilterMenu(false);
-      if (sortRef.current && !sortRef.current.contains(e.target)) setShowSortMenu(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  // --- Derived: filtered + sorted ---
-  const displayedCourses = course
-    .filter(c => {
-      const matchSearch = !searchText ||
-        c.title?.toLowerCase().includes(searchText.toLowerCase()) ||
-        c.author?.toLowerCase().includes(searchText.toLowerCase());
-
-      if (isTeacher) {
-        // The backend stores a submitted course as "pending" until admin approval.
-        // Keep approved, hidden, and pending courses visible in the default teacher list.
-        const normalizedStatus = c.status === 'approved' ? 'published' : (c.status || 'published');
-        const matchStatus = filterStatus === 'published'
-          ? ['published', 'hidden', 'pending'].includes(normalizedStatus)
-          : normalizedStatus === filterStatus;
-        return matchSearch && matchStatus;
-      }
-
-      const matchCategory = !filterCategory || c.category === filterCategory;
-      const matchLevel = !filterLevel || c.level === filterLevel;
-      return matchSearch && matchCategory && matchLevel;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0);
-      if (sortBy === 'price_asc') return (a.price || 0) - (b.price || 0);
-      if (sortBy === 'price_desc') return (b.price || 0) - (a.price || 0);
-      return 0; // relevance
-    });
-
-  const totalPages = Math.ceil(displayedCourses.length / ITEMS_PER_PAGE);
-  const paginatedCourses = displayedCourses.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
-  );
-
-  const sortLabels = {
-    relevance: 'Relevance',
-    rating: 'Highest Rated',
-    price_asc: 'Price: Low to High',
-    price_desc: 'Price: High to Low',
+      onCreated?.(body.data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
   };
-
-  const categories = [...new Set(course.map(c => c.category).filter(Boolean))];
-  const levels = [...new Set(course.map(c => c.level).filter(Boolean))];
-
-  const activeFilterCount = isTeacher
-    ? 0 // luôn có 1 trạng thái được chọn, không tính là "filter đang bật"
-    : [filterCategory, filterLevel].filter(Boolean).length;
-
-  const statusLabels = {
-    published: 'Your Courses',
-    hidden: 'Hidden Courses',
-    draft: 'Draft Courses',
-    pending: 'Pending Courses',
-    rejected: 'Rejected Courses',
-  };
-
-  if (loading) return <p style={{ padding: 24 }}>Loading...</p>;
-  if (error) return <p style={{ padding: 24, color: 'red' }}>Lỗi: {error}</p>;
+  const getVideoDurationSeconds = (file) =>
+  new Promise((resolve, reject) => {
+    const videoEl = document.createElement('video');
+    videoEl.preload = 'metadata';
+    videoEl.onloadedmetadata = () => {
+      URL.revokeObjectURL(videoEl.src);
+      resolve(videoEl.duration);
+    };
+    videoEl.onerror = () => {
+      URL.revokeObjectURL(videoEl.src);
+      reject(new Error('Không đọc được thời lượng video'));
+    };
+    videoEl.src = URL.createObjectURL(file);
+  });
 
   return (
-    <div className="my-courses-tab">
-      <div className="courses-header">
-        <h1 className="courses-header__title">
-          Courses <span className="courses-header__count">({displayedCourses.length})</span>
-        </h1>
-
-        <div className="courses-header__controls">
-          {/* Search */}
-          <div className="search-box">
-            <input
-              type="text"
-              placeholder="Search User"
-              className="search-box__input"
-              value={searchText}
-              onChange={e => setSearchText(e.target.value)}
-            />
-            <Search className="search-box__icon" />
-          </div>
-
-          {/* Sort */}
-          <div className="sort-control" ref={sortRef} style={{ position: 'relative' }}>
-            <span className="sort-control__label">Sort By</span>
-            <button className="sort-control__btn" onClick={() => setShowSortMenu(v => !v)}>
-              {sortLabels[sortBy]} <ChevronDown className="sort-control__icon" />
-            </button>
-            {showSortMenu && (
-              <div className="dropdown-menu">
-                {Object.entries(sortLabels).map(([key, label]) => (
-                  <button
-                    key={key}
-                    className={`dropdown-menu__item ${sortBy === key ? 'dropdown-menu__item--active' : ''}`}
-                    onClick={() => { setSortBy(key); setShowSortMenu(false); }}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Filter */}
-          <div ref={filterRef} style={{ position: 'relative' }}>
-            <button className="filter-btn" onClick={() => setShowFilterMenu(v => !v)}>
-              <Filter className="filter-btn__icon" />
-              {isTeacher ? statusLabels[filterStatus] : 'Filter'}
-              {activeFilterCount > 0 && (
-                <span className="filter-badge">{activeFilterCount}</span>
-              )}
-            </button>
-            {showFilterMenu && (
-              <div className="dropdown-menu dropdown-menu--filter">
-                {isTeacher ? (
-                  <div className="dropdown-menu__section">
-                    <p className="dropdown-menu__section-title">Status</p>
-                    {Object.entries(statusLabels).map(([key, label]) => (
-                      <button
-                        key={key}
-                        className={`dropdown-menu__item ${filterStatus === key ? 'dropdown-menu__item--active' : ''}`}
-                        onClick={() => { setFilterStatus(key); setShowFilterMenu(false); }}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <>
-                    <div className="dropdown-menu__section">
-                      <p className="dropdown-menu__section-title">Category</p>
-                      <button
-                        className={`dropdown-menu__item ${!filterCategory ? 'dropdown-menu__item--active' : ''}`}
-                        onClick={() => setFilterCategory('')}
-                      >All</button>
-                      {categories.map(cat => (
-                        <button
-                          key={cat}
-                          className={`dropdown-menu__item ${filterCategory === cat ? 'dropdown-menu__item--active' : ''}`}
-                          onClick={() => setFilterCategory(cat)}
-                        >
-                          {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="dropdown-menu__section">
-                      <p className="dropdown-menu__section-title">Level</p>
-                      <button
-                        className={`dropdown-menu__item ${!filterLevel ? 'dropdown-menu__item--active' : ''}`}
-                        onClick={() => setFilterLevel('')}
-                      >All</button>
-                      {levels.map(lv => (
-                        <button
-                          key={lv}
-                          className={`dropdown-menu__item ${filterLevel === lv ? 'dropdown-menu__item--active' : ''}`}
-                          onClick={() => setFilterLevel(lv)}
-                        >
-                          {lv}
-                        </button>
-                      ))}
-                    </div>
-                    {activeFilterCount > 0 && (
-                      <button
-                        className="dropdown-menu__clear"
-                        onClick={() => { setFilterCategory(''); setFilterLevel(''); }}
-                      >
-                        <X size={12} /> Clear all
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+    <div className="cc">
+      {/* Header */}
+      <div className="cc__header">
+        <h1 className="cc__heading">{editCourseId ? 'Edit Course' : 'Create New Course'}</h1>
+        <div className="cc__header-actions">
+          <button
+            type="button"
+            className="cc-btn cc-btn--outline"
+            onClick={onCancel}
+            disabled={saving}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="cc-btn cc-btn--outline"
+            onClick={() => handleSave('draft')}
+            disabled={saving}
+          >
+            Save Draft
+          </button>
+          <button
+            type="button"
+            className="cc-btn cc-btn--primary"
+            onClick={() => handleSave('published')}
+            disabled={saving}
+          >
+            {saving ? 'Saving...' : 'Publish Course'}
+          </button>
         </div>
       </div>
 
-      {/* Course Grid */}
-      <div className="course-grid">
-        {displayedCourses.length === 0 ? (
-          <p style={{ color: '#94a3b8', gridColumn: '1/-1' }}>No courses found.</p>
-        ) : (
-          paginatedCourses.map((data) => (
-            <Link
-              key={data._id || data.id}
-              to={`/mycoursespage/${data._id || data.id}`}
-              state={{ course: data }}
-            >
-              <div className="course-card">
-                <div className="course-card__thumbnail">
-                  <img src={data.thumbnail || img} alt={data.title} className="course-card__image" referrerPolicy="no-referrer" />
-                </div>
-                <div className="course-card__body">
-                  <h3 className="course-card__title">{data.title}</h3>
-                  {isTeacher ? (
-                    <p className="course-card__price">
-                      {data.status === 'approved' && `${data.price ? `$${data.price}` : 'Free'}`}
-                      {data.status !== 'approved' && (
-                        <span className={`course-card__status-badge course-card__status-badge--${data.status}`}>
-                          {data.status}
-                        </span>
-                      )}
-                    </p>
-                  ) : (
-                    <>
-                      <p className="course-card__instructor">By {data.author}</p>
-                      <div className="course-card__rating">
-                        {[...Array(5)].map((_, i) => {
-                          const full = i < Math.floor(data.rating);
-                          const half = !full && i + 0.5 <= data.rating;
-                          return (
-                            <span key={i} style={{ position: 'relative', display: 'inline-block' }}>
-                              <Star size={14} fill="#D1D5DB" stroke="#D1D5DB" />
-                              {(full || half) && (
-                                <span style={{ position: 'absolute', top: 0, left: 0, width: full ? '100%' : '50%', overflow: 'hidden', display: 'inline-block' }}>
-                                  <Star size={14} fill="#FBBF24" stroke="#FBBF24" />
-                                </span>
-                              )}
-                            </span>
-                          );
-                        })}
-                        <span className="course-card__reviews">({data.reviews} Ratings)</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-                          </div>
-          );
-
-            return isTeacher ? (
-              <button
-                key={data._id || data.id}
-                type="button"
-                className="course-card-btn"
-                onClick={() => onEditCourse?.(data._id || data.id)}
-              >
-                {cardInner}
-              </button>
-            ) : (
-              <Link key={data._id || data.id} to={`/mycoursespage/${data._id || data.id}`} state={{ course: data }}>
-                {cardInner}
-              </Link>
-            );
-          })
-        )}
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button
-            className="pagination__arrow"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((page) => page - 1)}
-          >
-            <ChevronLeft className="pagination__arrow-icon" />
-          </button>
-          {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-            <button
-              key={page}
-              className={`pagination__page ${page === currentPage ? 'pagination__page--active' : ''}`}
-              onClick={() => setCurrentPage(page)}
-            >
-              {page}
-            </button>
-          ))}
-          <button
-            className="pagination__arrow"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((page) => page + 1)}
-          >
-            <ChevronRight className="pagination__arrow-icon" />
+      {availableDraft && !courseId && (
+        <div className="cc__draft-resume">
+          <span>You have an unfinished draft: <strong>{availableDraft.title || 'Untitled course'}</strong></span>
+          <button type="button" className="cc-btn cc-btn--outline" onClick={() => setResumeDraft(true)}>
+            Resume Draft
           </button>
         </div>
       )}
+
+      {error && <p className="cc__error">{error}</p>}
+      {successMessage && <p className="cc__success">{successMessage}</p>}
+      <StatusTracker status={courseStatus} rejectionReason={rejectionReason} />
+
+      <div className="cc__grid">
+        {/* ---------- Left column ---------- */}
+        <div className="cc__main">
+          {/* Basic Information */}
+          <section className="cc-card">
+            <h2 className="cc-card__title">Basic Information</h2>
+
+            <div className="cc-form-group">
+              <label className="cc-form-label">Course Title</label>
+              <input
+                type="text"
+                className="cc-form-control"
+                placeholder="e.g. Introduction to User Experience Design"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+
+            <div className="cc-form-group">
+              <label className="cc-form-label">Course Overview</label>
+              <textarea
+                className="cc-form-control"
+                rows={4}
+                placeholder="Briefly describe what this course is about..."
+                value={overview}
+                onChange={(e) => setOverview(e.target.value)}
+              />
+            </div>
+
+            <div className="cc-form-group">
+              <label className="cc-form-label">
+                Key Learning Objectives (One per line)
+              </label>
+              <textarea
+                className="cc-form-control"
+                rows={4}
+                placeholder="What will students learn?"
+                value={objectives}
+                onChange={(e) => setObjectives(e.target.value)}
+              />
+            </div>
+          </section>
+
+          {/* Curriculum Builder */}
+          <section className="cc-card">
+            <h2 className="cc-card__title">Curriculum Builder</h2>
+
+            <div className="cc-curriculum">
+              <input
+                ref={lessonInputRef}
+                type="file"
+                accept="video/mp4, video/webm"
+                hidden
+                onChange={onLessonVideoSelected}
+              />
+              {sections.map((section) => (
+                <div className="cc-section" key={section.id}>
+                  <div className="cc-section__header">
+                    <GripVertical className="cc-drag-icon" size={20} />
+                    <input
+                      type="text"
+                      className="cc-form-control"
+                      style={{ flex: 1 }}
+                      placeholder="Section title"
+                      value={section.title}
+                      onChange={(e) =>
+                        handleSectionTitleChange(section.id, e.target.value)
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="cc-remove-btn"
+                      onClick={() => handleRemoveSection(section.id)}
+                      aria-label="Remove section"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+
+                  <div className="cc-lesson-list">
+                    {section.lessons.map((lesson) => (
+                      <div className="cc-lesson-item" key={lesson.id}>
+                        <GripVertical className="cc-drag-icon" size={16} />
+                        <input
+                          type="text"
+                          className="cc-form-control"
+                          style={{ flex: 2 }}
+                          placeholder="Lesson title"
+                          value={lesson.title}
+                          onChange={(e) =>
+                            handleLessonFieldChange(
+                              section.id,
+                              lesson.id,
+                              'title',
+                              e.target.value
+                            )
+                          }
+                        />
+                        <input
+                          type="text"
+                          className="cc-form-control"
+                          style={{ flex: 1, maxWidth: 80 }}
+                          placeholder="0min"
+                          value={lesson.duration}
+                          onChange={(e) =>
+                            handleLessonFieldChange(
+                              section.id,
+                              lesson.id,
+                              'duration',
+                              e.target.value
+                            )
+                          }
+                        />
+                        <button
+                          type="button"
+                          className="cc-btn cc-btn--outline cc-btn--icon"
+                          onClick={() => onPickLessonVideo(section.id, lesson.id)}
+                        >
+                          {lesson.videoFile ? lesson.videoFile.name : lesson.videoUrl ? 'Current video saved' : 'Upload Video'}
+                        </button>
+                        <button
+                          type="button"
+                          className="cc-remove-btn"
+                          onClick={() =>
+                            handleRemoveLesson(section.id, lesson.id)
+                          }
+                          aria-label="Remove lesson"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      className="cc-btn-add"
+                      onClick={() => handleAddLesson(section.id)}
+                    >
+                      <Plus size={16} />
+                      Add Lesson
+                    </button>
+                  </div>
+                  <div className="cc-quiz-block">
+                    <label className="cc-quiz-toggle">
+                      <input
+                        type="checkbox"
+                        checked={section.hasQuiz}
+                        onChange={() => handleToggleQuiz(section.id)}
+                      />
+                      Thêm quiz cho phần này
+                    </label>
+
+                    {section.hasQuiz && (
+                      <div className="cc-quiz-body">
+                        <div className="cc-form-group">
+                          <label className="cc-form-label">Tên bài kiểm tra</label>
+                          <input
+                            type="text"
+                            className="cc-form-control"
+                            value={section.quizTitle}
+                            onChange={(e) => handleQuizFieldChange(section.id, 'quizTitle', e.target.value)}
+                          />
+                        </div>
+                        <div className="cc-form-group">
+                          <label className="cc-form-label">Điểm đạt (%)</label>
+                          <input
+                            type="number"
+                            className="cc-form-control cc-form-control--sm"
+                            min="0"
+                            max="100"
+                            value={section.passingScore}
+                            onChange={(e) => handleQuizFieldChange(section.id, 'passingScore', e.target.value)}
+                          />
+                        </div>
+
+                        {section.questions.map((q, qIndex) => (
+                          <div key={q.id} className="cc-quiz-question">
+                            <div className="cc-quiz-question__head">
+                              <input
+                                type="text"
+                                className="cc-form-control"
+                                placeholder={`Question hỏi ${qIndex + 1}`}
+                                value={q.question}
+                                onChange={(e) => handleQuestionFieldChange(section.id, q.id, 'question', e.target.value)}
+                              />
+                              <button
+                                type="button"
+                                className="cc-remove-btn"
+                                onClick={() => handleRemoveQuestion(section.id, q.id)}
+                                aria-label="Remove question"
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+
+                            {q.options.map((opt, optIndex) => (
+                              <div key={optIndex} className="cc-quiz-option">
+                                <input
+                                  type="radio"
+                                  name={`correct-${q.id}`}
+                                  checked={q.correctIndex === optIndex}
+                                  onChange={() => handleQuestionFieldChange(section.id, q.id, 'correctIndex', optIndex)}
+                                />
+                                <input
+                                  type="text"
+                                  className="cc-form-control"
+                                  placeholder={`Option ${optIndex + 1}`}
+                                  value={opt}
+                                  onChange={(e) => handleOptionChange(section.id, q.id, optIndex, e.target.value)}
+                                />
+                              </div>
+                            ))}
+
+                            <input
+                              type="text"
+                              className="cc-form-control cc-quiz-question__explanation"
+                              placeholder="Giải thích đáp án (hiện sau khi students nộp bài)"
+                              value={q.explanation}
+                              onChange={(e) => handleQuestionFieldChange(section.id, q.id, 'explanation', e.target.value)}
+                            />
+                          </div>
+                        ))}
+
+                        <button
+                          type="button"
+                          className="cc-btn-add cc-quiz-add-question"
+                          onClick={() => handleAddQuestion(section.id)}
+                        >
+                          <Plus size={16} />
+                          Add question
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className="cc-btn-add cc-btn-add--lg"
+              onClick={handleAddSection}
+            >
+              <Plus size={20} />
+              Add New Section
+            </button>
+          </section>
+        </div>
+
+        {/* ---------- Right column ---------- */}
+        <aside className="cc__aside">
+          <section className="cc-card">
+            <h2 className="cc-card__title">Course Media</h2>
+
+            <div className="cc-form-group">
+              <label className="cc-form-label">Course Thumbnail</label>
+              <div
+                className="cc-upload-area"
+                onClick={onPickThumbnail}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={onThumbnailDrop}
+                onPaste={onThumbnailPaste}
+                tabIndex={0}
+                role="button"
+                aria-label="Upload or paste course thumbnail"
+              >
+                <input
+                  ref={thumbInputRef}
+                  type="file"
+                  accept="image/png, image/jpeg, image/gif"
+                  hidden
+                  onChange={onThumbnailSelected}
+                />
+                {thumbPreview ? (
+                  <img
+                    src={thumbPreview}
+                    alt="Thumbnail preview"
+                    className="cc-upload-area__preview"
+                  />
+                ) : (
+                  <>
+                    <UploadCloud className="cc-upload-icon" />
+                    <p className="cc-upload-text">
+                      <span>Click to upload</span>, drag and drop, or press Ctrl+V
+                    </p>
+                    <p className="cc-upload-text cc-upload-text--sm">
+                      PNG, JPG or GIF (max. 800x400px)
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="cc-form-group">
+              <label className="cc-form-label">Promotional Video</label>
+              <div className="cc-upload-area" onClick={onPickVideo}>
+                <input
+                  ref={videoInputRef}
+                  type="file"
+                  accept="video/mp4, video/webm"
+                  hidden
+                  onChange={onVideoSelected}
+                />
+                <Video className="cc-upload-icon" />
+                <p className="cc-upload-text">
+                  <span>{videoFile ? videoFile.name : existingPromoVideo ? 'Current video saved' : 'Upload Video'}</span>
+                  {!videoFile && !existingPromoVideo && ' (MP4, WebM)'}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="cc-card">
+            <h2 className="cc-card__title">Settings</h2>
+
+            <div className="cc-form-group">
+              <label className="cc-form-label">Category</label>
+              <select
+                className="cc-form-control"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                <option>Design</option>
+                <option>Development</option>
+                <option>Marketing</option>
+                <option>Business</option>
+              </select>
+            </div>
+
+            <div className="cc-form-group">
+              <label className="cc-form-label">Level</label>
+              <select
+                className="cc-form-control"
+                value={level}
+                onChange={(e) => setLevel(e.target.value)}
+              >
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+              </select>
+            </div>
+
+            <div className="cc-form-group">
+              <label className="cc-form-label">Price (USD)</label>
+              <input
+                type="number"
+                className="cc-form-control"
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            </div>
+            <div className="cc-form-group">
+              <label className="cc-form-label">Promotional Price (USD)</label>
+              <input
+                type="number"
+                className="cc-form-control"
+                placeholder="Để trống nếu không giảm giá"
+                min="0"
+                step="0.01"
+                value={promotionalPrice}
+                onChange={(e) => setPromotionalPrice(e.target.value)}
+              />
+            </div>
+
+            <div className="cc-form-group">
+              <label className="cc-form-label">Discount</label>
+              <input
+                type="text"
+                className="cc-form-control"
+                placeholder="e.g. 20%"
+                value={discount}
+                onChange={(e) => setDiscount(e.target.value)}
+              />
+            </div>
+
+            <div className="cc-form-group">
+              <label className="cc-form-label">Certification</label>
+              <input
+                type="text"
+                className="cc-form-control"
+                placeholder="e.g. Certificate of Completion"
+                value={certification}
+                onChange={(e) => setCertification(e.target.value)}
+              />
+            </div>
+
+            <div className="cc-form-group">
+              <label className="cc-form-label">Languages (phân cách bởi dấu phẩy)</label>
+              <input
+                type="text"
+                className="cc-form-control"
+                placeholder="e.g. English, Vietnamese"
+                value={languages}
+                onChange={(e) => setLanguages(e.target.value)}
+              />
+            </div>
+          </section>
+        </aside>
+      </div>
     </div>
   );
 }
