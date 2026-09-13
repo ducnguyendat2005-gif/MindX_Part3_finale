@@ -14,6 +14,7 @@ import MyReviewsTab from '../../components/ProfileComponents/MyReviewTab/MyRevie
 import CreateCourseTab from '../../components/ProfileComponents/CreateCourseTab/CreateCourseTab.jsx';
 import './Profilepage.scss';
 
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);

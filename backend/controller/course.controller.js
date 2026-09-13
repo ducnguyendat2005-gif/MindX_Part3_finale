@@ -133,29 +133,15 @@ const courseController = {
                 return res.status(400).json({ message: promotionalPriceError, success: false });
             }
 
-            const parsedLessonVideoIndexes = parseJsonField(req.body.lessonVideoIndexes, []);
-            const lessonVideoIndexes = Array.isArray(parsedLessonVideoIndexes)
-                ? parsedLessonVideoIndexes
-                : [];
-            const lessonFiles = req.files?.lessonVideos || [];
-
-            const [thumbnail, promotionalVideo, lessonVideoUrls] = await Promise.all([
+            const [thumbnail, promotionalVideo] = await Promise.all([
                 uploadFileToCloudinary(req.files?.thumbnail?.[0]),
                 uploadFileToCloudinary(req.files?.promoVideo?.[0]),
-                Promise.all(lessonFiles.map((file) => uploadFileToCloudinary(file))),
             ]);
-
-            const lessonVideoMap = new Map(
-                lessonVideoIndexes.map((item, index) => [
-                    `${item.sectionIndex}:${item.lessonIndex}`,
-                    lessonVideoUrls[index] || '',
-                ])
-            );
 
             let totalMinutes = 0;
             let totalLessons = 0;
             const syllabus = curriculum
-                .map((section, sectionIndex) => {
+                .map((section) => {
                     const lessons = Array.isArray(section.lessons) ? section.lessons : [];
                     const lessonDetails = lessons
                         .map((lesson, lessonIndex) => {
@@ -167,7 +153,7 @@ const courseController = {
                             return {
                                 title: lessonTitle,
                                 duration: formatDuration(minutes),
-                                videoUrl: lessonVideoMap.get(`${sectionIndex}:${lessonIndex}`) || '',
+                                videoUrl: String(lesson.videoUrl || '').trim(),
                             };
                         })
                         .filter(Boolean);
@@ -252,26 +238,14 @@ const courseController = {
             });
             if (!course) return res.status(404).json({ message: 'Course not found', success: false });
 
-            const parsedIndexes = parseJsonField(req.body.lessonVideoIndexes, []);
-            const lessonVideoIndexes = Array.isArray(parsedIndexes) ? parsedIndexes : [];
-            const lessonFiles = req.files?.lessonVideos || [];
-
-            const [uploadedThumbnail, uploadedPromoVideo, lessonVideoUrls] = await Promise.all([
+            const [uploadedThumbnail, uploadedPromoVideo] = await Promise.all([
                 uploadFileToCloudinary(req.files?.thumbnail?.[0]),
                 uploadFileToCloudinary(req.files?.promoVideo?.[0]),
-                Promise.all(lessonFiles.map((file) => uploadFileToCloudinary(file))),
             ]);
-
-            const lessonVideoMap = new Map(
-                lessonVideoIndexes.map((item, index) => [
-                    `${item.sectionIndex}:${item.lessonIndex}`,
-                    lessonVideoUrls[index] || '',
-                ])
-            );
 
             let totalMinutes = 0;
             let totalLessons = 0;
-            const syllabus = curriculum.map((section, sectionIndex) => {
+            const syllabus = curriculum.map((section) => {
                 const lessonDetails = (Array.isArray(section.lessons) ? section.lessons : [])
                     .map((lesson, lessonIndex) => {
                         const lessonTitle = String(lesson.title || '').trim();
@@ -282,7 +256,7 @@ const courseController = {
                         const lessonDoc = {
                             title: lessonTitle,
                             duration: formatDuration(minutes),
-                            videoUrl: lessonVideoMap.get(`${sectionIndex}:${lessonIndex}`) || lesson.videoUrl || '',
+                            videoUrl: String(lesson.videoUrl || '').trim(),
                         };
                         // Giữ nguyên _id cũ nếu frontend gửi lên — lesson đã tồn tại từ trước.
                         // Không set _id → Mongoose tự sinh mới, coi như lesson mới thêm.

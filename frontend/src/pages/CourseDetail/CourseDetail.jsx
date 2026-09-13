@@ -142,10 +142,13 @@ const SyllabusSection = ({ course }) => {
   );
 };
 
-const sameCourse = ({data,course}) => {
-  let fil1 = data.filter(element => element.category === course.category)
-  let fil2 = fil1.filter(e => e.level === course.level)
-  return fil2
+const sameCourse = ({ data, course, limit = 4 }) => {
+  const fil1 = data.filter(element =>
+    String(element._id ?? element.id) !== String(course._id) &&
+    element.category === course.category
+  );
+  const fil2 = fil1.filter(e => e.level === course.level);
+  return fil2.slice(0, limit);
 }
 
 const saleCount = (promotionalPrice,originalPrice) => {

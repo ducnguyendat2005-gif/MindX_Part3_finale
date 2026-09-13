@@ -11,6 +11,23 @@ import { API, fetchWithAuth } from '../../../config/api.js';
 import './CreateCourseTab.scss';
 import StatusTracker from './StatusTracker.jsx';
 
+const CLOUDINARY_CLOUD_NAME = 'y3uyx9ay';
+const CLOUDINARY_LESSON_VIDEO_PRESET = 'byway_lesson_videos';
+
+const uploadLessonVideoToCloudinary = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY_LESSON_VIDEO_PRESET);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`,
+    { method: 'POST', body: formData }
+  );
+  if (!res.ok) throw new Error('Video upload thất bại, thử lại nhé.');
+  const data = await res.json();
+  return data.secure_url;
+};
+
 let uid = 0;
 const nextId = () => `id-${Date.now()}-${uid++}`;
 
@@ -331,17 +348,28 @@ useEffect(() => {
       setError('Lesson video phải là file MP4 hoặc WebM.');
       return;
     }
-    handleLessonFieldChange(target.sectionId, target.lessonId, 'videoFile', file);
     e.target.value = '';
+    handleLessonFieldChange(target.sectionId, target.lessonId, 'videoFile', file);
+    handleLessonFieldChange(target.sectionId, target.lessonId, 'uploading', true);
+    setError(null);
 
     try {
-      const seconds = await getVideoDurationSeconds(file);
-      const minutes = Math.max(1, Math.round(seconds / 60));
-      handleLessonFieldChange(target.sectionId, target.lessonId, 'duration', String(minutes));
-    } catch {
-      // Không đọc được duration thì để giáo viên tự nhập, không chặn luồng upload.
+      const seconds = await getVideoDurationSeconds(file).catch(() => null);
+      if (seconds) {
+        const minutes = Math.max(1, Math.round(seconds / 60));
+        handleLessonFieldChange(target.sectionId, target.lessonId, 'duration', String(minutes));
+      }
+
+      const secureUrl = await uploadLessonVideoToCloudinary(file);
+      handleLessonFieldChange(target.sectionId, target.lessonId, 'videoUrl', secureUrl);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      handleLessonFieldChange(target.sectionId, target.lessonId, 'uploading', false);
+      handleLessonFieldChange(target.sectionId, target.lessonId, 'videoFile', null);
     }
   };
+
 
   const onThumbnailDrop = (e) => {
     e.preventDefault();
@@ -440,6 +468,10 @@ useEffect(() => {
       setError('Vui lòng nhập tên khóa học.');
       return;
     }
+    if (sections.some((s) => s.lessons.some((l) => l.uploading))) {
+      setError('Vui lòng đợi video bài giảng upload xong.');
+      return;
+    }
 
     try {
       setSaving(true);
@@ -449,17 +481,6 @@ useEffect(() => {
       formData.append('data', JSON.stringify({ ...payload, status }));
       if (thumbFile) formData.append('thumbnail', thumbFile);
       if (videoFile) formData.append('promoVideo', videoFile);
-
-      const lessonVideoIndexes = [];
-      sections.forEach((section, sectionIndex) => {
-        section.lessons.forEach((lesson, lessonIndex) => {
-          if (lesson.videoFile) {
-            formData.append('lessonVideos', lesson.videoFile);
-            lessonVideoIndexes.push({ sectionIndex, lessonIndex });
-          }
-        });
-      });
-      formData.append('lessonVideoIndexes', JSON.stringify(lessonVideoIndexes));
 
       const res = await fetchWithAuth(
         courseId ? API.teachingCourseById(courseId) : API.createCourse,
@@ -666,9 +687,9 @@ useEffect(() => {
                           type="button"
                           className="cc-btn cc-btn--outline cc-btn--icon"
                           onClick={() => onPickLessonVideo(section.id, lesson.id)}
+                          disabled={lesson.uploading}
                         >
-                          {lesson.videoFile ? lesson.videoFile.name : lesson.videoUrl ? 'Current video saved' : 'Upload Video'}
-                        </button>
+                          {lesson.uploading ? 'Uploading...' : lesson.videoUrl ? 'Current video saved' : 'Upload Video'}                        </button>
                         <button
                           type="button"
                           className="cc-remove-btn"

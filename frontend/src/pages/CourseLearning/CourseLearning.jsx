@@ -513,10 +513,13 @@ function CourseNavbar({ activeNav, setActiveNav, setActiveTab }) {
   );
 }
 
-const sameCourse = ({data,course}) => {
-  let fil1 = data.filter(element => element.category === course.category)
-  let fil2 = fil1.filter(e => e.level === course.level)
-  return fil2
+const sameCourse = ({ data, course, limit = 4 }) => {
+  const fil1 = data.filter(element =>
+    String(element._id ?? element.id) !== String(course._id) &&
+    element.category === course.category
+  );
+  const fil2 = fil1.filter(e => e.level === course.level);
+  return fil2.slice(0, limit);
 }
 
 const buildReviewStats = (reviews) => {
@@ -864,6 +867,11 @@ export default function CourseLearning() {
     [learningSections]
   );
 
+  const passedSectionIds = useMemo(
+    () => new Set(quizAttempts.filter(a => a.passed).map(a => String(a.sectionId))),
+    [quizAttempts]
+  );
+
   const handleEnded = async () => {
     if (!activeLesson?.storageId || !course?._id) return;
     try {
@@ -1055,10 +1063,6 @@ export default function CourseLearning() {
           </div>
         </div>
 
-        {/* Learner Reviews — luôn hiển thị, không phụ thuộc tab */}
-        <div className={styles.reviewsStandalone}>
-          <LearnerReviewsShowcase course={course} reviewStats={reviewStats} />
-        </div>
 
       </div>
 
