@@ -6,6 +6,15 @@ import './Checkout.scss';
 import { getCoursePricing, normalizeCartItem, TAX_PER_COURSE } from '../../utils/pricing.js';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 
+const getAccountId = () => {
+  try {
+    const stored = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+    return stored?._id || null;
+  } catch {
+    return null;
+  }
+};
+
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -34,14 +43,16 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem('insideCarts') || '[]');
+      const accountId = getAccountId();
+      const key = accountId ? `insideCarts_${accountId}` : 'insideCarts'; // fallback nếu chưa login
+      const stored = JSON.parse(localStorage.getItem(key) || '[]');
       const normalized = Array.isArray(stored) ? stored.map(normalizeCartItem) : [];
       setCart(normalized);
-      localStorage.setItem('insideCarts', JSON.stringify(normalized));
+      localStorage.setItem(key, JSON.stringify(normalized));
     } catch {
       setCart([]);
     }
-  }, []);
+  }, [user]); // nên load lại khi user đã xác định, tránh đọc trước khi biết accountId
 
   useEffect(() => {
     const loadUser = () => {
