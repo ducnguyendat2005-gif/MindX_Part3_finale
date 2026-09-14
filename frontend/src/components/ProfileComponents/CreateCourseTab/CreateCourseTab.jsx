@@ -378,15 +378,15 @@ useEffect(() => {
   };
 
   const validate = (status) => {
-    if (!title.trim()) return 'Vui lòng nhập tên khóa học.';
+    if (!title.trim()) return 'Please enter Course name';
     if (price !== '' && (!Number.isFinite(Number(price)) || Number(price) < 0)) {
-      return 'Price khóa học không hợp lệ.';
+      return 'Invalid course price.';
     }
     if (promotionalPrice !== '') {
       const originalPrice = Number(price || 0);
       const salePrice = Number(promotionalPrice);
       if (!Number.isFinite(salePrice) || salePrice < 0 || salePrice >= originalPrice) {
-        return 'Promotional Price phải nhỏ hơn giá gốc và không được âm.';
+        return 'Promotional price must be less than original price and cannot be negative.';
       }
     }
     if (status === 'published') {
@@ -492,14 +492,14 @@ useEffect(() => {
       const contentType = res.headers.get('content-type') || '';
       const body = contentType.includes('application/json')
         ? await res.json()
-        : { message: `Backend không trả về JSON (HTTP ${res.status}). Hãy kiểm tra backend đang chạy ở http://localhost:3001.` };
+        : { message: `Backend not respond JSON (HTTP ${res.status}). Hãy kiểm tra backend đang chạy ở http://localhost:3001.` };
 
       if (!res.ok) throw new Error(body.message || 'Tạo khóa học thất bại');
 
       setCourseId(body.data?._id || courseId);
       setCourseStatus(body.data?.status || status);
       if (status === 'draft') {
-        setSuccessMessage('Draft đã được lưu. Bạn có thể rời trang và tiếp tục chỉnh sửa sau.');
+        setSuccessMessage('Draft saved. You can leave the page and continue editing later.');
         return;
       }
       onCreated?.(body.data);
@@ -719,7 +719,7 @@ useEffect(() => {
                         checked={section.hasQuiz}
                         onChange={() => handleToggleQuiz(section.id)}
                       />
-                      Thêm quiz cho phần này
+                      Add Quiz for this sector
                     </label>
 
                     {section.hasQuiz && (

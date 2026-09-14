@@ -309,7 +309,7 @@ export default function CheckoutPage() {
                 return (
                 <div className="checkout-summary__course" key={data._id || data.id}>
                   <img
-                    src="https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&q=80&w=400"
+                    src={data.thumbnail}
                     alt={t('checkout.courseImageAlt')}
                     referrerPolicy="no-referrer"
                   />

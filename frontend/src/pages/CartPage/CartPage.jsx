@@ -133,7 +133,7 @@ export default function CartPage() {
 
           return (
             <div className="saved-for-later__item" key={itemId}>
-              <img src={img} alt={item.title} />
+              <img src={item.thumbnail} alt={item.title} />
               <div className="saved-for-later__info">
                 <h3>{item.title}</h3>
                 <p>{t('course.by')} {item.instructor || item.instructorId?.name || item.author || '—'}</p>
@@ -195,7 +195,7 @@ export default function CartPage() {
                   return (
                   <div key={itemId} className="cart-item">
                     <div className="cart-item__image">
-                      <img src={img} alt={item.title} referrerPolicy="no-referrer" />
+                      <img src={item.thumbnail} alt={item.title} referrerPolicy="no-referrer" />
                     </div>
                     <div className="cart-item__info">
                       <div className="cart-item__top">

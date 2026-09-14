@@ -112,7 +112,7 @@ export default function MyReviewsTab() {
   const pagedReviews = reviews.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   if (loading) {
-    return <div className="reviews-page reviews-page--state">Đang tải review...</div>;
+    return <div className="reviews-page reviews-page--state">Loading review...</div>;
   }
 
   if (error) {
@@ -130,7 +130,7 @@ export default function MyReviewsTab() {
       </h1>
 
       {reviews.length === 0 && (
-        <p className="reviews-list__empty">Bạn chưa viết review nào.</p>
+        <p className="reviews-list__empty">You haven't write any reviews.</p>
       )}
 
       <div className="reviews-list">

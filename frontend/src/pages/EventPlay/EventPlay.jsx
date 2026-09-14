@@ -411,7 +411,7 @@ function EventPlay() {
               onClick={() => submitCurrentAnswer()}
               disabled={matchedPairs.length === 0}
             >
-              Nộp {matchedPairs.length}/{matchLeft.length} cặp
+              Submit {matchedPairs.length}/{matchLeft.length} pairs
             </button>
           </div>
         </>

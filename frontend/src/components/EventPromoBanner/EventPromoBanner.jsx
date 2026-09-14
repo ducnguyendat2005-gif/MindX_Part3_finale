@@ -15,7 +15,7 @@ function EventPromoBanner() {
     if (!AT) {
       setNotice({
         type: 'guest',
-        message: 'Bạn cần đăng nhập để tham gia Season Pass Quiz.',
+        message: 'You need to sign in to play Season Pass Quiz.',
       });
       return;
     }
@@ -29,7 +29,7 @@ function EventPromoBanner() {
       if (owned.length === 0) {
         setNotice({
           type: 'no-course',
-          message: 'Bạn cần sở hữu ít nhất 1 khóa học để tham gia sự kiện.',
+          message: 'You need to own at least 1 course to join the event.',
         });
         return;
       }
@@ -48,23 +48,22 @@ function EventPromoBanner() {
       <div className={styles.glowTwo} />
 
       <div className={styles.content}>
-        <span className={styles.badge}>🔥 Season Pass · Sự kiện giới hạn thời gian</span>
-        <h2>Tham gia Season Pass Quiz</h2>
+        <span className={styles.badge}>🔥 Season Pass · Limited Time EVENT!</span>
+        <h2>Joining Season Pass Quiz</h2>
         <p>
-          Trả lời nhanh, giữ streak mỗi ngày, leo hạng trên bảng xếp hạng và
-          giành huy hiệu độc quyền của mùa này.
+          Answer fast, maintain your streak, climb the ranks, and earn exclusive season badges!
         </p>
 
         <div className={styles.actions}>
           <button className={styles.cta} onClick={handleJoin} disabled={checking}>
-            {checking ? 'Đang kiểm tra...' : 'Tham gia ngay →'}
+            {checking ? 'Checking...' : 'Join NOW →'}
           </button>
 
           {notice && (
             <div className={styles.notice} data-type={notice.type}>
               <span>{notice.message}</span>
-              {notice.type === 'guest' && <a href="/signin">Đăng nhập</a>}
-              {notice.type === 'no-course' && <a href="/course-page">Xem khóa học</a>}
+              {notice.type === 'guest' && <a href="/signin">Sign in</a>}
+              {notice.type === 'no-course' && <a href="/course-page">View Courses</a>}
             </div>
           )}
         </div>

@@ -50,11 +50,11 @@ export default function TeacherEditTab({
 
         <h3 className={styles.profileCardTitle}>
           <GraduationCap size={16} className={styles.profileCardTitleIcon} />
-          Thông tin giảng viên
+          Instructor Profile
         </h3>
 
         <div className={styles.profileCardField}>
-          <label>Chức danh / chuyên môn</label>
+          <label>Job Title / Expertise</label>
           <input
             type="text"
             placeholder="VD: Senior Full-stack Instructor"
@@ -64,7 +64,7 @@ export default function TeacherEditTab({
         </div>
 
         <div className={styles.profileCardField}>
-          <label>Giới thiệu bản thân</label>
+          <label>About Me</label>
           <textarea
             placeholder="Kinh nghiệm, chuyên môn giảng dạy..."
             rows={4}
@@ -74,7 +74,7 @@ export default function TeacherEditTab({
         </div>
 
         <div className={styles.profileCardField}>
-          <label>Số năm kinh nghiệm</label>
+          <label>Years of Experience</label>
           <input
             type="number"
             min={0}
@@ -84,7 +84,7 @@ export default function TeacherEditTab({
         </div>
 
         <div className={styles.profileCardField}>
-          <label>Portfolio đã nộp</label>
+          <label>Submitted Portfolios</label>
           {existingPortfolio?.length > 0 ? (
             <ul className={styles.portfolioFileList}>
               {existingPortfolio.map((url) => (
@@ -97,7 +97,7 @@ export default function TeacherEditTab({
               ))}
             </ul>
           ) : (
-            <p className={styles.profileCardHint}>Chưa có file portfolio nào.</p>
+            <p className={styles.profileCardHint}>There is no Portfolios</p>
           )}
         </div>
 
@@ -128,7 +128,7 @@ export default function TeacherEditTab({
         </div>
 
         <div className={styles.profileCardField}>
-          <label>Đổi ảnh đại diện</label>
+          <label>Change Avatar</label>
           <div className={styles.imageUploadRow}>
             <input
               ref={fileInputRef}
@@ -138,11 +138,11 @@ export default function TeacherEditTab({
               hidden
             />
             <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={onPickFile} type="button">
-              Chọn ảnh
+              Browse File
             </button>
             {localPreview && (
               <span className={styles.imageUploadRowHint}>
-                Ảnh mới sẽ được lưu khi bạn bấm "Save changes"
+                Your new photo will be saved when you click "Save changes"
               </span>
             )}
           </div>
@@ -167,14 +167,14 @@ export default function TeacherEditTab({
       <section className={styles.profileCardPass}>
         <h3 className={styles.profileCardTitle}>
           <Lock size={16} className={styles.profileCardTitleIcon} />
-          Đổi mật khẩu
+          Change Password
         </h3>
 
         <div className={styles.profileCardField}>
-          <label>Password hiện tại</label>
+          <label>Your Current Password</label>
           <input
             type="password"
-            placeholder="Nhập mật khẩu hiện tại"
+            placeholder="Enter current password"
             value={passwordForm.currentPassword}
             onChange={handlePasswordChange('currentPassword')}
           />
@@ -182,19 +182,19 @@ export default function TeacherEditTab({
 
         <div className={styles.profileCardRow}>
           <div className={styles.profileCardField}>
-            <label>Password mới</label>
+            <label>New Password</label>
             <input
               type="password"
-              placeholder="Nhập mật khẩu mới"
+              placeholder="Enter new password"
               value={passwordForm.newPassword}
               onChange={handlePasswordChange('newPassword')}
             />
           </div>
           <div className={styles.profileCardField}>
-            <label>Xác nhận mật khẩu mới</label>
+            <label>Confirm New Password</label>
             <input
               type="password"
-              placeholder="Nhập lại mật khẩu mới"
+              placeholder="Re-enter new password"
               value={passwordForm.confirmPassword}
               onChange={handlePasswordChange('confirmPassword')}
             />

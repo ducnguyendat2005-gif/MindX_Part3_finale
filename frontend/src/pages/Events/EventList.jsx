@@ -35,13 +35,13 @@ function EventsList() {
     <div className={styles.eventsList}>
       <div className={styles.header}>
         <span className={styles.eyebrow}>Season Pass</span>
-        <h1>Sự kiện đang diễn ra</h1>
-        <p>Trả lời nhanh, giữ streak, leo hạng bảng xếp hạng mùa này.</p>
+        <h1>Events Dashboard</h1>
+        <p>Answer fast, keep your daily streak, climb the leaderboard.</p>
       </div>
 
       {events.length === 0 ? (
         <div className={styles.empty}>
-          Hiện chưa có sự kiện nào đang mở. Back sau nhé.
+          No events available right now. Check back later.
         </div>
       ) : (
         <div className={styles.grid}>
@@ -58,7 +58,7 @@ function EventsList() {
                 <h3>{ev.title}</h3>
                 <p>{ev.description}</p>
                 <span className={styles.cardMeta}>
-                  {ev.questions?.length || 0} câu hỏi · End{' '}
+                  {ev.questions?.length || 0} quetions · End{' '}
                   {new Date(ev.endDate).toLocaleDateString('vi-VN')}
                 </span>
               </div>
