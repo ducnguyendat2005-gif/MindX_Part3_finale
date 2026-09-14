@@ -23,7 +23,22 @@ import twitter from "../../assets/twitter.png";
 import { normalizeCartItem } from "../../utils/pricing.js";
 import { useLanguage } from "../../context/LanguageContext.jsx";
 
-const WISHLIST_KEY = 'wishlistedCourses';
+const getAccountId = () => {
+  try {
+    const stored = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+    return stored?._id || null;
+  } catch {
+    return null;
+  }
+};
+const getWishlistKey = () => {
+  const accountId = getAccountId();
+  return accountId ? `wishlistedCourses_${accountId}` : null;
+};
+const getCartKey = () => {
+  const accountId = getAccountId();
+  return accountId ? `insideCarts_${accountId}` : null;
+};
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -214,12 +229,15 @@ const isOwned = user?.myCourses?.some(c => c && String(c._id) === String(id)) ??
   }, []);
 
   useEffect(() => {
-    const savedList = JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
+      const key = getWishlistKey();
+     const savedList = key ? JSON.parse(localStorage.getItem(key) || '[]') : [];
     setIsFavorite(savedList.some((item) => String(item._id) === String(id)));
   }, [id]);
 
   const handleAddtoCart = () => {
-    const existing = JSON.parse(localStorage.getItem('insideCarts') || '[]');
+     const cartKey = getCartKey();
+     if (!cartKey) { navigate('/signin'); return; }
+     const existing = JSON.parse(localStorage.getItem(cartKey) || '[]');
     const alreadyInCart = existing.some(item => String(item._id || item.id) === String(course._id));
     if (alreadyInCart) {
       setShowToast(true);
@@ -227,7 +245,7 @@ const isOwned = user?.myCourses?.some(c => c && String(c._id) === String(id)) ??
       return;
     }
     const updated = [...existing, normalizeCartItem(course)];
-    localStorage.setItem('insideCarts', JSON.stringify(updated));
+    localStorage.setItem(cartKey, JSON.stringify(updated));
     window.dispatchEvent(new Event('cartUpdated'));
     setAdded(true);
   };
@@ -238,7 +256,8 @@ const isOwned = user?.myCourses?.some(c => c && String(c._id) === String(id)) ??
       return;
     }
 
-    const existing = JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
+    const wishlistKey = getWishlistKey();
+    const existing = wishlistKey ? JSON.parse(localStorage.getItem(wishlistKey) || '[]') : [];
     const alreadySaved = existing.some((item) => String(item._id) === String(course._id));
 
     let updated;
@@ -250,7 +269,7 @@ const isOwned = user?.myCourses?.some(c => c && String(c._id) === String(id)) ??
       setIsFavorite(true);
     }
 
-    localStorage.setItem(WISHLIST_KEY, JSON.stringify(updated));
+    if (wishlistKey) localStorage.setItem(wishlistKey, JSON.stringify(updated));
     window.dispatchEvent(new Event('wishlistUpdated'));
   };
 
