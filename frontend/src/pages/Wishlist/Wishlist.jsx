@@ -4,7 +4,18 @@ import CourseCard from '../../components/CourseCard/CourseCard';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 import styles from './Wishlist.module.scss';
 
-const WISHLIST_KEY = 'wishlistedCourses';
+const getAccountId = () => {
+  try {
+    const stored = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+    return stored?._id || null;
+  } catch {
+    return null;
+  }
+};
+const getWishlistKey = () => {
+  const accountId = getAccountId();
+  return accountId ? `wishlistedCourses_${accountId}` : null;
+};
 
 export default function Wishlist() {
   const [wishlist, setWishlist] = useState([]);
@@ -12,21 +23,27 @@ export default function Wishlist() {
   const { t } = useLanguage();
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
+     const key = getWishlistKey();
+      const stored = key ? JSON.parse(localStorage.getItem(key) || '[]') : [];
     setWishlist(stored);
 
     const handleUpdate = () => {
-      const fresh = JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
-      setWishlist(fresh);
+      const k = getWishlistKey();
+      const fresh = k ? JSON.parse(localStorage.getItem(k) || '[]') : [];      setWishlist(fresh);
     };
 
     window.addEventListener('wishlistUpdated', handleUpdate);
-    return () => window.removeEventListener('wishlistUpdated', handleUpdate);
+    window.addEventListener('userUpdated', handleUpdate);
+     return () => {
+     window.removeEventListener('wishlistUpdated', handleUpdate);
+     window.removeEventListener('userUpdated', handleUpdate);
+   };
   }, []);
 
   const handleRemove = (courseId) => {
     const updated = wishlist.filter((course) => course._id !== courseId);
-    localStorage.setItem(WISHLIST_KEY, JSON.stringify(updated));
+    const key = getWishlistKey();
+    if (key) localStorage.setItem(key, JSON.stringify(updated));
     setWishlist(updated);
     window.dispatchEvent(new Event('wishlistUpdated'));
   };

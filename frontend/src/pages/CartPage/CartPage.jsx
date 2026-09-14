@@ -49,7 +49,9 @@ const MOCK_CART_ITEMS = [
 
 const readCart = () => {
   try {
-    const stored = JSON.parse(localStorage.getItem('insideCarts') || '[]');
+    const accountId = getAccountId();
+    if (!accountId) return [];
+    const stored = JSON.parse(localStorage.getItem(`insideCarts_${accountId}`) || '[]');
     return Array.isArray(stored) ? stored.map(normalizeCartItem) : [];
   } catch {
     return [];
@@ -58,7 +60,9 @@ const readCart = () => {
 
 const readSavedItems = () => {
   try {
-    const stored = JSON.parse(localStorage.getItem('savedForLaterItems') || '[]');
+    const accountId = getAccountId();
+    if (!accountId) return [];
+    const stored = JSON.parse(localStorage.getItem(`savedForLaterItems_${accountId}`) || '[]')
     return Array.isArray(stored) ? stored.map(normalizeCartItem) : [];
   } catch {
     return [];
@@ -66,6 +70,15 @@ const readSavedItems = () => {
 };
 
 const getItemId = (item) => String(item?._id || item?.id);
+
+const getAccountId = () => {
+  try {
+    const stored = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+    return stored?._id || null;
+  } catch {
+    return null;
+  }
+};
 
 export default function CartPage() {
   const { t } = useLanguage();
@@ -82,7 +95,7 @@ export default function CartPage() {
   const handleRemove = (id) => {
     const updated = cart.filter(item => String(item._id || item.id) !== String(id));
     setCart(updated);
-    localStorage.setItem('insideCarts', JSON.stringify(updated));
+    localStorage.setItem(`insideCarts_${getAccountId()}`, JSON.stringify(updated));
     window.dispatchEvent(new Event('cartUpdated'));
   };
 
@@ -96,8 +109,8 @@ export default function CartPage() {
 
     setCart(updatedCart);
     setSavedItems(updatedSavedItems);
-    localStorage.setItem('insideCarts', JSON.stringify(updatedCart));
-    localStorage.setItem('savedForLaterItems', JSON.stringify(updatedSavedItems));
+    localStorage.setItem(`insideCarts_${getAccountId()}`, JSON.stringify(updatedCart));
+    localStorage.setItem(`savedForLaterItems_${getAccountId()}`, JSON.stringify(updatedSavedItems));
     window.dispatchEvent(new Event('cartUpdated'));
   };
 
@@ -109,15 +122,15 @@ export default function CartPage() {
 
     setCart(updatedCart);
     setSavedItems(updatedSavedItems);
-    localStorage.setItem('insideCarts', JSON.stringify(updatedCart));
-    localStorage.setItem('savedForLaterItems', JSON.stringify(updatedSavedItems));
+    localStorage.setItem(`insideCarts_${getAccountId()}`, JSON.stringify(updatedCart));
+    localStorage.setItem(`savedForLaterItems_${getAccountId()}`, JSON.stringify(updatedSavedItems));
     window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const handleRemoveSavedItem = (id) => {
     const updatedSavedItems = savedItems.filter((item) => getItemId(item) !== String(id));
     setSavedItems(updatedSavedItems);
-    localStorage.setItem('savedForLaterItems', JSON.stringify(updatedSavedItems));
+    localStorage.setItem(`savedForLaterItems_${getAccountId()}`, JSON.stringify(updatedSavedItems));
   };
 
   const savedForLaterSection = savedItems.length > 0 && (

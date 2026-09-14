@@ -145,8 +145,12 @@ function Header() {
 
   useEffect(() => {
     const updateWishlistCount = () => {
-      const stored = JSON.parse(localStorage.getItem('wishlistedCourses') || '[]');
-      setWishlistCount(user ? stored.length : 0);
+      if (!user) {
+        setWishlistCount(0);
+        return;
+      }
+      const stored = JSON.parse(localStorage.getItem(`wishlistedCourses_${user._id}`) || '[]');
+      setWishlistCount(stored.length);
     };
 
     updateWishlistCount();
@@ -187,7 +191,7 @@ function Header() {
     }
     const lower = query.toLowerCase();
     const filtered = products.filter((c) =>
-      c.title.toLowerCase().includes(lower)
+      c.title?.toLowerCase().includes(lower)
     );
     setSearchResults(filtered);
     setShowSearch(true);
@@ -196,6 +200,8 @@ function Header() {
     const handleLogout = () => {
     tokenStorage.clear();
     setUser(null);
+    setCart([]);
+    setWishlistCount(0);
     setProfileOpen(false);
     setNotificationOpen(false);
     window.dispatchEvent(new Event('userUpdated'));
@@ -221,16 +227,19 @@ function Header() {
 
   useEffect(() => {
     const syncCart = () => {
-      setCart(JSON.parse(localStorage.getItem('insideCarts') || '[]'));
+      const key = user ? `insideCarts_${user._id}` : null;
+      setCart(key ? JSON.parse(localStorage.getItem(key) || '[]') : []);
     };
     syncCart();
     window.addEventListener('storage', syncCart);
     window.addEventListener('cartUpdated', syncCart);
+    window.addEventListener('userUpdated', syncCart);
     return () => {
       window.removeEventListener('storage', syncCart);
       window.removeEventListener('cartUpdated', syncCart);
+      window.removeEventListener('userUpdated', syncCart);
     };
-  }, []);
+  }, [user]);
 
   return (
     <header className={styles.header}>
