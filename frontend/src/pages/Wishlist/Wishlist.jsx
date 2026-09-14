@@ -3,19 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import CourseCard from '../../components/CourseCard/CourseCard';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 import styles from './Wishlist.module.scss';
+import { readUserCollection, writeUserCollection } from '../../utils/userStorage.js';
 
-const getAccountId = () => {
-  try {
-    const stored = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-    return stored?._id || null;
-  } catch {
-    return null;
-  }
-};
-const getWishlistKey = () => {
-  const accountId = getAccountId();
-  return accountId ? `wishlistedCourses_${accountId}` : null;
-};
+const getCourseId = (course) => course?._id || course?.id;
 
 export default function Wishlist() {
   const [wishlist, setWishlist] = useState([]);
@@ -23,27 +13,20 @@ export default function Wishlist() {
   const { t } = useLanguage();
 
   useEffect(() => {
-     const key = getWishlistKey();
-      const stored = key ? JSON.parse(localStorage.getItem(key) || '[]') : [];
-    setWishlist(stored);
+    const syncWishlist = () => setWishlist(readUserCollection('wishlistedCourses'));
+    syncWishlist();
 
-    const handleUpdate = () => {
-      const k = getWishlistKey();
-      const fresh = k ? JSON.parse(localStorage.getItem(k) || '[]') : [];      setWishlist(fresh);
-    };
-
-    window.addEventListener('wishlistUpdated', handleUpdate);
-    window.addEventListener('userUpdated', handleUpdate);
+    window.addEventListener('wishlistUpdated', syncWishlist);
+    window.addEventListener('userUpdated', syncWishlist);
      return () => {
-     window.removeEventListener('wishlistUpdated', handleUpdate);
-     window.removeEventListener('userUpdated', handleUpdate);
+     window.removeEventListener('wishlistUpdated', syncWishlist);
+     window.removeEventListener('userUpdated', syncWishlist);
    };
   }, []);
 
   const handleRemove = (courseId) => {
-    const updated = wishlist.filter((course) => course._id !== courseId);
-    const key = getWishlistKey();
-    if (key) localStorage.setItem(key, JSON.stringify(updated));
+    const updated = wishlist.filter((course) => String(getCourseId(course)) !== String(courseId));
+    writeUserCollection('wishlistedCourses', updated);
     setWishlist(updated);
     window.dispatchEvent(new Event('wishlistUpdated'));
   };
@@ -65,9 +48,9 @@ export default function Wishlist() {
       ) : (
         <div className={styles.courseGrid}>
           {wishlist.map((course) => (
-            <div key={course._id} className={styles.courseCardWrapper}>
+            <div key={getCourseId(course)} className={styles.courseCardWrapper}>
               <CourseCard
-                id={course._id}
+                id={getCourseId(course)}
                 thumbnail={course.thumbnail || course.image || course.cover || course?.courseImage}
                 title={course.title}
                 instructor={course.instructorId?.name || course.instructor || course.author}
@@ -78,7 +61,7 @@ export default function Wishlist() {
                 promotionalPrice={course.promotionalPrice ?? course.price}
                 originalPrice={course.price ?? course.originalPrice ?? 0}
               />
-              <button className={styles.removeButton} onClick={() => handleRemove(course._id)}>
+              <button className={styles.removeButton} onClick={() => handleRemove(getCourseId(course))}>
                 {t('wishlist.remove')}
               </button>
             </div>

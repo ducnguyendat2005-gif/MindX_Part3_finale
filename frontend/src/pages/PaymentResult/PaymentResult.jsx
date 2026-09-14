@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { API, fetchWithAuth } from '../../config/api.js';
+import { readUserCollection, removeUserCollection, writeUserCollection } from '../../utils/userStorage.js';
 
 export default function PaymentResult() {
   const [searchParams] = useSearchParams();
@@ -21,7 +22,7 @@ export default function PaymentResult() {
   const removePurchasedCoursesFromWishlist = () => {
     try {
       const pendingCourseIds = JSON.parse(localStorage.getItem('pendingOrderCourseIds') || '[]');
-      const cart = JSON.parse(localStorage.getItem('insideCarts') || '[]');
+      const cart = readUserCollection('insideCarts');
       const fallbackCourseIds = Array.isArray(cart)
         ? cart.map((course) => course?._id || course?.id).filter(Boolean)
         : [];
@@ -32,15 +33,14 @@ export default function PaymentResult() {
 
       if (purchasedIds.length === 0) return;
 
-      const wishlist = JSON.parse(localStorage.getItem('wishlistedCourses') || '[]');
-      if (!Array.isArray(wishlist)) return;
+      const wishlist = readUserCollection('wishlistedCourses');
 
       const updatedWishlist = wishlist.filter(
         (course) => !purchasedIds.includes(String(course?._id || course?.id)),
       );
 
       if (updatedWishlist.length !== wishlist.length) {
-        localStorage.setItem('wishlistedCourses', JSON.stringify(updatedWishlist));
+        writeUserCollection('wishlistedCourses', updatedWishlist);
         window.dispatchEvent(new Event('wishlistUpdated'));
       }
     } catch (error) {
@@ -73,7 +73,7 @@ export default function PaymentResult() {
         console.error('Refresh profile failed:', err);
       } finally {
         removePurchasedCoursesFromWishlist();
-        localStorage.removeItem('insideCarts');
+        removeUserCollection('insideCarts');
         localStorage.removeItem('pendingOrderId');
         setRefreshed(true);
       }

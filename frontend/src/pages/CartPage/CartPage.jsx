@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +6,10 @@ import img from '../../assets/photo-1542744094-3a31f272c490.avif'
 import './CartPage.scss';
 import { getCoursePricing, normalizeCartItem, TAX_PER_COURSE } from '../../utils/pricing.js';
 import { useLanguage } from '../../context/LanguageContext.jsx';
+import {
+  readUserCollection,
+  writeUserCollection,
+} from '../../utils/userStorage.js';
 
 
 const MOCK_CART_ITEMS = [
@@ -49,10 +53,7 @@ const MOCK_CART_ITEMS = [
 
 const readCart = () => {
   try {
-    const accountId = getAccountId();
-    if (!accountId) return [];
-    const stored = JSON.parse(localStorage.getItem(`insideCarts_${accountId}`) || '[]');
-    return Array.isArray(stored) ? stored.map(normalizeCartItem) : [];
+    return readUserCollection('insideCarts').map(normalizeCartItem);
   } catch {
     return [];
   }
@@ -60,25 +61,13 @@ const readCart = () => {
 
 const readSavedItems = () => {
   try {
-    const accountId = getAccountId();
-    if (!accountId) return [];
-    const stored = JSON.parse(localStorage.getItem(`savedForLaterItems_${accountId}`) || '[]')
-    return Array.isArray(stored) ? stored.map(normalizeCartItem) : [];
+    return readUserCollection('savedForLaterItems').map(normalizeCartItem);
   } catch {
     return [];
   }
 };
 
 const getItemId = (item) => String(item?._id || item?.id);
-
-const getAccountId = () => {
-  try {
-    const stored = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-    return stored?._id || null;
-  } catch {
-    return null;
-  }
-};
 
 export default function CartPage() {
   const { t } = useLanguage();
@@ -91,11 +80,24 @@ export default function CartPage() {
   const tax = cart.length * TAX_PER_COURSE;
   const total = Math.max(subtotal - discount + tax, 0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const syncCart = () => {
+      setCart(readCart());
+      setSavedItems(readSavedItems());
+    };
+    window.addEventListener('cartUpdated', syncCart);
+    window.addEventListener('userUpdated', syncCart);
+    return () => {
+      window.removeEventListener('cartUpdated', syncCart);
+      window.removeEventListener('userUpdated', syncCart);
+    };
+  }, []);
   
   const handleRemove = (id) => {
     const updated = cart.filter(item => String(item._id || item.id) !== String(id));
     setCart(updated);
-    localStorage.setItem(`insideCarts_${getAccountId()}`, JSON.stringify(updated));
+    writeUserCollection('insideCarts', updated);
     window.dispatchEvent(new Event('cartUpdated'));
   };
 
@@ -109,8 +111,8 @@ export default function CartPage() {
 
     setCart(updatedCart);
     setSavedItems(updatedSavedItems);
-    localStorage.setItem(`insideCarts_${getAccountId()}`, JSON.stringify(updatedCart));
-    localStorage.setItem(`savedForLaterItems_${getAccountId()}`, JSON.stringify(updatedSavedItems));
+    writeUserCollection('insideCarts', updatedCart);
+    writeUserCollection('savedForLaterItems', updatedSavedItems);
     window.dispatchEvent(new Event('cartUpdated'));
   };
 
@@ -122,15 +124,15 @@ export default function CartPage() {
 
     setCart(updatedCart);
     setSavedItems(updatedSavedItems);
-    localStorage.setItem(`insideCarts_${getAccountId()}`, JSON.stringify(updatedCart));
-    localStorage.setItem(`savedForLaterItems_${getAccountId()}`, JSON.stringify(updatedSavedItems));
+    writeUserCollection('insideCarts', updatedCart);
+    writeUserCollection('savedForLaterItems', updatedSavedItems);
     window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const handleRemoveSavedItem = (id) => {
     const updatedSavedItems = savedItems.filter((item) => getItemId(item) !== String(id));
     setSavedItems(updatedSavedItems);
-    localStorage.setItem(`savedForLaterItems_${getAccountId()}`, JSON.stringify(updatedSavedItems));
+    writeUserCollection('savedForLaterItems', updatedSavedItems);
   };
 
   const savedForLaterSection = savedItems.length > 0 && (

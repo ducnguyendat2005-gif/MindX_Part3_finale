@@ -5,6 +5,7 @@ import { API, fetchWithAuth, tokenStorage } from '../../config/api.js';
 import './Checkout.scss';
 import { getCoursePricing, normalizeCartItem, TAX_PER_COURSE } from '../../utils/pricing.js';
 import { useLanguage } from '../../context/LanguageContext.jsx';
+import { readUserCollection } from '../../utils/userStorage.js';
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -34,10 +35,8 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem('insideCarts') || '[]');
-      const normalized = Array.isArray(stored) ? stored.map(normalizeCartItem) : [];
+      const normalized = readUserCollection('insideCarts').map(normalizeCartItem);
       setCart(normalized);
-      localStorage.setItem('insideCarts', JSON.stringify(normalized));
     } catch {
       setCart([]);
     }

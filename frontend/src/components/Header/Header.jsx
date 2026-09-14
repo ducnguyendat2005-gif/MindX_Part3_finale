@@ -12,6 +12,7 @@ import { jwtDecode } from 'jwt-decode';
 import ThemeToggleButton from './ThemeToggleButton';
 import NotificationPanel from './NotificationPanel';
 import { useLanguage } from '../../context/LanguageContext.jsx';
+import { readUserCollection } from '../../utils/userStorage.js';
 
 function Header() {
   const navigate = useNavigate();
@@ -149,7 +150,7 @@ function Header() {
         setWishlistCount(0);
         return;
       }
-      const stored = JSON.parse(localStorage.getItem(`wishlistedCourses_${user._id}`) || '[]');
+      const stored = readUserCollection('wishlistedCourses', user);
       setWishlistCount(stored.length);
     };
 
@@ -227,8 +228,7 @@ function Header() {
 
   useEffect(() => {
     const syncCart = () => {
-      const key = user ? `insideCarts_${user._id}` : null;
-      setCart(key ? JSON.parse(localStorage.getItem(key) || '[]') : []);
+      setCart(user ? readUserCollection('insideCarts', user) : []);
     };
     syncCart();
     window.addEventListener('storage', syncCart);

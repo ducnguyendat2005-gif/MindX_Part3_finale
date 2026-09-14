@@ -21,9 +21,13 @@ import google from "../../assets/google.jpg";
 import microsoft from "../../assets/microsoft.png";
 import twitter from "../../assets/twitter.png";
 import { normalizeCartItem } from "../../utils/pricing.js";
+import { readUserCollection, writeUserCollection } from "../../utils/userStorage.js";
 import { useLanguage } from "../../context/LanguageContext.jsx";
 
+const CART_KEY = 'insideCarts';
 const WISHLIST_KEY = 'wishlistedCourses';
+
+const getCourseId = (item) => item?._id || item?.id;
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -197,7 +201,7 @@ const CourseDetail = () => {
   const [user, setUser] = useState(null);
   const [added, setAdded] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  const [toast, setToast] = useState(null);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const navigate = useNavigate();
 
@@ -214,22 +218,35 @@ const isOwned = user?.myCourses?.some(c => c && String(c._id) === String(id)) ??
   }, []);
 
   useEffect(() => {
-    const savedList = JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
-    setIsFavorite(savedList.some((item) => String(item._id) === String(id)));
-  }, [id]);
+    if (!course || !user) {
+      setAdded(false);
+      setIsFavorite(false);
+      return;
+    }
+
+    const courseId = String(getCourseId(course));
+    const savedCart = readUserCollection(CART_KEY, user);
+    const savedWishlist = readUserCollection(WISHLIST_KEY, user);
+    setAdded(savedCart.some((item) => String(getCourseId(item)) === courseId));
+    setIsFavorite(savedWishlist.some((item) => String(getCourseId(item)) === courseId));
+  }, [course, user, id]);
 
   const handleAddtoCart = () => {
-    const existing = JSON.parse(localStorage.getItem('insideCarts') || '[]');
-    const alreadyInCart = existing.some(item => String(item._id || item.id) === String(course._id));
+    const existing = readUserCollection(CART_KEY, user);
+    const courseId = String(getCourseId(course));
+    const alreadyInCart = existing.some(item => String(getCourseId(item)) === courseId);
     if (alreadyInCart) {
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
+      setAdded(true);
+      setToast({ messageKey: 'detail.alreadyInCart', type: 'warning' });
+      setTimeout(() => setToast(null), 3000);
       return;
     }
     const updated = [...existing, normalizeCartItem(course)];
-    localStorage.setItem('insideCarts', JSON.stringify(updated));
+    writeUserCollection(CART_KEY, updated, user);
     window.dispatchEvent(new Event('cartUpdated'));
     setAdded(true);
+    setToast({ messageKey: 'detail.addedToCart', type: 'success' });
+    setTimeout(() => setToast(null), 3000);
   };
 
   const handleToggleWishlist = () => {
@@ -238,20 +255,24 @@ const isOwned = user?.myCourses?.some(c => c && String(c._id) === String(id)) ??
       return;
     }
 
-    const existing = JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
-    const alreadySaved = existing.some((item) => String(item._id) === String(course._id));
+    const existing = readUserCollection(WISHLIST_KEY, user);
+    const courseId = String(getCourseId(course));
+    const alreadySaved = existing.some((item) => String(getCourseId(item)) === courseId);
 
     let updated;
     if (alreadySaved) {
-      updated = existing.filter((item) => String(item._id) !== String(course._id));
+      updated = existing.filter((item) => String(getCourseId(item)) !== courseId);
       setIsFavorite(false);
+      setToast({ messageKey: 'detail.removedFromWishlist', type: 'success' });
     } else {
       updated = [...existing, course];
       setIsFavorite(true);
+      setToast({ messageKey: 'detail.addedToWishlist', type: 'success' });
     }
 
-    localStorage.setItem(WISHLIST_KEY, JSON.stringify(updated));
+    writeUserCollection(WISHLIST_KEY, updated, user);
     window.dispatchEvent(new Event('wishlistUpdated'));
+    setTimeout(() => setToast(null), 3000);
   };
 
   const handleBuynow = () => {
@@ -299,13 +320,13 @@ useEffect(() => {
     course.promotionalPrice < course.price;
   return (
     <>
-      {showToast && (
+      {toast && (
         <div style={{
           position: 'fixed',
           top: '24px',
           right: '24px',
           zIndex: 9999,
-          backgroundColor: '#1e293b',
+          backgroundColor: toast.type === 'warning' ? '#1e293b' : '#166534',
           color: '#fff',
           padding: '14px 20px',
           borderRadius: '10px',
@@ -316,11 +337,16 @@ useEffect(() => {
           animation: 'fadeIn 0.3s ease',
         }}>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="10" r="10" fill="#f59e0b" />
-            <path d="M10 6v4M10 13h.01" stroke="#fff" strokeWidth="1.8"
-              strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="10" cy="10" r="10" fill={toast.type === 'warning' ? '#f59e0b' : '#22c55e'} />
+            {toast.type === 'warning' ? (
+              <path d="M10 6v4M10 13h.01" stroke="#fff" strokeWidth="1.8"
+                strokeLinecap="round" strokeLinejoin="round" />
+            ) : (
+              <path d="M6 10l2.5 2.5L14 7" stroke="#fff" strokeWidth="1.8"
+                strokeLinecap="round" strokeLinejoin="round" />
+            )}
           </svg>
-          <span>{t('detail.alreadyInCart')}</span>
+          <span>{t(toast.messageKey)}</span>
         </div>
       )}
 
